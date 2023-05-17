@@ -36,7 +36,8 @@ class TestMetadataResource(TestCase):
         resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        self.assertEqual(resp.created, datetime(year=2023, month=5, day=17, hour=16, second=41, tzinfo=timezone.utc))
+        self.assertEqual(resp.created, datetime(year=2023, month=5, day=17, hour=16, minute=41, tzinfo=timezone.utc))
+        self.assertEqual(resp.modified, datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=timezone.utc))
 
     def test_metadata_from_odt(self):
         test_file = SAMPLE_DIR / "sample.odt"
