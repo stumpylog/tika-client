@@ -77,6 +77,13 @@ jobs:
         run: |
           hatch run cov
       -
+        name: Upload coverage to Codecov
+        if: matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v3
+        with:
+          # not required for public repos, but intermittently fails otherwise
+          token: ${{ secrets.CODECOV_TOKEN }}
+      -
         name: Stop containers
         if: always()
         run: |
