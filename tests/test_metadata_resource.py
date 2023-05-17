@@ -1,12 +1,13 @@
+import contextlib
 from datetime import datetime
+from datetime import timezone
 from unittest import TestCase
 
 import magic
 
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:
-    from backports.zoneinfo import ZoneInfo
+with contextlib.suppress(ImportError):
+    pass
+
 
 from tests.config import SAMPLE_DIR
 from tests.config import TIKA_URL
@@ -35,7 +36,7 @@ class TestMetadataResource(TestCase):
         resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        self.assertEqual(resp.created, datetime(year=2023, month=5, day=17, hour=16, second=41, tzinfo=ZoneInfo("UTC")))
+        self.assertEqual(resp.created, datetime(year=2023, month=5, day=17, hour=16, second=41, tzinfo=timezone.utc))
 
     def test_metadata_from_odt(self):
         test_file = SAMPLE_DIR / "sample.odt"
