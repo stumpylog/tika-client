@@ -6,11 +6,12 @@ from typing import Optional
 from httpx import Client
 
 from tika_rest_client.errors import RestHttpError
+from tika_rest_client.utils import get_optional_int
 
 
 class DocumentMetadata:
     def __init__(self, json: dict) -> None:
-        self.size: Optional[int] = json["Content-Length"]
+        self.size: Optional[int] = get_optional_int(json, "Content-Length")
         from pprint import pprint
 
         pprint(json)
@@ -26,11 +27,12 @@ class Metadata:
     """
 
     ENDPOINT: Final[str] = "/meta"
+    MULTI_PART_ENDPOINT = f"{ENDPOINT}/form"
 
     def __init__(self, client: Client) -> None:
         self.client = client
 
-    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None) -> DocumentMetadata:
         """
         PUTs the provided document to the metadata endpoint using multipart
         file encoding.  Optionally can provide the mime type
@@ -40,7 +42,7 @@ class Metadata:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
                 files = {"upload-file": (filepath.name, handle)}
-            resp = self.client.post(self.ENDPOINT, files=files)
+            resp = self.client.post(self.MULTI_PART_ENDPOINT, files=files)
             if resp.status_code != HTTPStatus.OK:
                 raise RestHttpError(resp.status_code)
             return DocumentMetadata(resp.json())
