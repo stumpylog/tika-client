@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from pathlib import Path
 from typing import Final
+from typing import List
 from typing import Optional
 
 from httpx import Client
@@ -12,6 +13,9 @@ from tika_rest_client.utils import get_optional_int
 class DocumentMetadata:
     def __init__(self, json: dict) -> None:
         self.size: Optional[int] = get_optional_int(json, "Content-Length")
+        self.type: str = json["Content-Type"]
+        self.parsers: List[str] = json["X-TIKA:Parsed-By"]
+        self.language: str = json["language"]
         from pprint import pprint
 
         pprint(json)
