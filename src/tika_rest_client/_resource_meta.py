@@ -10,6 +10,7 @@ from tika_rest_client.errors import RestHttpError
 
 class DocumentMetadata:
     def __init__(self, json: dict) -> None:
+        self.size: Optional[int] = json["Content-Length"]
         from pprint import pprint
 
         pprint(json)
@@ -39,7 +40,7 @@ class Metadata:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
                 files = {"upload-file": (filepath.name, handle)}
-            resp = self.client.put(self.ENDPOINT, files=files)
+            resp = self.client.post(self.ENDPOINT, files=files)
             if resp.status_code != HTTPStatus.OK:
                 raise RestHttpError(resp.status_code)
             return DocumentMetadata(resp.json())
