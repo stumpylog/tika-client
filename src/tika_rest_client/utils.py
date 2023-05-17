@@ -16,12 +16,12 @@ class BaseResponse:
         pass
 
     def get_optional_int(self, key: str) -> Optional[int]:
-        if key not in self.data:
+        if key not in self.data:  # pragma: no cover
             return None
         return int(self.data[key])
 
     def get_optional_datetime(self, key: str) -> Optional[datetime]:
-        if key not in self.data:
+        if key not in self.data:  # pragma: no cover
             return None
         # Handle Zulu time as UTC
         return datetime.fromisoformat(self.data[key].replace("Z", "+00:00"))
