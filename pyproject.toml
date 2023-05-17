@@ -38,11 +38,11 @@ path = "src/tika_rest_client/__about__.py"
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
-  "pre-commit",
-  "ruff",
-  "black",
+  "pytest-sugar",
+  "pytest-cov",
+  "pytest-xdist",
+  "pytest-httpx",
   "python-magic",
-  "backports.zoneinfo; python_version<'3.9'",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
