@@ -40,7 +40,9 @@ dependencies = [
   "pytest",
   "pre-commit",
   "ruff",
-  "black"
+  "black",
+	"python-magic",
+	"python-magic-bin; os_name=='nt'"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
@@ -48,6 +50,7 @@ test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
   "- coverage combine",
   "coverage report",
+  "coverage html",
 ]
 cov = [
   "test-cov",

@@ -25,15 +25,34 @@ jobs:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
 
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python ${{ matrix.python-version }}
+    -
+      uses: actions/checkout@v3
+    -
+      name: Start containers
+      run: |
+        docker compose --file ${GITHUB_WORKSPACE}.docker/docker-compose.ci-test.yml pull --quiet
+        docker compose --file ${GITHUB_WORKSPACE}.docker/docker-compose.ci-test.yml up --detach
+    -
+      name: Install file for macOS
+      if: runner.os == 'macOS'
+      run: |
+        brew install libmagic
+    -
+      name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Install Hatch
-      run: pip install --upgrade hatch
-
-    - name: Run tests
-      run: hatch run cov
+    -
+      name: Install Hatch
+      run: |
+        pip install --upgrade hatch
+    -
+      name: Run tests
+      run: |
+        hatch run cov
+    -
+      name: Stop containers
+      if: always()
+      run: |
+        docker compose --file ${GITHUB_WORKSPACE}/docker/compose/docker-compose.ci-test.yml logs
+        docker compose --file ${GITHUB_WORKSPACE}/docker/compose/docker-compose.ci-test.yml down
