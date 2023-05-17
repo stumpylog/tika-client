@@ -9,9 +9,12 @@ with contextlib.suppress(ImportError):
     pass
 
 
+from unittest import mock
+
 from tests.config import SAMPLE_DIR
 from tests.config import TIKA_URL
 from tika_rest_client.client import TikaClient
+from tika_rest_client.errors import RestHttpError
 
 
 class TestMetadataResource(TestCase):
@@ -53,3 +56,10 @@ class TestMetadataResource(TestCase):
         self.assertEqual(resp.type, "application/vnd.oasis.opendocument.text")
         self.assertEqual(resp.data["generator"], "LibreOfficeDev/6.0.5.2$Linux_X86_64 LibreOffice_project/")
         self.assertIsNone(resp.created)
+
+    def test_http_error(self):
+        with mock.patch("tika_rest_client.client.TikaClient.put") as mocked:
+            mocked.return_value.status_code = 500
+            with self.assertRaises(RestHttpError):
+                test_file = SAMPLE_DIR / "sample.odt"
+                self.client.metadata.from_file(test_file)

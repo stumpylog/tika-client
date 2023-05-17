@@ -32,6 +32,7 @@ jobs:
       run: |
         docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml pull --quiet
         docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml up --detach
+        sleep 5
     -
       name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -40,7 +41,7 @@ jobs:
     -
       name: Install Hatch
       run: |
-        pip install --upgrade hatch
+        pip --quiet install --upgrade hatch
     -
       name: Run tests
       run: |
