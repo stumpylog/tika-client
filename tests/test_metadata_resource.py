@@ -1,11 +1,16 @@
+from datetime import datetime
 from unittest import TestCase
 
 import magic
 
-from tika_rest_client.client import TikaClient
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
-from .config import SAMPLE_DIR
-from .config import TIKA_URL
+from tests.config import SAMPLE_DIR
+from tests.config import TIKA_URL
+from tika_rest_client.client import TikaClient
 
 
 class TestMetadataResource(TestCase):
@@ -20,15 +25,22 @@ class TestMetadataResource(TestCase):
 
     def test_metadata_from_docx(self):
         test_file = SAMPLE_DIR / "sample.docx"
-        self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
-        self.assertTrue(False)
+        resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
+
+        self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        self.assertIsNone(resp.created)
 
     def test_metadata_from_word_docx(self):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
-        self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
-        self.assertTrue(False)
+        resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
+
+        self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        self.assertEqual(resp.created, datetime(year=2023, month=5, day=17, hour=16, second=41, tzinfo=ZoneInfo("UTC")))
 
     def test_metadata_from_odt(self):
         test_file = SAMPLE_DIR / "sample.odt"
-        self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
-        self.assertTrue(False)
+        resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
+
+        self.assertEqual(resp.type, "application/vnd.oasis.opendocument.text")
+        self.assertEqual(resp.data["generator"], "LibreOfficeDev/6.0.5.2$Linux_X86_64 LibreOffice_project/")
+        self.assertIsNone(resp.created)

@@ -7,18 +7,19 @@ from typing import Optional
 from httpx import Client
 
 from tika_rest_client.errors import RestHttpError
-from tika_rest_client.utils import get_optional_int
+from tika_rest_client.utils import BaseResponse
 
 
-class DocumentMetadata:
-    def __init__(self, json: dict) -> None:
-        self.size: Optional[int] = get_optional_int(json, "Content-Length")
-        self.type: str = json["Content-Type"]
-        self.parsers: List[str] = json["X-TIKA:Parsed-By"]
-        self.language: str = json["language"]
-        from pprint import pprint
-
-        pprint(json)
+class DocumentMetadata(BaseResponse):
+    def __init__(self, data: dict) -> None:
+        super().__init__(data)
+        self.size = self.get_optional_int("Content-Length")
+        self.type: str = self.data["Content-Type"]
+        self.parsers: List[str] = self.data["X-TIKA:Parsed-By"]
+        self.language: str = self.data["language"]
+        self.revision = self.get_optional_int("cp:revision")
+        self.created = self.get_optional_datetime("dcterms:created")
+        self.modified = self.get_optional_datetime("dcterms:modified")
 
 
 class Metadata:

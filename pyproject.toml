@@ -41,8 +41,8 @@ dependencies = [
   "pre-commit",
   "ruff",
   "black",
-	"python-magic",
-	"python-magic-bin; os_name=='nt'"
+  "python-magic",
+  "backports.zoneinfo; python_version<'3.9'",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
