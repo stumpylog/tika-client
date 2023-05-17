@@ -31,6 +31,13 @@ class TestMetadataResource(TestCase):
         self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         self.assertIsNone(resp.created)
 
+    def test_metadata_from_docx_no_mime(self):
+        test_file = SAMPLE_DIR / "sample.docx"
+        resp = self.client.metadata.from_file(test_file)
+
+        self.assertEqual(resp.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        self.assertIsNone(resp.created)
+
     def test_metadata_from_word_docx(self):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
         resp = self.client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
