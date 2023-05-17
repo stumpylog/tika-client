@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from pathlib import Path
 from typing import Final
+from typing import Optional
 
 from httpx import Client
 
@@ -28,7 +29,7 @@ class Metadata:
     def __init__(self, client: Client) -> None:
         self.client = client
 
-    def from_file(self, filepath: Path, mime_type: str | None = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
         """
         PUTs the provided document to the metadata endpoint using multipart
         file encoding.  Optionally can provide the mime type
