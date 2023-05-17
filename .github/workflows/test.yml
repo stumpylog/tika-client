@@ -30,8 +30,8 @@ jobs:
     -
       name: Start containers
       run: |
-        docker compose --file ${GITHUB_WORKSPACE}.docker/docker-compose.ci-test.yml pull --quiet
-        docker compose --file ${GITHUB_WORKSPACE}.docker/docker-compose.ci-test.yml up --detach
+        docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml pull --quiet
+        docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml up --detach
     -
       name: Install file for macOS
       if: runner.os == 'macOS'
@@ -54,5 +54,5 @@ jobs:
       name: Stop containers
       if: always()
       run: |
-        docker compose --file ${GITHUB_WORKSPACE}/docker/compose/docker-compose.ci-test.yml logs
-        docker compose --file ${GITHUB_WORKSPACE}/docker/compose/docker-compose.ci-test.yml down
+        docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml logs
+        docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml down
