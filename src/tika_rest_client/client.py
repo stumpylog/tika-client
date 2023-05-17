@@ -1,6 +1,7 @@
 from httpx import Client
 
 from tika_rest_client._resource_meta import Metadata
+from tika_rest_client._resource_tika import Tika
 
 
 class TikaClient(Client):
@@ -10,3 +11,4 @@ class TikaClient(Client):
         self.headers.update({"Accept": "application/json"})
 
         self.metadata = Metadata(self)
+        self.tika = Tika(self)
