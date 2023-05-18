@@ -26,7 +26,7 @@ class Tika(BaseResource):
     ENDPOINT: Final[str] = "/tika"
     PLAIN_TEXT_CONTENT: Final[str] = f"{ENDPOINT}/text"
     MULTI_PART_ENDPOINT = f"{ENDPOINT}/form"
-    MULTI_PART_PLAIN_TEXT_CONTENT = f"{PLAIN_TEXT_CONTENT}/form"
+    MULTI_PART_PLAIN_TEXT_CONTENT = f"{MULTI_PART_ENDPOINT}/text"
 
     def _common_call(self, endpoint: str, filepath: Path, mime_type: Optional[str] = None) -> DocumentData:
         return DocumentData(self.put_multipart(endpoint, filepath, mime_type))

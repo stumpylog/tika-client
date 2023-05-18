@@ -11,7 +11,7 @@ class BaseResponse:
         self.data = data
         self.__post_init__()
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> None:  # pragma: no cover
         pass
 
     def get_optional_int(self, key: str) -> Optional[int]:
