@@ -4,7 +4,6 @@ from typing import Dict
 from typing import Optional
 
 from httpx import Client
-from httpx import Response
 
 
 class BaseResponse:
@@ -31,12 +30,12 @@ class BaseResource:
     def __init__(self, client: Client) -> None:
         self.client = client
 
-    def put_multipart(self, endpoint: str, filepath: Path, mime_type: Optional[str] = None) -> Response:
+    def put_multipart(self, endpoint: str, filepath: Path, mime_type: Optional[str] = None) -> Dict:
         with filepath.open("rb") as handle:
             if mime_type is not None:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
-                files = {"upload-file": (filepath.name, handle)}
+                files = {"upload-file": (filepath.name, handle)}  # type: ignore
             resp = self.client.post(endpoint, files=files)
             resp.raise_for_status()
             # Always JSON

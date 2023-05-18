@@ -3,8 +3,8 @@ from typing import Final
 from typing import List
 from typing import Optional
 
-from tika_rest_client.utils import BaseResource
-from tika_rest_client.utils import BaseResponse
+from tika_client.utils import BaseResource
+from tika_client.utils import BaseResponse
 
 
 class DocumentMetadata(BaseResponse):

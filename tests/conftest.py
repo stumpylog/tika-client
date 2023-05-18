@@ -1,6 +1,6 @@
 import pytest
 
-from tika_rest_client.client import TikaClient
+from tika_client.client import TikaClient
 
 from .config import TIKA_URL
 

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tika-rest-client"
+name = "tika-client"
 dynamic = ["version"]
 description = 'A modern REST client for Apache Tika server'
 readme = "README.md"
@@ -31,7 +31,7 @@ Issues = "https://github.com/stumpylog/tika-rest-client/issues"
 Source = "https://github.com/stumpylog/tika-rest-client"
 
 [tool.hatch.version]
-path = "src/tika_rest_client/__about__.py"
+path = "src/tika_client/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -69,9 +69,10 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "httpx",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/tika_rest_client tests}"
+typing = "mypy --install-types --non-interactive {args:src/tika_client}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -146,7 +147,7 @@ ignore = [
 
 [tool.ruff.isort]
 force-single-line = true
-known-first-party = ["tika_rest_client"]
+known-first-party = ["tika_client"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -161,16 +162,16 @@ ban-relative-imports = "all"
                 ]
 
 [tool.coverage.run]
-source_pkgs = ["tika_rest_client", "tests"]
+source_pkgs = ["tika_client", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/tika_rest_client/__about__.py",
+  "src/tika_client/__about__.py",
 ]
 
 [tool.coverage.paths]
-tika_rest_client = ["src/tika_rest_client", "*/tika-rest-client/src/tika_rest_client"]
-tests = ["tests", "*/tika-rest-client/tests"]
+tika_client = ["src/tika_client", "*/tika-client/src/tika_client"]
+tests = ["tests", "*/tika-client/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -178,3 +179,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.mypy]
+disallow_untyped_defs = true
