@@ -1,29 +1,8 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Dict
 from typing import Optional
 
 from httpx import Client
-
-
-class BaseResponse:
-    def __init__(self, data: Dict) -> None:
-        self.data = data
-        self.__post_init__()
-
-    def __post_init__(self) -> None:  # pragma: no cover
-        pass
-
-    def get_optional_int(self, key: str) -> Optional[int]:
-        if key not in self.data:  # pragma: no cover
-            return None
-        return int(self.data[key])
-
-    def get_optional_datetime(self, key: str) -> Optional[datetime]:
-        if key not in self.data:  # pragma: no cover
-            return None
-        # Handle Zulu time as UTC
-        return datetime.fromisoformat(self.data[key].replace("Z", "+00:00"))
 
 
 class BaseResource:

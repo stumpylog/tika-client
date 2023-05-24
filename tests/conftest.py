@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Final
@@ -13,5 +14,5 @@ SAMPLE_DIR: Final[Path] = Path(__file__).parent.resolve() / "samples"
 
 @pytest.fixture()
 def tika_client() -> TikaClient:
-    with TikaClient(tika_url=TIKA_URL) as client:
+    with TikaClient(tika_url=TIKA_URL, log_level=logging.INFO) as client:
         yield client

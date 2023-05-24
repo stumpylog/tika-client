@@ -1,42 +1,47 @@
+import logging
 from pathlib import Path
 from typing import Final
 from typing import List
 from typing import Optional
+from typing import Union
 
 from httpx import Client
 
-from tika_client.utils import BaseResource
-from tika_client.utils import BaseResponse
+from tika_client._utils import BaseResource
+from tika_client.data_models import KNOWN_DATA_TYPES
+from tika_client.data_models import BaseResponse
+from tika_client.data_models import Document
+from tika_client.data_models import Image
 
-
-class RecursiveDocumentData(BaseResponse):
-    def __post_init__(self) -> None:
-        self.type: str = self.data["Content-Type"]
-        self.content: str = self.data["X-TIKA:content"]
-        self.created = self.get_optional_datetime("dcterms:created")
-        self.modified = self.get_optional_datetime("dcterms:modified")
-
-
-class RecursiveData(BaseResponse):
-    def __post_init__(self) -> None:
-        self.documents: List[RecursiveDocumentData] = []
-        for item in self.data:
-            self.documents.append(RecursiveDocumentData(item))
+logger = logging.getLogger("tika-client.rmeta")
 
 
 class _TikaRmetaBase(BaseResource):
-    def _common_call(self, endpoint: str, filepath: Path, mime_type: Optional[str] = None) -> RecursiveData:
+    def _common_call(
+        self,
+        endpoint: str,
+        filepath: Path,
+        mime_type: Optional[str] = None,
+    ) -> List[Union[Document, Image, BaseResponse]]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
-        return RecursiveData(self.put_multipart(endpoint, filepath, mime_type))
+        documents: List[Union[Document, Image, BaseResponse]] = []
+        for item in self.put_multipart(endpoint, filepath, mime_type):
+            # If a detailed class exists, use it
+            if item["Content-Type"] in KNOWN_DATA_TYPES:
+                documents.append(KNOWN_DATA_TYPES[item["Content-Type"]](item))
+            else:
+                logger.warning(f"Unknown content-type: {item['Content-Type']}")
+                documents.append(BaseResponse(item))
+        return documents
 
 
 class _RecursiveMetaHtml(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta"
     MULTI_PART_ENDPOINT = "/rmeta/form/html"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None) -> RecursiveData:
+    def parse(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the formatted (as HTML) document data
         """
@@ -47,7 +52,7 @@ class _RecursiveMetaPlain(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta/text"
     MULTI_PART_ENDPOINT = "/rmeta/form/text"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None) -> RecursiveData:
+    def parse(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the plain text document data
         """

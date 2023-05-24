@@ -1,21 +1,11 @@
 from pathlib import Path
 from typing import Final
-from typing import List
 from typing import Optional
+from typing import Union
 
-from tika_client.utils import BaseResource
-from tika_client.utils import BaseResponse
-
-
-class DocumentMetadata(BaseResponse):
-    def __post_init__(self) -> None:
-        self.size = self.get_optional_int("Content-Length")
-        self.type: str = self.data["Content-Type"]
-        self.parsers: List[str] = self.data["X-TIKA:Parsed-By"]
-        self.language: str = self.data["language"]
-        self.revision = self.get_optional_int("cp:revision")
-        self.created = self.get_optional_datetime("dcterms:created")
-        self.modified = self.get_optional_datetime("dcterms:modified")
+from tika_client._utils import BaseResource
+from tika_client.data_models import BaseResponse
+from tika_client.data_models import DocumentMetadata
 
 
 class Metadata(BaseResource):
@@ -30,9 +20,10 @@ class Metadata(BaseResource):
     ENDPOINT: Final[str] = "/meta"
     MULTI_PART_ENDPOINT = f"{ENDPOINT}/form"
 
-    def from_file(self, filepath: Path, mime_type: Optional[str] = None) -> DocumentMetadata:
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None) -> Union[BaseResponse, DocumentMetadata]:
         """
         PUTs the provided document to the metadata endpoint using multipart
         file encoding.  Optionally can provide the mime type
         """
-        return DocumentMetadata(self.put_multipart(self.MULTI_PART_ENDPOINT, filepath, mime_type))
+        resp = self.put_multipart(self.MULTI_PART_ENDPOINT, filepath, mime_type)
+        return DocumentMetadata(resp)

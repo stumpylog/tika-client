@@ -1,3 +1,5 @@
+import logging
+
 from httpx import Client
 
 from tika_client._resource_meta import Metadata
@@ -6,9 +8,13 @@ from tika_client._resource_tika import Tika
 
 
 class TikaClient:
-    def __init__(self, tika_url: str, timeout: float = 30.0):
+    def __init__(self, tika_url: str, timeout: float = 30.0, log_level: int = logging.ERROR):
         # Configure the client
         self._client = Client(base_url=tika_url, timeout=timeout)
+
+        # Set the log level
+        logging.getLogger("httpx").setLevel(log_level)
+        logging.getLogger("httpcore").setLevel(log_level)
 
         # Only JSON responses supported
         self._client.headers.update({"Accept": "application/json"})
@@ -21,5 +27,5 @@ class TikaClient:
     def __enter__(self) -> "TikaClient":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._client.close()

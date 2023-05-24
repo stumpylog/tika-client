@@ -1,35 +1,38 @@
 from pathlib import Path
 from typing import Final
-from typing import List
 from typing import Optional
+from typing import Union
 
 from httpx import Client
 
-from tika_client.utils import BaseResource
-from tika_client.utils import BaseResponse
-
-
-class DocumentData(BaseResponse):
-    def __post_init__(self) -> None:
-        self.size = self.get_optional_int("Content-Length")
-        self.type: str = self.data["Content-Type"]
-        self.parsers: List[str] = self.data["X-TIKA:Parsed-By"]
-        self.content: str = self.data["X-TIKA:content"]
+from tika_client._utils import BaseResource
+from tika_client.data_models import KNOWN_DATA_TYPES
+from tika_client.data_models import BaseResponse
+from tika_client.data_models import Document
 
 
 class _TikaBase(BaseResource):
-    def _common_call(self, endpoint: str, filepath: Path, mime_type: Optional[str] = None) -> DocumentData:
+    def _common_call(
+        self,
+        endpoint: str,
+        filepath: Path,
+        mime_type: Optional[str] = None,
+    ) -> Union[BaseResponse, Document]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
-        return DocumentData(self.put_multipart(endpoint, filepath, mime_type))
+        resp = self.put_multipart(endpoint, filepath, mime_type)
+        base_resp = BaseResponse(resp)
+        if base_resp.type in KNOWN_DATA_TYPES:
+            return KNOWN_DATA_TYPES[base_resp.type](base_resp.data)
+        return base_resp  # pragma: no cover
 
 
 class _TikaHtml(_TikaBase):
     ENDPOINT: Final[str] = "/tika"
     MULTI_PART_ENDPOINT = "/tika/form"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None) -> DocumentData:
+    def parse(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the formatted (as HTML) document data
         """
@@ -40,7 +43,7 @@ class _TikaPlain(_TikaBase):
     PLAIN_TEXT_CONTENT: Final[str] = "/tika/text"
     MULTI_PART_PLAIN_TEXT_CONTENT = "/tika/form/text"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None) -> DocumentData:
+    def parse(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the plain text document data
         """
