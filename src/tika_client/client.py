@@ -18,8 +18,8 @@ class TikaClient:
         self.tika = Tika(self._client)
         self.rmeta = Recursive(self._client)
 
-    def __enter__(self):
+    def __enter__(self) -> "TikaClient":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
         self._client.close()

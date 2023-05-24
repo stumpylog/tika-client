@@ -36,7 +36,11 @@ class BaseResource:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
                 files = {"upload-file": (filepath.name, handle)}  # type: ignore
-            resp = self.client.post(endpoint, files=files)
+            resp = self.client.post(
+                endpoint,
+                files=files,
+                headers={"Content-Disposition": f"attachment; filename={filepath.name}"},
+            )
             resp.raise_for_status()
             # Always JSON
             return resp.json()

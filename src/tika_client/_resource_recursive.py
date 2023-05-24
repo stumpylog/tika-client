@@ -10,7 +10,7 @@ from tika_client.utils import BaseResponse
 
 
 class RecursiveDocumentData(BaseResponse):
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.type: str = self.data["Content-Type"]
         self.content: str = self.data["X-TIKA:content"]
         self.created = self.get_optional_datetime("dcterms:created")
