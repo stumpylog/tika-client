@@ -1,27 +1,27 @@
 import magic
 
-from tests.config import SAMPLE_DIR
+from tests.conftest import SAMPLE_DIR
 from tika_client.client import TikaClient
 
 
 class TestParseFormatted:
     def test_parse_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.tika.parse_formatted(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.html.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
 
     def test_parse_docx_no_mime(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.tika.parse_formatted(test_file)
+        resp = tika_client.tika.html.parse(test_file)
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
 
     def test_parse_microsoft_word_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
-        resp = tika_client.tika.parse_formatted(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.html.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert (
@@ -31,7 +31,7 @@ class TestParseFormatted:
 
     def test_parse_odt(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
-        resp = tika_client.tika.parse_formatted(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.html.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert resp.type == "application/vnd.oasis.opendocument.text"
         assert "<body><p>This is an ODT test document, created September 14, 2022</p>\n</body>" in resp.content
@@ -40,14 +40,14 @@ class TestParseFormatted:
 class TestParsePlain:
     def test_parse_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.tika.parse_plain(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.plain.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert "This is an DOCX test document, also made September 14, 2022" in resp.content
 
     def test_parse_odt(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
-        resp = tika_client.tika.parse_plain(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.plain.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert resp.type == "application/vnd.oasis.opendocument.text"
         assert "This is an ODT test document, created September 14, 2022" in resp.content

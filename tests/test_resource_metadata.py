@@ -6,8 +6,8 @@ import magic
 import pytest
 from pytest_httpx import HTTPXMock
 
-from tests.config import SAMPLE_DIR
-from tests.config import TIKA_URL
+from tests.conftest import SAMPLE_DIR
+from tests.conftest import TIKA_URL
 from tika_client.client import TikaClient
 
 
@@ -46,6 +46,6 @@ class TestMetadataResource:
         test_file = SAMPLE_DIR / "sample.odt"
 
         httpx_mock.add_response(status_code=500)
-        with pytest.raises(httpx.HTTPStatusError) as err, TikaClient(base_url=TIKA_URL) as client:
+        with pytest.raises(httpx.HTTPStatusError) as err, TikaClient(tika_url=TIKA_URL) as client:
             client.metadata.from_file(test_file)
         assert err.value.response.status_code == httpx.codes.INTERNAL_SERVER_ERROR
