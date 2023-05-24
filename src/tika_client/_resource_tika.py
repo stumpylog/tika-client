@@ -59,4 +59,4 @@ class Tika(BaseResource):
     def __init__(self, client: Client) -> None:
         super().__init__(client)
         self.html = _TikaHtml(self.client)
-        self.plain = _TikaPlain(self.client)
+        self.text = _TikaPlain(self.client)

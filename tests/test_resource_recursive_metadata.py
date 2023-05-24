@@ -19,7 +19,7 @@ class TestMetadataResource:
 
     def test_r_metadata_from_docx_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.rmeta.plain.parse(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.rmeta.text.parse(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(resp.documents) == 1
 
