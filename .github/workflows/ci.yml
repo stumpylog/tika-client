@@ -1,4 +1,4 @@
-name: test
+name: CI
 
 on:
   push:
@@ -116,6 +116,7 @@ jobs:
             name: artifacts
             path: dist/*
             if-no-files-found: error
+
   publish:
     name: Publish project
     runs-on: ubuntu-latest

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixes the Github Actions test workflow concurrency setting
+- Fixes workflow name and file name to reflect what it actually does
 
 ## [0.0.1] - 2023-05-25
 
