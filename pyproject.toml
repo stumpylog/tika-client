@@ -43,7 +43,9 @@ dependencies = [
   "pytest-httpx",
   "python-magic",
 ]
+
 [tool.hatch.envs.default.scripts]
+version = "python3 --version"
 test = "pytest {args:tests}"
 cov-clear = "coverage erase"
 test-cov = "coverage run -m pytest {args:tests}"
@@ -54,6 +56,7 @@ cov-report = [
 cov-html = "coverage html"
 cov-json = "coverage json"
 cov = [
+  "version",
   "cov-clear",
   "test-cov",
   "cov-report",
@@ -71,6 +74,7 @@ dependencies = [
   "ruff>=0.0.243",
   "httpx",
 ]
+
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/tika_client}"
 style = [

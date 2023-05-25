@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Print of the Python version to the test coverage running
+
 ### Fixed
 
 - Reduces the frequency of CodeQL runs
