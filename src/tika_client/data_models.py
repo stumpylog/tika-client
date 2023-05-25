@@ -8,6 +8,14 @@ from typing import Union
 
 
 class BaseResponse:
+    """
+    A basic response from the API.  It sets fields which the response
+    always appears to have, and some small helpers for getting and converting
+    other data types, including handling the chance those don't exist in the response.
+
+    All returned data is available in the decoded JSON form under the .data attribute
+    """
+
     def __init__(self, data: Dict) -> None:
         self.data = data
         self.type: str = self.data["Content-Type"]
@@ -34,11 +42,14 @@ class BaseResponse:
 
 
 class DocumentMetadata(BaseResponse):
+    """
+    Basic metadata about a document, attempting to expand the basic response set
+    with item such as revision and dates.
+    """
+
     def __init__(self, data: Dict) -> None:
         super().__init__(data)
         self.size = self.get_optional_int("Content-Length")
-        self.type: str = self.data["Content-Type"]
-        self.parsers: List[str] = self.data["X-TIKA:Parsed-By"]
 
         self.language = self.get_optional_string("language")
 
@@ -49,6 +60,12 @@ class DocumentMetadata(BaseResponse):
 
 
 class Document(BaseResponse):
+
+    """
+    Response from the tika and rmeta end points.  Expands on the basic values
+    for those which appear always or often set for common office document types.
+    """
+
     def __init__(self, data: Dict) -> None:
         super().__init__(data)
         self.size = self.get_optional_int("Content-Length")
@@ -57,9 +74,13 @@ class Document(BaseResponse):
 
 
 class Image(BaseResponse):
-    pass
+    """
+    Some recursive metadata calls will included embedded images, with
+    lots of data, but none that looks really relevant
+    """
 
 
+# If a particular Content-Type has a better parsing class for it, map it here
 KNOWN_DATA_TYPES: Final[Dict[str, Union[Type[Document], Type[Image]]]] = {
     "application/vnd.oasis.opendocument.text": Document,
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Document,
