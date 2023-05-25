@@ -16,3 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive CI configuration
 - Code coverage through codedov.io
 - CodeQL scanning
+
+### Fixed
+
+- Fixes the Github Actions test workflow concurrency setting
+- Fixes workflow name and file name to reflect what it actually does

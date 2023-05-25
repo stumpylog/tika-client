@@ -1,4 +1,4 @@
-name: test
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - develop
 
 concurrency:
-  group: test-${{ github.head_ref }}
+  group: test-${{ github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -116,6 +116,7 @@ jobs:
             name: artifacts
             path: dist/*
             if-no-files-found: error
+
   publish:
     name: Publish project
     runs-on: ubuntu-latest
