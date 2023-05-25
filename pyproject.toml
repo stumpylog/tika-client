@@ -3,11 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tika-rest-client"
+name = "tika-client"
 dynamic = ["version"]
 description = 'A modern REST client for Apache Tika server'
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = "GPL-3.0-only"
 keywords = []
 authors = [
@@ -16,7 +16,6 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -27,12 +26,12 @@ classifiers = [
 dependencies = ["httpx"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/tika-rest-client#readme"
-Issues = "https://github.com/unknown/tika-rest-client/issues"
-Source = "https://github.com/unknown/tika-rest-client"
+Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
+Issues = "https://github.com/stumpylog/tika-rest-client/issues"
+Source = "https://github.com/stumpylog/tika-rest-client"
 
 [tool.hatch.version]
-path = "src/tika_rest_client/__about__.py"
+path = "src/tika_client/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -46,19 +45,23 @@ dependencies = [
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
+cov-clear = "coverage erase"
 test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
   "- coverage combine",
   "coverage report",
-  "coverage html",
 ]
+cov-html = "coverage html"
+cov-json = "coverage json"
 cov = [
+  "cov-clear",
   "test-cov",
   "cov-report",
+  "cov-json"
 ]
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.lint]
 detached = true
@@ -66,9 +69,10 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "httpx",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/tika_rest_client tests}"
+typing = "mypy --install-types --non-interactive {args:src/tika_client}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -84,9 +88,8 @@ all = [
 ]
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py38"]
 line-length = 120
-skip-string-normalization = true
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/settings/
@@ -143,7 +146,7 @@ ignore = [
 
 [tool.ruff.isort]
 force-single-line = true
-known-first-party = ["tika_rest_client"]
+known-first-party = ["tika_client"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -158,16 +161,16 @@ ban-relative-imports = "all"
                 ]
 
 [tool.coverage.run]
-source_pkgs = ["tika_rest_client", "tests"]
+source_pkgs = ["tika_client", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/tika_rest_client/__about__.py",
+  "src/tika_client/__about__.py",
 ]
 
 [tool.coverage.paths]
-tika_rest_client = ["src/tika_rest_client", "*/tika-rest-client/src/tika_rest_client"]
-tests = ["tests", "*/tika-rest-client/tests"]
+tika_client = ["src/tika_client", "*/tika-client/src/tika_client"]
+tests = ["tests", "*/tika-client/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -175,3 +178,15 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.mypy]
+#disallow_any_expr = true
+#disallow_untyped_defs = true
+#disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+warn_unused_configs = true
