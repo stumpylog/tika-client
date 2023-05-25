@@ -14,3 +14,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full typing
 - A changelog
 - Comprehensive CI configuration
+- Code coverage through codedov.io
+- CodeQL scanning

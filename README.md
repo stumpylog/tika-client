@@ -2,6 +2,7 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/tika-client.svg)](https://pypi.org/project/tika-client)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tika-client.svg)](https://pypi.org/project/tika-client)
+[![codecov](https://codecov.io/github/stumpylog/tika-client/branch/main/graph/badge.svg?token=PTESS6YUK5)](https://codecov.io/github/stumpylog/tika-client)
 
 ---
 
@@ -14,9 +15,9 @@
 
 ## Features
 
-- Simplified: No need to worry about XML or JSON responses, downloading a Tika jar file or Python 2 leftovers
+- Simplified: No need to worry about XML or JSON responses, downloading a Tika jar file or Python 2
 - Support for Tika 2+ only
-- Based on the modern httpx library for support of all modern features
+- Based on the modern [httpx](https://github.com/encode/httpx) library
 - Full support for type hinting
 - Full test coverage run against an actual Tika server for multiple Python and PyPy versions
 
@@ -55,6 +56,17 @@ with TikaClient("http://localhost:9998) as client
                                   "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 ```
+
+The Tika REST API documentation can be found [here](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
+At the moment, only the metadata, tika and recursive metadata endpoints are implemented.
+
+Unfortunately, the set of possible return values of the Tika API are not very well documented. The library makes
+a best effort to extract relevant fields into type attributes, including conversion of date strings to
+time zone aware `datetime` objects. The full JSON response is always available to the user under the `.data`
+attribute.
+
+In general, requests from the tika and recursive endpoints return a
+`Document` with any metadata available under `document.metadata`.
 
 ## Why
 
