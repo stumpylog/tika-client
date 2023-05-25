@@ -88,9 +88,8 @@ all = [
 ]
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py38"]
 line-length = 120
-skip-string-normalization = true
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/settings/
