@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 from httpx import Client
 
@@ -23,6 +24,12 @@ class TikaClient:
         self.metadata = Metadata(self._client)
         self.tika = Tika(self._client)
         self.rmeta = Recursive(self._client)
+
+    def add_headers(self, header: Dict[str, str]):
+        """
+        Updates the httpx Client headers with the given values
+        """
+        self._client.headers.update(header)
 
     def __enter__(self) -> "TikaClient":
         return self
