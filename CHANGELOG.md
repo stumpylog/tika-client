@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Print of the Python version to the test coverage running
+- Optional dependencies for HTTP/2 and Brotli support in httpx
 
 ### Fixed
 
