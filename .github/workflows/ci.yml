@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', 'pypy3.8', 'pypy3.9']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12-dev', 'pypy3.8', 'pypy3.9']
 
     steps:
       -
@@ -116,6 +116,7 @@ jobs:
             name: artifacts
             path: dist/*
             if-no-files-found: error
+            retention-days: 7
 
   publish:
     name: Publish project

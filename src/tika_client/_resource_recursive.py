@@ -41,7 +41,7 @@ class _RecursiveMetaHtml(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta"
     MULTI_PART_ENDPOINT = "/rmeta/form/html"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the formatted (as HTML) document data
         """
@@ -52,7 +52,7 @@ class _RecursiveMetaPlain(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta/text"
     MULTI_PART_ENDPOINT = "/rmeta/form/text"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the plain text document data
         """
