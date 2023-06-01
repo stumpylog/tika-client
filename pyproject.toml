@@ -23,7 +23,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = ["httpx"]
+dependencies = ["httpx~=0.24",
+                "backports.strenum~=1.2; python_version < '3.11'"]
 
 [project.urls]
 Documentation = "https://github.com/stumpylog/tika-rest-client#readme"

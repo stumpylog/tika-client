@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `backports.strenum` is not a dependency for versions of Python before 3.11
+- Metadata and fields are now accessed via named keys
+- Metadata and fields are now scoped by the namespace
+
 ### Changed
 
 - The plain text and html versions of the Tika endpoint have been renamed to `as_html` and `as_text`,
   hopefully to make it clearer about the response type
+- `httpx` version is now specified more fully in the dependencies
 
 ### Removed
 

@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from typing import Dict
 from typing import Final
@@ -5,6 +6,17 @@ from typing import List
 from typing import Optional
 from typing import Type
 from typing import Union
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from backports.strenum import StrEnum  # type: ignore
+
+
+class TikaProcessKey(StrEnum):
+    """
+    https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
+    """
 
 
 class BaseResponse:
