@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The plain text and html versions of the Tika endpoint have been renamed to `as_html` and `as_text`,
   hopefully to make it clearer about the response type
+- The plain text and html versions of the recursive endpoint were renamed to `as_html` and `as_text`
 
 ### Removed
 

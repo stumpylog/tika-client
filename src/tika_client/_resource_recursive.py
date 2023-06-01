@@ -71,5 +71,5 @@ class Recursive(BaseResource):
     def __init__(self, client: Client) -> None:
         super().__init__(client)
         # No support for XML endpoint.  Who wants that?
-        self.html = _RecursiveMetaHtml(self.client)
-        self.text = _RecursiveMetaPlain(self.client)
+        self.as_html = _RecursiveMetaHtml(self.client)
+        self.as_text = _RecursiveMetaPlain(self.client)
