@@ -7,7 +7,7 @@ from tika_client.client import TikaClient
 class TestRecursiveMetadataResource:
     def test_r_metadata_from_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        documents = tika_client.rmeta.html.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 1
         document = documents[0]
@@ -18,7 +18,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_metadata_from_docx_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        documents = tika_client.rmeta.text.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 1
         document = documents[0]
@@ -29,7 +29,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_meta_microsoft_word_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
-        documents = tika_client.rmeta.html.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 1
         document = documents[0]
@@ -42,7 +42,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_metadata_from_odt(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
-        documents = tika_client.rmeta.html.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 2
         document = documents[0]
@@ -53,7 +53,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_metadata_from_odt_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
-        documents = tika_client.rmeta.text.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 2
         document = documents[0]
@@ -63,7 +63,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_metadata_from_ods_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample-spreadsheet.ods"
-        documents = tika_client.rmeta.text.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 2
         document = documents[0]
@@ -73,7 +73,7 @@ class TestRecursiveMetadataResource:
 
     def test_r_metadata_from_xlsx_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample-spreadsheet.xlsx"
-        documents = tika_client.rmeta.text.parse(test_file, magic.from_file(str(test_file), mime=True))
+        documents = tika_client.rmeta.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 1
         document = documents[0]
