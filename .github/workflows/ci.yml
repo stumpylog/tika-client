@@ -116,6 +116,7 @@ jobs:
             name: artifacts
             path: dist/*
             if-no-files-found: error
+            retention-days: 7
 
   publish:
     name: Publish project
