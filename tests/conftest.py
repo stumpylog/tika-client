@@ -16,3 +16,9 @@ SAMPLE_DIR: Final[Path] = Path(__file__).parent.resolve() / "samples"
 def tika_client() -> TikaClient:
     with TikaClient(tika_url=TIKA_URL, log_level=logging.INFO) as client:
         yield client
+
+
+@pytest.fixture()
+def tika_client_compressed() -> TikaClient:
+    with TikaClient(tika_url=TIKA_URL, log_level=logging.INFO, compress=True) as client:
+        yield client

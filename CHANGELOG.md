@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3] - 2023-06-01
+
+### Changed
+
+- The plain text and html versions of the Tika endpoint have been renamed to `as_html` and `as_text`,
+  hopefully to make it clearer about the response type
+- The plain text and html versions of the recursive endpoint were renamed to `as_html` and `as_text`
+
+### Added
+
+- Optional gzip compression for use when parsing from a buffer instead of a file
+
+### Removed
+
+- The optional dependencies have been removed as Tika does not support HTTP/2 or Brotli
+
 ## [0.0.2] - 2023-05-31
 
 ### Added
