@@ -2,11 +2,11 @@ import logging
 from pathlib import Path
 from typing import Final
 from typing import List
-from typing import Optional
 from typing import Union
 
 from httpx import Client
 
+from tika_client._types import MimeType
 from tika_client._utils import BaseResource
 from tika_client.data_models import KNOWN_DATA_TYPES
 from tika_client.data_models import BaseResponse
@@ -21,13 +21,13 @@ class _TikaRmetaBase(BaseResource):
         self,
         endpoint: str,
         filepath: Path,
-        mime_type: Optional[str] = None,
+        mime_type: MimeType = None,
     ) -> List[Union[Document, Image, BaseResponse]]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
         documents: List[Union[Document, Image, BaseResponse]] = []
-        for item in self.put_multipart(endpoint, filepath, mime_type):
+        for item in self._put_multipart(endpoint, filepath, mime_type):
             # If a detailed class exists, use it
             if item["Content-Type"] in KNOWN_DATA_TYPES:
                 documents.append(KNOWN_DATA_TYPES[item["Content-Type"]](item))
@@ -41,7 +41,7 @@ class _RecursiveMetaHtml(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta"
     MULTI_PART_ENDPOINT = "/rmeta/form/html"
 
-    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: MimeType = None):
         """
         Returns the formatted (as HTML) document data
         """
@@ -52,7 +52,7 @@ class _RecursiveMetaPlain(_TikaRmetaBase):
     ENDPOINT: Final[str] = "/rmeta/text"
     MULTI_PART_ENDPOINT = "/rmeta/form/text"
 
-    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: MimeType = None):
         """
         Returns the plain text document data
         """
@@ -68,8 +68,8 @@ class Recursive(BaseResource):
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-RecursiveMetadataandContent
     """
 
-    def __init__(self, client: Client) -> None:
-        super().__init__(client)
+    def __init__(self, client: Client, *, compress: bool) -> None:
+        super().__init__(client, compress=compress)
         # No support for XML endpoint.  Who wants that?
-        self.as_html = _RecursiveMetaHtml(self.client)
-        self.as_text = _RecursiveMetaPlain(self.client)
+        self.as_html = _RecursiveMetaHtml(self.client, compress=compress)
+        self.as_text = _RecursiveMetaPlain(self.client, compress=compress)

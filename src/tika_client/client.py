@@ -9,7 +9,14 @@ from tika_client._resource_tika import Tika
 
 
 class TikaClient:
-    def __init__(self, tika_url: str, timeout: float = 30.0, log_level: int = logging.ERROR):
+    def __init__(
+        self,
+        *,
+        tika_url: str,
+        timeout: float = 30.0,
+        log_level: int = logging.ERROR,
+        compress: bool = False,
+    ):
         # Configure the client
         self._client = Client(base_url=tika_url, timeout=timeout)
 
@@ -20,10 +27,13 @@ class TikaClient:
         # Only JSON responses supported
         self._client.headers.update({"Accept": "application/json"})
 
+        if compress:
+            self._client.headers.update({"Accept-Encoding": "gzip"})
+
         # Add the resources
-        self.metadata = Metadata(self._client)
-        self.tika = Tika(self._client)
-        self.rmeta = Recursive(self._client)
+        self.metadata = Metadata(self._client, compress=compress)
+        self.tika = Tika(self._client, compress=compress)
+        self.rmeta = Recursive(self._client, compress=compress)
 
     def add_headers(self, header: Dict[str, str]):
         """

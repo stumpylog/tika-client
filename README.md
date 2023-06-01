@@ -20,6 +20,8 @@
 - Based on the modern [httpx](https://github.com/encode/httpx) library
 - Full support for type hinting
 - Full test coverage run against an actual Tika server for multiple Python and PyPy versions
+- Uses HTTP multipart/form-data to stream files to the server (instead of reading into memory)
+- Optional compression for parsing from a file content already in a buffer (as opposed to a file)
 
 ## Installation
 

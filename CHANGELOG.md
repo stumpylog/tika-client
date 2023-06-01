@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hopefully to make it clearer about the response type
 - The plain text and html versions of the recursive endpoint were renamed to `as_html` and `as_text`
 
+### Added
+
+- Optional gzip compression for use when parsing from a buffer instead of a file
+
 ### Removed
 
 - The optional dependencies have been removed as Tika does not support HTTP/2 or Brotli
