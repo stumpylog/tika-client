@@ -106,7 +106,7 @@ class TestParseContentPlain:
         assert resp.data["description"] == "A sample HTML file"
 
 
-class TestParseContentcompress:
+class TestParseContentCompress:
     def test_parse_odt_from_bytes_buffer_compress(self, tika_client_compressed: TikaClient):
         test_file = SAMPLE_DIR / "test-document-images.odt"
         buffer = test_file.read_bytes()
