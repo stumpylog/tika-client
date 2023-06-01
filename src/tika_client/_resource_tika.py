@@ -12,7 +12,7 @@ from tika_client.data_models import Document
 
 
 class _TikaBase(BaseResource):
-    def _common_call(
+    def _common_multi_part_put(
         self,
         endpoint: str,
         filepath: Path,
@@ -27,27 +27,57 @@ class _TikaBase(BaseResource):
             return KNOWN_DATA_TYPES[base_resp.type](base_resp.data)
         return base_resp  # pragma: no cover
 
+    def _common_content_put(
+        self,
+        endpoint: str,
+        content: Union[str, bytes],
+    ) -> Union[BaseResponse, Document]:
+        """
+        Preforms an HTTP PUT with the given content and returns a decoded response.
+        Includes handling of string to bytes and setting content length correctly
+        """
+        content_bytes = content.encode("utf-8") if isinstance(content, str) else content
+        resp = self.client.put(endpoint, content=content_bytes, headers={"Content-Length": str(len(content_bytes))})
+        resp.raise_for_status()
+
+        base_resp = BaseResponse(resp.json())
+        if base_resp.type in KNOWN_DATA_TYPES:
+            return KNOWN_DATA_TYPES[base_resp.type](base_resp.data)
+        return base_resp  # pragma: no cover
+
 
 class _TikaHtml(_TikaBase):
     ENDPOINT: Final[str] = "/tika"
     MULTI_PART_ENDPOINT = "/tika/form"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the formatted (as HTML) document data
         """
-        return self._common_call(self.MULTI_PART_ENDPOINT, filepath, mime_type)
+        return self._common_multi_part_put(self.MULTI_PART_ENDPOINT, filepath, mime_type)
+
+    def from_buffer(self, content: Union[str, bytes]) -> Union[BaseResponse, Document]:
+        """
+        Returns the HTML formatted document data from a given string of document content
+        """
+        return self._common_content_put(self.ENDPOINT, content)
 
 
 class _TikaPlain(_TikaBase):
     PLAIN_TEXT_CONTENT: Final[str] = "/tika/text"
     MULTI_PART_PLAIN_TEXT_CONTENT = "/tika/form/text"
 
-    def parse(self, filepath: Path, mime_type: Optional[str] = None):
+    def from_file(self, filepath: Path, mime_type: Optional[str] = None):
         """
         Returns the plain text document data
         """
-        return self._common_call(self.MULTI_PART_PLAIN_TEXT_CONTENT, filepath, mime_type)
+        return self._common_multi_part_put(self.MULTI_PART_PLAIN_TEXT_CONTENT, filepath, mime_type)
+
+    def from_buffer(self, content: Union[str, bytes]) -> Union[BaseResponse, Document]:
+        """
+        Returns the plain text document data from a given string of document content
+        """
+        return self._common_content_put(self.PLAIN_TEXT_CONTENT, content)
 
 
 class Tika(BaseResource):
