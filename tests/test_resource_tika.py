@@ -8,7 +8,7 @@ from tika_client.data_models import Document
 class TestParseFormatted:
     def test_parse_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.tika.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -16,7 +16,7 @@ class TestParseFormatted:
 
     def test_parse_docx_no_mime(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
-        resp = tika_client.tika.html.from_file(test_file)
+        resp = tika_client.tika.as_html.from_file(test_file)
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -24,7 +24,7 @@ class TestParseFormatted:
 
     def test_parse_microsoft_word_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
-        resp = tika_client.tika.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -35,7 +35,7 @@ class TestParseFormatted:
 
     def test_parse_odt(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
-        resp = tika_client.tika.html.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.oasis.opendocument.text"
@@ -46,7 +46,7 @@ class TestParsePlain:
     def test_parse_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
 
-        resp = tika_client.tika.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -55,7 +55,7 @@ class TestParsePlain:
     def test_parse_odt(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"
 
-        resp = tika_client.tika.text.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.oasis.opendocument.text"
@@ -67,7 +67,7 @@ class TestParseContentPlain:
         test_file = SAMPLE_DIR / "sample.docx"
         buffer = test_file.read_bytes()
 
-        resp = tika_client.tika.text.from_buffer(buffer)
+        resp = tika_client.tika.as_text.from_buffer(buffer)
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -77,7 +77,7 @@ class TestParseContentPlain:
         test_file = SAMPLE_DIR / "sample.odt"
         buffer = test_file.read_bytes()
 
-        resp = tika_client.tika.text.from_buffer(buffer)
+        resp = tika_client.tika.as_text.from_buffer(buffer)
 
         assert isinstance(resp, Document)
         assert resp.type == "application/vnd.oasis.opendocument.text"
@@ -87,7 +87,7 @@ class TestParseContentPlain:
         test_file = SAMPLE_DIR / "sample.html"
         buffer = test_file.read_text()
 
-        resp = tika_client.tika.text.from_buffer(buffer)
+        resp = tika_client.tika.as_text.from_buffer(buffer)
 
         assert resp.type == "text/html; charset=UTF-8"
         assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.HtmlParser"]

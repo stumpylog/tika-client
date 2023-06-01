@@ -42,18 +42,18 @@ with TikaClient("http://localhost:9998) as client
     metadata = client.metadata.from_file(test_file)
 
     # Get the content of a document as HTML
-    data = client.tika.html.from_file(test_file)
+    data = client.tika.as_html.from_file(test_file)
 
     # Or as plain text
-    text = client.tika.text.from_file(test_file)
+    text = client.tika.as_text.from_file(test_file)
 
     # Content and metadata combined
-    data = client.rmeta.text.from_file(test_file)
+    data = client.rmeta.as_text.from_file(test_file)
 
     # The mime type can also be given
     # This allows Content-Type to be set most accurately
-    text = client.tika.text.from_file(test_file,
-                                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    text = client.tika.as_text.from_file(test_file,
+                                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 ```
 

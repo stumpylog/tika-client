@@ -91,5 +91,5 @@ class Tika(BaseResource):
 
     def __init__(self, client: Client) -> None:
         super().__init__(client)
-        self.html = _TikaHtml(self.client)
-        self.text = _TikaPlain(self.client)
+        self.as_html = _TikaHtml(self.client)
+        self.as_text = _TikaPlain(self.client)
