@@ -19,7 +19,7 @@
 - Support for Tika 2+ only
 - Based on the modern [httpx](https://github.com/encode/httpx) library
 - Full support for type hinting
-- Full test coverage run against an actual Tika server for multiple Python and PyPy versions
+- Nearly full test coverage run against an actual Tika server for multiple Python and PyPy versions
 - Uses HTTP multipart/form-data to stream files to the server (instead of reading into memory)
 - Optional compression for parsing from a file content already in a buffer (as opposed to a file)
 
@@ -63,12 +63,12 @@ The Tika REST API documentation can be found [here](https://cwiki.apache.org/con
 At the moment, only the metadata, tika and recursive metadata endpoints are implemented.
 
 Unfortunately, the set of possible return values of the Tika API are not very well documented. The library makes
-a best effort to extract relevant fields into type attributes, including conversion of date strings to
-time zone aware `datetime` objects. The full JSON response is always available to the user under the `.data`
+a best effort to extract relevant fields into type properties where it understands more about the mime type
+of the document (as returned by Tika). This includes information like created/modified information as time zone
+aware `datetime` objects. The full JSON response is always available to the user under the `.data`
 attribute.
 
-In general, requests from the tika and recursive endpoints return a
-`Document` with any metadata available under `document.metadata`.
+When a particular key is not present in the response, all properties will return `None` instead.
 
 ## Why
 
@@ -80,7 +80,7 @@ API client should only interface to the API and not try to provide functionality
 the API as well. The user is responsible for providing the server with the Tika version they desire.
 
 The library also provides a lot of knobs to turn, but I argue most developers will not want to configure XML as
-the response type, they just want the data, already parsed.
+the response type, they just want the data, already parsed to the maximum extend possible.
 
 This library attempts to provide a simpler interface, minimal lines of code and typing of the parsed response.
 

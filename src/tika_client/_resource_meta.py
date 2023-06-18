@@ -1,11 +1,8 @@
 from pathlib import Path
 from typing import Final
-from typing import Union
 
 from tika_client._types import MimeType
 from tika_client._utils import BaseResource
-from tika_client.data_models import BaseResponse
-from tika_client.data_models import DocumentMetadata
 
 
 class Metadata(BaseResource):
@@ -20,10 +17,10 @@ class Metadata(BaseResource):
     ENDPOINT: Final[str] = "/meta"
     MULTI_PART_ENDPOINT = f"{ENDPOINT}/form"
 
-    def from_file(self, filepath: Path, mime_type: MimeType = None) -> Union[BaseResponse, DocumentMetadata]:
+    def from_file(self, filepath: Path, mime_type: MimeType = None):
         """
         PUTs the provided document to the metadata endpoint using multipart
         file encoding.  Optionally can provide the mime type
         """
         resp = self._put_multipart(self.MULTI_PART_ENDPOINT, filepath, mime_type)
-        return DocumentMetadata(resp)
+        return self._decoded_response(resp)

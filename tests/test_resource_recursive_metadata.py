@@ -14,7 +14,7 @@ class TestRecursiveMetadataResource:
 
         assert document.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in document.content
-        assert document.metadata.created is None
+        assert document.created is None
 
     def test_r_metadata_from_docx_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.docx"
@@ -25,7 +25,7 @@ class TestRecursiveMetadataResource:
 
         assert document.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert "This is an DOCX test document, also made September 14, 2022" in document.content
-        assert document.metadata.created is None
+        assert document.created is None
 
     def test_r_meta_microsoft_word_docx(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
@@ -49,7 +49,7 @@ class TestRecursiveMetadataResource:
 
         assert document.type == "application/vnd.oasis.opendocument.text"
         assert "<body><p>This is an ODT test document, created September 14, 2022</p>\n</body>" in document.content
-        assert document.metadata.created is None
+        assert document.created is None
 
     def test_r_metadata_from_odt_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample.odt"

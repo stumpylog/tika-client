@@ -1,14 +1,11 @@
 from pathlib import Path
 from typing import Final
-from typing import Union
 
 from httpx import Client
 
 from tika_client._types import MimeType
 from tika_client._types import RequestContent
 from tika_client._utils import BaseResource
-from tika_client.data_models import BaseResponse
-from tika_client.data_models import Document
 
 
 class _TikaHtml(BaseResource):
@@ -21,7 +18,7 @@ class _TikaHtml(BaseResource):
         """
         return self._decoded_response(self._put_multipart(self.MULTI_PART_ENDPOINT, filepath, mime_type))
 
-    def from_buffer(self, content: RequestContent, mime_type: MimeType = None) -> Union[BaseResponse, Document]:
+    def from_buffer(self, content: RequestContent, mime_type: MimeType = None):
         """
         Returns the HTML formatted document data from a given string of document content
         """
@@ -38,7 +35,7 @@ class _TikaPlain(BaseResource):
         """
         return self._decoded_response(self._put_multipart(self.MULTI_PART_PLAIN_TEXT_CONTENT, filepath, mime_type))
 
-    def from_buffer(self, content: RequestContent, mime_type: MimeType = None) -> Union[BaseResponse, Document]:
+    def from_buffer(self, content: RequestContent, mime_type: MimeType = None):
         """
         Returns the plain text document data from a given string of document content
         """
