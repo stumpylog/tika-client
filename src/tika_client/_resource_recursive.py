@@ -8,10 +8,9 @@ from httpx import Client
 
 from tika_client._types import MimeType
 from tika_client._utils import BaseResource
-from tika_client.data_models import KNOWN_DATA_TYPES
-from tika_client.data_models import BaseResponse
-from tika_client.data_models import Document
-from tika_client.data_models import Image
+from tika_client.data_models import ParsedDocument
+from tika_client.data_models import ParsedImage
+from tika_client.data_models import TikaResponse
 
 logger = logging.getLogger("tika-client.rmeta")
 
@@ -22,18 +21,13 @@ class _TikaRmetaBase(BaseResource):
         endpoint: str,
         filepath: Path,
         mime_type: MimeType = None,
-    ) -> List[Union[Document, Image, BaseResponse]]:
+    ) -> List[Union[ParsedDocument, ParsedImage, TikaResponse]]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
-        documents: List[Union[Document, Image, BaseResponse]] = []
+        documents: List[Union[ParsedDocument, ParsedImage, TikaResponse]] = []
         for item in self._put_multipart(endpoint, filepath, mime_type):
-            # If a detailed class exists, use it
-            if item["Content-Type"] in KNOWN_DATA_TYPES:
-                documents.append(KNOWN_DATA_TYPES[item["Content-Type"]](item))
-            else:
-                logger.warning(f"Unknown content-type: {item['Content-Type']}")
-                documents.append(BaseResponse(item))
+            documents.append(self._decoded_response(item))
         return documents
 
 

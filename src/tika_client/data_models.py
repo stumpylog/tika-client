@@ -1,13 +1,23 @@
 from datetime import datetime
+from enum import Enum
 from typing import Dict
 from typing import Final
 from typing import List
 from typing import Optional
-from typing import Type
+from typing import Set
 from typing import Union
 
 
-class BaseResponse:
+class TikaKey(str, Enum):
+    Parsers = "X-TIKA:Parsed-By"
+    ContentType = "Content-Type"
+    ContentLength = "Content-Length"
+    Content = "X-TIKA:content"
+    Created = "dcterms:created"
+    Modified = "dcterms:modified"
+
+
+class TikaResponse:
     """
     A basic response from the API.  It sets fields which the response
     always appears to have, and some small helpers for getting and converting
@@ -18,21 +28,29 @@ class BaseResponse:
 
     def __init__(self, data: Dict) -> None:
         self.data = data
-        self.type: str = self.data["Content-Type"]
-        self.parsers: List[str] = self.data["X-TIKA:Parsed-By"]
+        self.type: str = self.data[TikaKey.ContentType]
+        self.parsers: List[str] = self.data[TikaKey.Parsers]
 
-    def get_optional_int(self, key: str) -> Optional[int]:
+    # Helpers
+
+    def get_optional_int(self, key: Union[TikaKey, str]) -> Optional[int]:
         if key not in self.data:  # pragma: no cover
             return None
         return int(self.data[key])
 
-    def get_optional_datetime(self, key: str) -> Optional[datetime]:
+    def get_optional_datetime(self, key: Union[TikaKey, str]) -> Optional[datetime]:
+        """
+        If present, attempts to parse the given key as an ISO-8061 format
+        datetime, including timezone handling and return if.
+
+        If not present, return None
+        """
         if key not in self.data:  # pragma: no cover
             return None
         # Handle Zulu time as UTC
         return datetime.fromisoformat(self.data[key].replace("Z", "+00:00"))
 
-    def get_optional_string(self, key: str) -> Optional[str]:
+    def get_optional_string(self, key: Union[TikaKey, str]) -> Optional[str]:
         if key not in self.data:
             return None
         return self.data[key]
@@ -41,50 +59,61 @@ class BaseResponse:
         return f"{self.type} response"
 
 
-class DocumentMetadata(BaseResponse):
+class ParsedDocument(TikaResponse):
     """
-    Basic metadata about a document, attempting to expand the basic response set
-    with item such as revision and dates.
-    """
-
-    def __init__(self, data: Dict) -> None:
-        super().__init__(data)
-        self.size = self.get_optional_int("Content-Length")
-
-        self.language = self.get_optional_string("language")
-
-        self.revision = self.get_optional_int("cp:revision")
-
-        self.created = self.get_optional_datetime("dcterms:created")
-        self.modified = self.get_optional_datetime("dcterms:modified")
-
-
-class Document(BaseResponse):
-
-    """
-    Response from the tika and rmeta end points.  Expands on the basic values
-    for those which appear always or often set for common office document types.
+    Properties which Tika seems to return for document like
+    parsing
     """
 
-    def __init__(self, data: Dict) -> None:
-        super().__init__(data)
-        self.size = self.get_optional_int("Content-Length")
-        self.content: str = self.data["X-TIKA:content"]
-        self.metadata = DocumentMetadata(self.data)
+    @property
+    def content(self) -> Optional[str]:
+        return self.get_optional_string(TikaKey.Content)
+
+    @property
+    def content_length(self) -> Optional[int]:
+        return self.get_optional_int(TikaKey.ContentLength)
+
+    @property
+    def created(self) -> Optional[datetime]:
+        return self.get_optional_datetime(TikaKey.Created)
+
+    @property
+    def modified(self) -> Optional[datetime]:
+        return self.get_optional_datetime(TikaKey.Modified)
+
+    @property
+    def page_count(self) -> Optional[int]:
+        return self.get_optional_int("xmpTPg:NPages")
+
+    @property
+    def character_count(self) -> Optional[int]:
+        return self.get_optional_int("meta:character-count")
+
+    @property
+    def language(self) -> Optional[str]:
+        return self.get_optional_string("language")
+
+    @property
+    def last_author(self) -> Optional[str]:
+        return self.get_optional_string("meta:last-author")
+
+    @property
+    def revision(self) -> Optional[int]:
+        return self.get_optional_int("cp:revision")
 
 
-class Image(BaseResponse):
+class ParsedImage(TikaResponse):
     """
-    Some recursive metadata calls will included embedded images, with
-    lots of data, but none that looks really relevant
+    Properties which seem to be returned for image like
+    parsing
     """
 
 
-# If a particular Content-Type has a better parsing class for it, map it here
-KNOWN_DATA_TYPES: Final[Dict[str, Union[Type[Document], Type[Image]]]] = {
-    "application/vnd.oasis.opendocument.text": Document,
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Document,
-    "application/vnd.oasis.opendocument.spreadsheet": Document,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Document,
-    "image/png": Image,
+IMAGE_TYPES: Final[Set[str]] = {"image/png", "image/jpeg", "image/webp"}
+DOCUMENT_TYPES: Final[Set[str]] = {
+    "application/vnd.oasis.opendocument.text",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.oasis.opendocument.spreadsheet",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/msword",
 }
