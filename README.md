@@ -11,6 +11,7 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Why](#why)
 - [License](#license)
 
 ## Features
