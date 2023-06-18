@@ -80,5 +80,5 @@ class BaseResource:
         elif resp_json[TikaKey.ContentType] in DOCUMENT_TYPES:
             return ParsedDocument(resp_json)
         else:
-            logger.warning(f"Unknown content-type: {resp_json[TikaKey.ContentLength]}")
+            logger.warning(f"Under-specified content-type: {resp_json[TikaKey.ContentType]}")
             return TikaResponse(resp_json)
