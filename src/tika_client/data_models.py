@@ -4,7 +4,7 @@ from typing import Dict
 from typing import Final
 from typing import List
 from typing import Optional
-from typing import Set
+from typing import Type
 from typing import Union
 
 
@@ -15,6 +15,8 @@ class TikaKey(str, Enum):
     Content = "X-TIKA:content"
     Created = "dcterms:created"
     Modified = "dcterms:modified"
+    Title = "dc:title"
+    Subject = "dc:subject"
 
 
 class TikaResponse:
@@ -109,11 +111,34 @@ class ParsedImage(TikaResponse):
     """
 
 
-IMAGE_TYPES: Final[Set[str]] = {"image/png", "image/jpeg", "image/webp"}
-DOCUMENT_TYPES: Final[Set[str]] = {
-    "application/vnd.oasis.opendocument.text",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.oasis.opendocument.spreadsheet",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/msword",
+class ParsedEmail(TikaResponse):
+    """
+    Properties for .eml files
+    """
+
+    @property
+    def subject(self):
+        return self.get_optional_string(TikaKey.Subject)
+
+    @property
+    def title(self):
+        return self.get_optional_string(TikaKey.Title)
+
+    @property
+    def content(self) -> Optional[str]:
+        return self.get_optional_string(TikaKey.Content)
+
+
+KNOWN_CONTENT_TYPES: Final[
+    Dict[str, Union[Type[ParsedDocument], Type[ParsedImage], Type[ParsedEmail], Type[TikaResponse]]]
+] = {
+    "application/vnd.oasis.opendocument.text": ParsedDocument,
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ParsedDocument,
+    "application/vnd.oasis.opendocument.spreadsheet": ParsedDocument,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ParsedDocument,
+    "application/msword": ParsedDocument,
+    "image/png": ParsedImage,
+    "image/jpeg": ParsedImage,
+    "image/webp": ParsedImage,
+    "message/rfc822": ParsedEmail,
 }

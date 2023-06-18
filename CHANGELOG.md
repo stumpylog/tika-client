@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixes an incorrect key when parsing new content types
+- Fixed handling of message/rfc822 content type documents
 
 ## [0.1.0] - 2023-06-17
 

@@ -1,17 +1,13 @@
 import logging
 from pathlib import Path
 from typing import Dict
-from typing import Union
 
 from httpx import Client
 
 from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._types import MimeType
 from tika_client._types import RequestContent
-from tika_client.data_models import DOCUMENT_TYPES
-from tika_client.data_models import IMAGE_TYPES
-from tika_client.data_models import ParsedDocument
-from tika_client.data_models import ParsedImage
+from tika_client.data_models import KNOWN_CONTENT_TYPES
 from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
 
@@ -69,16 +65,14 @@ class BaseResource:
         return resp.json()
 
     @staticmethod
-    def _decoded_response(resp_json: Dict) -> Union[ParsedDocument, ParsedImage, TikaResponse]:
+    def _decoded_response(resp_json: Dict):
         """
         If possible, returns a more detailed class with properties that appear often in this
         mime type.  Otherwise, it's a basically raw data response, but with some helpers
         for processing fields into Python types
         """
-        if resp_json[TikaKey.ContentType] in IMAGE_TYPES:
-            return ParsedImage(resp_json)
-        elif resp_json[TikaKey.ContentType] in DOCUMENT_TYPES:
-            return ParsedDocument(resp_json)
+        if resp_json[TikaKey.ContentType] in KNOWN_CONTENT_TYPES:
+            return KNOWN_CONTENT_TYPES[resp_json[TikaKey.ContentType]](resp_json)
         else:
             logger.warning(f"Under-specified content-type: {resp_json[TikaKey.ContentType]}")
             return TikaResponse(resp_json)
