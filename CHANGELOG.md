@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Restricted action permissions to minimal requirements to function
 - Github CI also now creates a Github release with sdist, wheel and changelog
+- Additional classifiers to the project on PyPI
 
 ## [0.2.0] - 2023-06-26
 
