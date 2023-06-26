@@ -35,7 +35,7 @@ class TikaClient:
         self.tika = Tika(self._client, compress=compress)
         self.rmeta = Recursive(self._client, compress=compress)
 
-    def add_headers(self, header: Dict[str, str]):
+    def add_headers(self, header: Dict[str, str]):  # pragma: no cover
         """
         Updates the httpx Client headers with the given values
         """

@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from pathlib import Path
 from typing import Dict
 
@@ -7,8 +8,6 @@ from httpx import Client
 from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._types import MimeType
 from tika_client._types import RequestContent
-from tika_client.data_models import KNOWN_CONTENT_TYPES
-from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
 
 logger = logging.getLogger("tika-client.utils")
@@ -31,11 +30,19 @@ class BaseResource:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
                 files = {"upload-file": (filepath.name, handle)}  # type: ignore
-            resp = self.client.post(
-                endpoint,
-                files=files,
-                headers={"Content-Disposition": f"attachment; filename={filepath.name}"},
-            )
+            try:
+                # Filename is valid ASCII, use it
+                filepath.name.encode("ascii")
+                content_header = {"Content-Disposition": f"attachment; filename={filepath.name}"}
+            except UnicodeEncodeError:
+                # Ignore non-ascii, in case RFC 5987 is not supported, but also encode it
+                filename_safed = filepath.name.encode("ascii", "ignore").decode("ascii")
+                filepath_quoted = urllib.parse.quote(filepath.name, encoding="utf-8")
+                content_header = {
+                    "Content-Disposition": f"attachment; filename={filename_safed}; filename*=UTF-8''{filepath_quoted}",
+                }
+
+            resp = self.client.post(endpoint, files=files, headers=content_header)
             resp.raise_for_status()
             # Always JSON
             return resp.json()
@@ -71,8 +78,4 @@ class BaseResource:
         mime type.  Otherwise, it's a basically raw data response, but with some helpers
         for processing fields into Python types
         """
-        if resp_json[TikaKey.ContentType] in KNOWN_CONTENT_TYPES:
-            return KNOWN_CONTENT_TYPES[resp_json[TikaKey.ContentType]](resp_json)
-        else:
-            logger.warning(f"Under-specified content-type: {resp_json[TikaKey.ContentType]}")
-            return TikaResponse(resp_json)
+        return TikaResponse(resp_json)
