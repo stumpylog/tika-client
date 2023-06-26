@@ -2,14 +2,11 @@ import logging
 from pathlib import Path
 from typing import Final
 from typing import List
-from typing import Union
 
 from httpx import Client
 
 from tika_client._types import MimeType
 from tika_client._utils import BaseResource
-from tika_client.data_models import ParsedDocument
-from tika_client.data_models import ParsedImage
 from tika_client.data_models import TikaResponse
 
 logger = logging.getLogger("tika-client.rmeta")
@@ -21,11 +18,11 @@ class _TikaRmetaBase(BaseResource):
         endpoint: str,
         filepath: Path,
         mime_type: MimeType = None,
-    ) -> List[Union[ParsedDocument, ParsedImage, TikaResponse]]:
+    ) -> List[TikaResponse]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
-        documents: List[Union[ParsedDocument, ParsedImage, TikaResponse]] = []
+        documents: List[TikaResponse] = []
         for item in self._put_multipart(endpoint, filepath, mime_type):
             documents.append(self._decoded_response(item))
         return documents

@@ -8,8 +8,6 @@ from httpx import Client
 from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._types import MimeType
 from tika_client._types import RequestContent
-from tika_client.data_models import KNOWN_CONTENT_TYPES
-from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
 
 logger = logging.getLogger("tika-client.utils")
@@ -80,8 +78,4 @@ class BaseResource:
         mime type.  Otherwise, it's a basically raw data response, but with some helpers
         for processing fields into Python types
         """
-        if resp_json[TikaKey.ContentType] in KNOWN_CONTENT_TYPES:
-            return KNOWN_CONTENT_TYPES[resp_json[TikaKey.ContentType]](resp_json)
-        else:
-            logger.warning(f"Under-specified content-type: {resp_json[TikaKey.ContentType]}")
-            return TikaResponse(resp_json)
+        return TikaResponse(resp_json)
