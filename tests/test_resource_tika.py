@@ -1,3 +1,7 @@
+import shutil
+import tempfile
+from pathlib import Path
+
 import magic
 
 from tests.conftest import SAMPLE_DIR
@@ -136,3 +140,19 @@ class TestParseContentCompress:
 
         assert isinstance(resp, ParsedDocument)
         assert resp.type == "application/vnd.oasis.opendocument.text"
+
+
+class TestFilenameContentDisposition:
+    def test_non_ascii_filename(self, tika_client: TikaClient):
+        test_file = SAMPLE_DIR / "sample.docx"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            copy = shutil.copy(
+                test_file,
+                Path(temp_dir) / "Kostenerstattung für Meldebescheinigung Familienzuschlag.docx",
+            )
+
+            resp = tika_client.tika.as_text.from_file(copy, magic.from_file(str(copy), mime=True))
+
+            assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            assert "This is an DOCX test document, also made September 14, 2022" in resp.content

@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from pathlib import Path
 from typing import Dict
 
@@ -31,11 +32,19 @@ class BaseResource:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
                 files = {"upload-file": (filepath.name, handle)}  # type: ignore
-            resp = self.client.post(
-                endpoint,
-                files=files,
-                headers={"Content-Disposition": f"attachment; filename={filepath.name}"},
-            )
+            try:
+                # Filename is valid ASCII, use it
+                filepath.name.encode("ascii")
+                content_header = {"Content-Disposition": f"attachment; filename={filepath.name}"}
+            except UnicodeEncodeError:
+                # Ignore non-ascii, in case RFC 5987 is not supported, but also encode it
+                filename_safed = filepath.name.encode("ascii", "ignore").decode("ascii")
+                filepath_quoted = urllib.parse.quote(filepath.name, encoding="utf-8")
+                content_header = {
+                    "Content-Disposition": f"attachment; filename={filename_safed}; filename*=UTF-8''{filepath_quoted}",
+                }
+
+            resp = self.client.post(endpoint, files=files, headers=content_header)
             resp.raise_for_status()
             # Always JSON
             return resp.json()
