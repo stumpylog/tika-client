@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Github CI also now creates a Github release with sdist, wheel and changelog
 - Additional classifiers to the project on PyPI
 
+### Fixed
+
+- Handling of ISO-8061 dates with fractional seconds, which Python doesn't support natively
+
 ## [0.2.0] - 2023-06-26
 
 ### Fixed
