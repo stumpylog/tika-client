@@ -1,4 +1,7 @@
+import logging
+import re
 from datetime import datetime
+from datetime import timedelta
 from enum import Enum
 from typing import Dict
 from typing import List
@@ -6,6 +9,9 @@ from typing import Optional
 from typing import Union
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
+
+logger = logging.getLogger("tika-client.data")
+_FRACTION_REGEX = re.compile("(.*)([\\.,][0-9]+)(.*)")
 
 
 class TikaKey(str, Enum):
@@ -96,8 +102,34 @@ class TikaResponse:
         """
         if key not in self.data:  # pragma: no cover
             return None
+
+        date_str: str = self.data[key]
+
+        # Handle fractional seconds
+        frac = _FRACTION_REGEX.match(date_str)
+        if frac is not None:
+            logger.info("Located fractional seconds")
+            delta = timedelta(seconds=float(frac.group(2)))
+            date_str = frac.group(1)
+            # Attempt to include the timezone info still
+            if frac.group(3) is not None:
+                date_str += frac.group(3)
+        else:
+            delta = timedelta()
+
         # Handle Zulu time as UTC
-        return datetime.fromisoformat(self.data[key].replace("Z", "+00:00"))
+        if "Z" in date_str:
+            date_str = date_str.replace("Z", "+00:00")
+
+        # Assume UTC if it is not set
+        if "+" not in date_str:
+            date_str += "+00:00"
+
+        try:
+            return datetime.fromisoformat(date_str) + delta
+        except ValueError as e:
+            logger.error(f"{e} during datetime parsing")
+        return None
 
     def get_optional_string(self, key: Union[TikaKey, DublinCoreKey, XmpKey, str]) -> Optional[str]:
         if key not in self.data:
