@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import timezone
 
 import magic
 
@@ -27,5 +26,5 @@ class TestLibreOfficeFormats:
             minute=30,
             second=44,
             microsecond=719000,
-            tzinfo=timezone.utc,
+            tzinfo=None,
         )
