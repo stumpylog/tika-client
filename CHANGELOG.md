@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Date parsing is now regular expression based and does not assume a timezone if none is provided (the parsed datetime will be naive)
+- Date parsing is now does not assume a timezone if none is provided (the parsed datetime will be naive)
 - `pypa/gh-action-pypi-publish` updated to v1.8.8
 
 ## [0.3.0] - 2023-07-19
