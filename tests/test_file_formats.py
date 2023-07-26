@@ -8,6 +8,9 @@ from tika_client.client import TikaClient
 
 class TestLibreOfficeFormats:
     def test_parse_libre_office_writer_document(self, tika_client: TikaClient):
+        """
+        Test handling of a ODT document produced by LibreOffice
+        """
         test_file = SAMPLE_DIR / "sample-libre-office.odt"
         resp = tika_client.tika.as_html.from_file(test_file, magic.from_file(str(test_file), mime=True))
 

@@ -56,20 +56,26 @@ class TestRecursiveMetadataResource:
         documents = tika_client.rmeta.as_text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 2
-        document = documents[0]
 
+        document = documents[0]
         assert document.type == "application/vnd.oasis.opendocument.text"
         assert "This is an ODT test document, created September 14, 2022" in document.content
+
+        document = documents[1]
+        assert document.type == "image/png"
 
     def test_r_metadata_from_ods_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample-spreadsheet.ods"
         documents = tika_client.rmeta.as_text.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
         assert len(documents) == 2
-        document = documents[0]
 
+        document = documents[0]
         assert "This is cell A1" in document.content
         assert "You sunk my battleship" in document.content
+
+        document = documents[1]
+        assert document.type == "image/png"
 
     def test_r_metadata_from_xlsx_plain(self, tika_client: TikaClient):
         test_file = SAMPLE_DIR / "sample-spreadsheet.xlsx"
