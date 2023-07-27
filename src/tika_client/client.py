@@ -1,6 +1,8 @@
 import logging
 from types import TracebackType
 from typing import Dict
+from typing import Optional
+from typing import Type
 
 from httpx import Client
 
@@ -47,8 +49,8 @@ class TikaClient:
 
     def __exit__(
         self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
     ) -> None:
         self._client.close()
