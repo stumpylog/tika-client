@@ -168,7 +168,8 @@ ban-relative-imports = "all"
                 "S101",
                 "TID252",
                 # Allow more complex pytest.raises
-                "PT012"
+                "PT012",
+                "DTZ001"
                 ]
 
 [tool.coverage.run]

@@ -151,8 +151,8 @@ jobs:
       -
         name: Display release info
         run: |
-          echo "$Version: ${{ steps.query-release-info.outputs.version }}"
-          echo "$Date: ${{ steps.query-release-info.outputs.release-date }}"
+          echo "Version: ${{ steps.query-release-info.outputs.version }}"
+          echo "Date: ${{ steps.query-release-info.outputs.release-date }}"
           echo "${{ steps.query-release-info.outputs.release-notes }}"
       -
         uses: ncipollo/release-action@v1
@@ -177,4 +177,4 @@ jobs:
           path: dist
       -
         name: Publish build to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.7
+        uses: pypa/gh-action-pypi-publish@v1.8.8

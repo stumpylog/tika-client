@@ -13,6 +13,9 @@ from tika_client.client import TikaClient
 
 class TestMetadataResource:
     def test_metadata_from_docx(self, tika_client: TikaClient):
+        """
+        Test parsing of a DOCX produced by Google Docs conversion
+        """
         test_file = SAMPLE_DIR / "sample.docx"
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
@@ -20,6 +23,9 @@ class TestMetadataResource:
         assert resp.created is None
 
     def test_metadata_from_docx_no_mime(self, tika_client: TikaClient):
+        """
+        Test parsing of a DOCX produced by Google Docs conversion, when no mime type is provided
+        """
         test_file = SAMPLE_DIR / "sample.docx"
         resp = tika_client.metadata.from_file(test_file)
 
@@ -27,6 +33,9 @@ class TestMetadataResource:
         assert resp.created is None
 
     def test_metadata_from_word_docx(self, tika_client: TikaClient):
+        """
+        Test parsing of a DOCX produced by Microsoft Word
+        """
         test_file = SAMPLE_DIR / "microsoft-sample.docx"
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
@@ -35,6 +44,9 @@ class TestMetadataResource:
         assert resp.modified == datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=timezone.utc)
 
     def test_metadata_from_odt(self, tika_client: TikaClient):
+        """
+        Test parsing of a ODT produced by Google Docs conversion
+        """
         test_file = SAMPLE_DIR / "sample.odt"
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
@@ -43,6 +55,9 @@ class TestMetadataResource:
         assert resp.created is None
 
     def test_metadata_from_doc(self, tika_client: TikaClient):
+        """
+        Test parsing of a DOC produced by Google Docs conversion
+        """
         test_file = SAMPLE_DIR / "sample.doc"
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
@@ -50,6 +65,9 @@ class TestMetadataResource:
         assert resp.language == "en"
 
     def test_http_error(self, httpx_mock: HTTPXMock):
+        """
+        Test handling of HTTP errors returned from Tika
+        """
         test_file = SAMPLE_DIR / "sample.odt"
 
         httpx_mock.add_response(status_code=500)

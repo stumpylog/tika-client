@@ -1,5 +1,8 @@
 import logging
+from types import TracebackType
 from typing import Dict
+from typing import Optional
+from typing import Type
 
 from httpx import Client
 
@@ -35,7 +38,7 @@ class TikaClient:
         self.tika = Tika(self._client, compress=compress)
         self.rmeta = Recursive(self._client, compress=compress)
 
-    def add_headers(self, header: Dict[str, str]):  # pragma: no cover
+    def add_headers(self, header: Dict[str, str]) -> None:  # pragma: no cover
         """
         Updates the httpx Client headers with the given values
         """
@@ -44,5 +47,10 @@ class TikaClient:
     def __enter__(self) -> "TikaClient":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         self._client.close()
