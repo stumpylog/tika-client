@@ -40,6 +40,12 @@ Source = "https://github.com/stumpylog/tika-rest-client"
 [tool.hatch.version]
 path = "src/tika_client/__about__.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+  ".github",
+  ".docker"
+]
+
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
