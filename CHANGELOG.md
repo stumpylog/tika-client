@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `.github` and `.docker` folders are no longer included in the source distribution
+- Changed the license to Mozilla Public License Version 2.0
 
 ## [0.4.0] - 2023-07-27
 

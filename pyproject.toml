@@ -8,14 +8,14 @@ dynamic = ["version"]
 description = 'A modern REST client for Apache Tika server'
 readme = "README.md"
 requires-python = ">=3.8"
-license = "GPL-3.0-only"
+license = "MPL-2.0"
 keywords = []
 authors = [
   { name = "Trenton H", email = "797416+stumpylog@users.noreply.github.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
   "Operating System :: OS Independent",
   "Intended Audience :: Developers",
   "Environment :: Web Environment",
