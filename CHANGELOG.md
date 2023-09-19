@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github` and `.docker` folders are no longer included in the source distribution
 - Changed the license to Mozilla Public License Version 2.0
 - `pypa/gh-action-pypi-publish` updated to v1.8.10
+- CI testing now uses the official Apache Tika image (minimal)
 
 ## [0.4.0] - 2023-07-27
 
