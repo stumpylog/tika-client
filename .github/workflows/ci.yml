@@ -75,6 +75,10 @@ jobs:
         run: |
           pip3 --quiet install --upgrade hatch
       -
+        name: List installed dependencies
+        run: |
+          hatch run pip-list
+      -
         name: Run tests
         run: |
           hatch run cov
