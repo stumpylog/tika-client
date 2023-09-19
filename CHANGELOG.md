@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Testing on PyPy 3.10
+
 ### Changed
 
 - `.github` and `.docker` folders are no longer included in the source distribution
