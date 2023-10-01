@@ -23,7 +23,7 @@ jobs:
       contents: read
     steps:
       -
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Set up Python 3.10
         uses: actions/setup-python@v4
@@ -56,7 +56,7 @@ jobs:
 
     steps:
       -
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Start containers
         run: |
@@ -105,7 +105,7 @@ jobs:
       - lint
     steps:
       -
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Set up Python 3.10
         uses: actions/setup-python@v4
@@ -139,7 +139,7 @@ jobs:
       - test
     steps:
       -
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         uses: actions/download-artifact@v3
         with:
