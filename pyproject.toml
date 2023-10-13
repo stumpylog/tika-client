@@ -11,7 +11,7 @@ requires-python = ">=3.8"
 license = "MPL-2.0"
 keywords = []
 authors = [
-  { name = "Trenton H", email = "797416+stumpylog@users.noreply.github.com" },
+  { name = "Trenton H", email = "rda0128ou@mozmail.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
