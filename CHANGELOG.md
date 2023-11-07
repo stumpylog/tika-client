@@ -5,18 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2023-11-07
 
 ### Added
 
 - Testing on PyPy 3.10
+- Testing on released Python 3.12
 
 ### Changed
 
 - `.github` and `.docker` folders are no longer included in the source distribution
 - Changed the license to Mozilla Public License Version 2.0
 - `pypa/gh-action-pypi-publish` updated to v1.8.10
-- CI testing now uses the official Apache Tika image (minimal)
+- CI testing now uses the official Apache Tika image (minimal) instead of the paperless-ngx image
 
 ## [0.4.0] - 2023-07-27
 
