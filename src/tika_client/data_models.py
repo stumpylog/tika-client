@@ -12,6 +12,7 @@ from typing import Union
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
 
 logger = logging.getLogger("tika-client.data")
+
 _TIME_RE = re.compile(
     r"(?P<year>\d{4})-"
     r"(?P<month>\d{2})-"
@@ -87,7 +88,6 @@ class TikaResponse:
         self.title = self.get_optional_string(DublinCoreKey.Title)
 
         # Xmp keys
-        # TODO: Implement more of these
         self.xmp_created = self.get_optional_datetime(XmpKey.Created)
         self.page_count = self.get_optional_int(XmpKey.NumPages)
 
