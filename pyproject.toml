@@ -5,17 +5,17 @@ build-backend = "hatchling.build"
 [project]
 name = "tika-client"
 dynamic = ["version"]
-description = 'A modern REST client for Apache Tika server'
+description = "A modern REST client for Apache Tika server"
 readme = "README.md"
 requires-python = ">=3.8"
-license = "GPL-3.0-only"
+license = "MPL-2.0"
 keywords = []
 authors = [
-  { name = "Trenton H", email = "797416+stumpylog@users.noreply.github.com" },
+  { name = "Trenton H", email = "rda0128ou@mozmail.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
   "Operating System :: OS Independent",
   "Intended Audience :: Developers",
   "Environment :: Web Environment",
@@ -30,7 +30,10 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy"
 ]
-dependencies = ["httpx ~= 0.24"]
+dependencies = [
+  "httpx ~= 0.25; python_version >= '3.9'",
+  "httpx ~= 0.24; python_version < '3.9'"
+]
 
 [project.urls]
 Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
@@ -40,14 +43,21 @@ Source = "https://github.com/stumpylog/tika-rest-client"
 [tool.hatch.version]
 path = "src/tika_client/__about__.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+  ".github",
+  ".docker"
+]
+
 [tool.hatch.envs.default]
 dependencies = [
-  "coverage[toml]>=6.5",
-  "pytest",
+  "coverage[toml] >= 7.3",
+  "pytest >= 7.4",
   "pytest-sugar",
   "pytest-cov",
   "pytest-xdist",
-  "pytest-httpx",
+  "pytest-httpx ~= 0.26; python_version >= '3.9'",
+  "pytest-httpx ~= 0.22; python_version < '3.9'",
   "python-magic",
 ]
 
@@ -69,6 +79,7 @@ cov = [
   "cov-report",
   "cov-json"
 ]
+pip-list = "pip list"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
@@ -76,9 +87,9 @@ python = ["3.8", "3.9", "3.10", "3.11"]
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-  "black>=23.1.0",
-  "mypy>=1.0.0",
-  "ruff>=0.0.243",
+  "black>=23.10.0",
+  "mypy>=1.5.0",
+  "ruff>=0.1.3",
   "httpx",
 ]
 
@@ -103,43 +114,56 @@ target-version = ["py38"]
 line-length = 120
 
 [tool.ruff]
-# https://beta.ruff.rs/docs/settings/
+# https://docs.astral.sh/ruff/settings/
 fix = true
-format = "grouped"
+output-format = "grouped"
 target-version = "py38"
 line-length = 120
-# https://beta.ruff.rs/docs/rules/
+# https://docs.astral.sh/ruff/rules/
 extend-select = [
   "A",
   "ARG",
   "B",
   "C",
-	"COM",
+  "C4",
+  "COM",
   "DTZ",
   "E",
   "EM",
-	"EXE",
+  "ERA",
+  "EXE",
   "F",
   "FBT",
+  "FLY",
   "I",
   "ICN",
-	"INP",
+  "INP",
+  "INT",
   "ISC",
   "N",
-	"PIE",
-	"PTH",
+  "PERF",
+  "PIE",
+  "PGH",
+  "PTH",
+  "PL",
   "PLC",
   "PLE",
   "PLR",
   "PLW",
   "PT",
   "Q",
-	"RSE",
+  "RSE",
   "RUF",
   "S",
-	"SIM",
+  "SIM",
+  "SLF",
   "T",
+  "T10",
+  "T20",
+  "TCH",
+  "TD",
   "TID",
+  "TRY",
   "UP",
   "W",
   "YTT",

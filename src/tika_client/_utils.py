@@ -29,7 +29,7 @@ class BaseResource:
             if mime_type is not None:
                 files = {"upload-file": (filepath.name, handle, mime_type)}
             else:
-                files = {"upload-file": (filepath.name, handle)}  # type: ignore
+                files = {"upload-file": (filepath.name, handle)}  # type: ignore [dict-item]
             try:
                 # Filename is valid ASCII, use it
                 filepath.name.encode("ascii")

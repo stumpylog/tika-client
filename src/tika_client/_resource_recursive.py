@@ -22,10 +22,7 @@ class _TikaRmetaBase(BaseResource):
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """
-        documents: List[TikaResponse] = []
-        for item in self._put_multipart(endpoint, filepath, mime_type):
-            documents.append(self._decoded_response(item))
-        return documents
+        return [self._decoded_response(item) for item in self._put_multipart(endpoint, filepath, mime_type)]
 
 
 class _RecursiveMetaHtml(_TikaRmetaBase):
