@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "tika-client"
 dynamic = ["version"]
-description = 'A modern REST client for Apache Tika server'
+description = "A modern REST client for Apache Tika server"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MPL-2.0"
@@ -30,7 +30,10 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy"
 ]
-dependencies = ["httpx ~= 0.24"]
+dependencies = [
+  "httpx ~= 0.25; python_version >= '3.9'",
+  "httpx ~= 0.24; python_version < '3.9'"
+]
 
 [project.urls]
 Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
