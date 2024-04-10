@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated development tools
+- Bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (by @dependabot in #16)
 
 ## [0.5.0] - 2023-11-07
 
