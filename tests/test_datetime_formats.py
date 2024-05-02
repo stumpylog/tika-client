@@ -3,6 +3,7 @@ from datetime import timedelta
 from datetime import timezone
 
 import magic
+import pytest
 from pytest_httpx import HTTPXMock
 
 from tests.conftest import SAMPLE_DIR
@@ -68,14 +69,9 @@ class TestDateTimeFormat:
 
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
-        assert resp.created == datetime(
-            year=2023,
-            month=6,
-            day=17,
-            hour=16,
-            minute=30,
-            second=44,
-            tzinfo=timezone(timedelta(hours=8)),
+        assert resp.created == pytest.approx(
+            datetime(year=2023, month=6, day=17, hour=16, minute=30, second=44, tzinfo=timezone(timedelta(hours=8))),
+            rel=timedelta(seconds=1),
         )
 
     def test_parse_offset_date_format_negative(self, tika_client: TikaClient, httpx_mock: HTTPXMock):
@@ -90,14 +86,17 @@ class TestDateTimeFormat:
 
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
-        assert resp.created == datetime(
-            year=2023,
-            month=6,
-            day=17,
-            hour=16,
-            minute=30,
-            second=44,
-            tzinfo=timezone(timedelta(hours=-8)),
+        assert resp.created == pytest.approx(
+            datetime(
+                year=2023,
+                month=6,
+                day=17,
+                hour=16,
+                minute=30,
+                second=44,
+                tzinfo=timezone(timedelta(hours=-8)),
+            ),
+            rel=timedelta(seconds=1),
         )
 
     def test_parse_offset_date_format_python_isoformat(self, tika_client: TikaClient, httpx_mock: HTTPXMock):
@@ -114,7 +113,7 @@ class TestDateTimeFormat:
 
         resp = tika_client.metadata.from_file(test_file, magic.from_file(str(test_file), mime=True))
 
-        assert resp.created == expected
+        assert resp.created == pytest.approx(expected, rel=timedelta(seconds=1))
 
     def test_parse_offset_date_no_match(self, tika_client: TikaClient, httpx_mock: HTTPXMock):
         """

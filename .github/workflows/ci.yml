@@ -80,10 +80,6 @@ jobs:
           hatch --version
           uv --version
       -
-        name: Show Python
-        run: |
-          hatch python show
-      -
         name: Show environment
         run: |
           hatch test --show --python ${{ matrix.python-version }}

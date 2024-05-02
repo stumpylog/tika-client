@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated development tools
-- Bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (by @dependabot in #16)
+- Bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (by [@dependabot](https://github.com/apps/dependabot) in [#16](https://github.com/stumpylog/tika-client/pull/16))
+- Update development to use `hatch test` and `hatch fmt` ([#17](https://github.com/stumpylog/tika-client/pull/17))
 
 ## [0.5.0] - 2023-11-07
 
