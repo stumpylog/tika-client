@@ -1,3 +1,6 @@
+#
+# Project Configuration
+#
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -32,7 +35,8 @@ classifiers = [
 ]
 dependencies = [
   "httpx ~= 0.27; python_version >= '3.9'",
-  "httpx ~= 0.24; python_version < '3.9'"
+  "httpx ~= 0.24; python_version < '3.9'",
+  "typing-extensions; python_version < '3.11'"
 ]
 
 [project.urls]
@@ -40,6 +44,9 @@ Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
 Issues = "https://github.com/stumpylog/tika-rest-client/issues"
 Source = "https://github.com/stumpylog/tika-rest-client"
 
+#
+# Hatch Configuration
+#
 [tool.hatch.version]
 path = "src/tika_client/__about__.py"
 
@@ -50,16 +57,7 @@ exclude = [
 ]
 
 [tool.hatch.envs.default]
-dependencies = [
-  "coverage[toml] ~= 7.4.0",
-  "pytest >= 7.4",
-  "pytest-sugar",
-  "pytest-cov",
-  "pytest-xdist",
-  "pytest-httpx ~= 0.30; python_version >= '3.9'",
-  "pytest-httpx ~= 0.22; python_version < '3.9'",
-  "python-magic",
-]
+installer = "uv"
 
 [tool.hatch.envs.default.scripts]
 version = "python3 --version"
@@ -84,39 +82,53 @@ pip-list = "pip list"
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11"]
 
-[tool.hatch.envs.lint]
+[tool.hatch.envs.hatch-static-analysis]
+# https://hatch.pypa.io/latest/config/internal/static-analysis/
+dependencies = ["ruff ~= 0.4.2"]
+config-path = "none"
+
+[tool.hatch.envs.hatch-test]
+# https://hatch.pypa.io/latest/config/internal/testing/
+parallel = true
+randomize = true
+extra-dependencies = [
+  "pytest-sugar",
+  "pytest-httpx ~= 0.30; python_version >= '3.9'",
+  "pytest-httpx ~= 0.22; python_version < '3.9'",
+  "python-magic",
+]
+extra-args = ["--maxprocesses=16"]
+
+#
+# Custom Environments
+#
+[tool.hatch.envs.typing]
 detached = true
 dependencies = [
-  "black ~= 24.2.0",
-  "mypy ~= 1.8.0",
-  "ruff ~= 0.3.0",
+  "mypy ~= 1.10.0",
   "httpx",
 ]
 
-[tool.hatch.envs.lint.scripts]
-typing = [
+[tool.hatch.envs.typing.scripts]
+run = [
   "mypy --version",
   "mypy --install-types --non-interactive {args:src/tika_client}"
 ]
-style = [
-  "ruff check {args:.}",
-  "black --check --diff {args:.}",
-]
-fmt = [
-  "black {args:.}",
-  "ruff check --fix {args:.}",
-  "style",
-]
-all = [
-  "pip list",
-  "style",
-  "typing",
+
+[tool.hatch.envs.pre-commit]
+template = "pre-commit"
+detached = true
+dependencies = [
+  "pre-commit ~= 3.7.0",
 ]
 
-[tool.black]
-target-version = ["py38"]
-line-length = 120
+[tool.hatch.envs.pre-commit.scripts]
+check = ["pre-commit run --all-files"]
+update = ["pre-commit autoupdate"]
 
+#
+# Tool Configuration
+#
 [tool.ruff]
 # https://docs.astral.sh/ruff/settings/
 fix = true
@@ -139,6 +151,7 @@ extend-select = [
   "ERA",
   "EXE",
   "F",
+  "FA",
   "FBT",
   "FLY",
   "I",

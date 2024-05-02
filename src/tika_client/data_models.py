@@ -1,13 +1,11 @@
+from __future__ import annotations
+
 import logging
 import re
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from enum import Enum
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
 
@@ -72,11 +70,11 @@ class TikaResponse:
     All returned data is available in the decoded JSON form under the .data attribute
     """
 
-    def __init__(self, data: Dict) -> None:
+    def __init__(self, data: dict) -> None:
         self.data = data
         # Always set keys
         self.type: str = self.data[TikaKey.ContentType]
-        self.parsers: List[str] = self.data[TikaKey.Parsers]
+        self.parsers: list[str] = self.data[TikaKey.Parsers]
 
         # Tika keys
         self.content = self.get_optional_string(TikaKey.Content)
@@ -99,12 +97,18 @@ class TikaResponse:
 
     # Helpers
 
-    def get_optional_int(self, key: Union[TikaKey, DublinCoreKey, XmpKey, str]) -> Optional[int]:
+    def get_optional_int(
+        self,
+        key: TikaKey | DublinCoreKey | XmpKey | str,
+    ) -> int | None:
         if key not in self.data:  # pragma: no cover
             return None
         return int(self.data[key])
 
-    def get_optional_datetime(self, key: Union[TikaKey, DublinCoreKey, XmpKey, str]) -> Optional[datetime]:
+    def get_optional_datetime(
+        self,
+        key: TikaKey | DublinCoreKey | XmpKey | str,
+    ) -> datetime | None:
         """
         If present, attempts to parse the given key as an ISO-8061 format
         datetime, including timezone handling and return if.
@@ -145,7 +149,10 @@ class TikaResponse:
             tzinfo=tzinfo,
         )
 
-    def get_optional_string(self, key: Union[TikaKey, DublinCoreKey, XmpKey, str]) -> Optional[str]:
+    def get_optional_string(
+        self,
+        key: TikaKey | DublinCoreKey | XmpKey | str,
+    ) -> str | None:
         if key not in self.data:
             return None
         return self.data[key]

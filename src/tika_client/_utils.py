@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import logging
 import urllib.parse
-from pathlib import Path
-from typing import Dict
-
-from httpx import Client
+from typing import TYPE_CHECKING
 
 from tika_client._constants import MIN_COMPRESS_LEN
-from tika_client._types import MimeType
-from tika_client._types import RequestContent
 from tika_client.data_models import TikaResponse
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from httpx import Client
+
+    from tika_client._types import MimeType
+    from tika_client._types import RequestContent
 
 logger = logging.getLogger("tika-client.utils")
 
@@ -18,7 +23,12 @@ class BaseResource:
         self.client = client
         self.compress = compress
 
-    def _put_multipart(self, endpoint: str, filepath: Path, mime_type: MimeType = None) -> Dict:
+    def _put_multipart(
+        self,
+        endpoint: str,
+        filepath: Path,
+        mime_type: MimeType = None,
+    ) -> dict:
         """
         Given an endpoint, file and an optional mime type, does a multi-part form
         data upload of the file to the end point.
@@ -33,7 +43,9 @@ class BaseResource:
             try:
                 # Filename is valid ASCII, use it
                 filepath.name.encode("ascii")
-                content_header = {"Content-Disposition": f"attachment; filename={filepath.name}"}
+                content_header = {
+                    "Content-Disposition": f"attachment; filename={filepath.name}",
+                }
             except UnicodeEncodeError:
                 # Ignore non-ascii, in case RFC 5987 is not supported, but also encode it
                 filename_safed = filepath.name.encode("ascii", "ignore").decode("ascii")
@@ -47,7 +59,12 @@ class BaseResource:
             # Always JSON
             return resp.json()
 
-    def _put_content(self, endpoint: str, content: RequestContent, mime_type: MimeType = None) -> Dict:
+    def _put_content(
+        self,
+        endpoint: str,
+        content: RequestContent,
+        mime_type: MimeType = None,
+    ) -> dict:
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
 
@@ -72,7 +89,7 @@ class BaseResource:
         return resp.json()
 
     @staticmethod
-    def _decoded_response(resp_json: Dict):
+    def _decoded_response(resp_json: dict):
         """
         If possible, returns a more detailed class with properties that appear often in this
         mime type.  Otherwise, it's a basically raw data response, but with some helpers

@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import logging
-from types import TracebackType
-from typing import Dict
-from typing import Optional
-from typing import Type
+from typing import TYPE_CHECKING
 
 from httpx import Client
 
 from tika_client._resource_meta import Metadata
 from tika_client._resource_recursive import Recursive
 from tika_client._resource_tika import Tika
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from tika_client._types import Self
 
 
 class TikaClient:
@@ -38,19 +42,19 @@ class TikaClient:
         self.tika = Tika(self._client, compress=compress)
         self.rmeta = Recursive(self._client, compress=compress)
 
-    def add_headers(self, header: Dict[str, str]) -> None:  # pragma: no cover
+    def add_headers(self, header: dict[str, str]) -> None:  # pragma: no cover
         """
         Updates the httpx Client headers with the given values
         """
         self._client.headers.update(header)
 
-    def __enter__(self) -> "TikaClient":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         self._client.close()
