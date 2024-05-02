@@ -92,6 +92,7 @@ config-path = "none"
 parallel = true
 randomize = true
 extra-dependencies = [
+  "pytest < 8.0; python_version < '3.9'",
   "pytest-sugar",
   "pytest-httpx ~= 0.30; python_version >= '3.9'",
   "pytest-httpx ~= 0.22; python_version < '3.9'",
