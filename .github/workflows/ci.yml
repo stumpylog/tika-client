@@ -76,6 +76,10 @@ jobs:
         run: |
           pip3 --quiet install --upgrade hatch uv
       -
+        name: Show Python
+        run: |
+          hatch python show
+      -
         name: Show environment
         run: |
           hatch test --show --python ${{ matrix.python-version }}
