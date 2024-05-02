@@ -33,11 +33,13 @@ jobs:
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Lint project
         run: |
-          hatch run lint:all
+          hatch fmt --check
       -
         name: Check files with pre-commit
         uses: pre-commit/action@v3.0.1
@@ -67,21 +69,25 @@ jobs:
       -
         name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
+        id: py-setup
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
-        name: List installed dependencies
+        name: Show environment
         run: |
-          hatch run pip-list
+          hatch test --show --python ${{ matrix.python-version }}
       -
         name: Run tests
         run: |
-          hatch run cov
+          hatch test --cover --python ${{ matrix.python-version }}
+          ls -ahl .
       -
         name: Upload coverage to Codecov
         if: matrix.python-version == '3.10'
@@ -115,7 +121,9 @@ jobs:
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Build
         run: |
