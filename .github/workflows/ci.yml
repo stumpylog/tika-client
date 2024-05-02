@@ -34,6 +34,8 @@ jobs:
         name: Install Hatch
         run: |
           pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Lint project
         run: |
@@ -75,6 +77,8 @@ jobs:
         name: Install Hatch
         run: |
           pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Show Python
         run: |
@@ -87,6 +91,7 @@ jobs:
         name: Run tests
         run: |
           hatch test --cover --python ${{ matrix.python-version }}
+          ls -ahl .
       -
         name: Upload coverage to Codecov
         if: matrix.python-version == '3.10'
@@ -121,6 +126,8 @@ jobs:
         name: Install Hatch
         run: |
           pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Build
         run: |
