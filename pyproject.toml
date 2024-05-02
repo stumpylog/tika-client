@@ -59,29 +59,6 @@ exclude = [
 [tool.hatch.envs.default]
 installer = "uv"
 
-[tool.hatch.envs.default.scripts]
-version = "python3 --version"
-test = "pytest {args:tests}"
-cov-clear = "coverage erase"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov-html = "coverage html"
-cov-json = "coverage json"
-cov = [
-  "version",
-  "cov-clear",
-  "test-cov",
-  "cov-report",
-  "cov-json"
-]
-pip-list = "pip list"
-
-[[tool.hatch.envs.all.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11", "pypy3.8", "pypy3.9", "pypy3.10"]
-
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
 dependencies = ["ruff ~= 0.4.2"]
@@ -103,12 +80,31 @@ dependencies = [
 ]
 extra-dependencies = [
   "pytest-sugar",
-  "pytest-cov",
   "pytest-httpx ~= 0.30; python_version >= '3.9'",
   "pytest-httpx ~= 0.22; python_version < '3.9'",
   "python-magic",
 ]
-extra-args = ["--maxprocesses=16", "--cov-report=json"]
+extra-args = ["--maxprocesses=8"]
+
+[tool.hatch.envs.hatch-test.scripts]
+run = [
+  "python3 --version",
+  "pytest{env:HATCH_TEST_ARGS:} {args}"]
+
+run-cov = [
+  "python3 --version",
+  "coverage erase",
+  "coverage run -m pytest{env:HATCH_TEST_ARGS:} {args}"
+]
+cov-combine = ["coverage combine"]
+cov-report = [
+  "coverage report",
+  "coverage json",
+  "coverage html"
+]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "pypy3.8", "pypy3.9", "pypy3.10"]
 
 #
 # Custom Environments
@@ -256,3 +252,6 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
 warn_unused_configs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
