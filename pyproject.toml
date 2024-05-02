@@ -103,11 +103,12 @@ dependencies = [
 ]
 extra-dependencies = [
   "pytest-sugar",
+  "pytest-cov",
   "pytest-httpx ~= 0.30; python_version >= '3.9'",
   "pytest-httpx ~= 0.22; python_version < '3.9'",
   "python-magic",
 ]
-extra-args = ["--maxprocesses=16"]
+extra-args = ["--maxprocesses=16", "--cov-report=json"]
 
 #
 # Custom Environments
