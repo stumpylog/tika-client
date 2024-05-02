@@ -76,13 +76,13 @@ jobs:
         run: |
           pip3 --quiet install --upgrade hatch uv
       -
-        name: Run tests
+        name: Show environment
         run: |
-          hatch test --show --python '${{ steps.py-setup.outputs.python-version }}'
+          hatch test --show --python ${{ matrix.python-version }}
       -
         name: Run tests
         run: |
-          hatch test --cover --python '${{ steps.py-setup.outputs.python-version }}'
+          hatch test --cover --python ${{ matrix.python-version }}
       -
         name: Upload coverage to Codecov
         if: matrix.python-version == '3.10'
