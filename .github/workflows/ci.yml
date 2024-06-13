@@ -41,6 +41,10 @@ jobs:
         run: |
           hatch fmt --check
       -
+        name: Check project typing
+        run: |
+          hatch run typing:run
+      -
         name: Check files with pre-commit
         uses: pre-commit/action@v3.0.1
 

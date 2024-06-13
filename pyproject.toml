@@ -12,7 +12,7 @@ description = "A modern REST client for Apache Tika server"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MPL-2.0"
-keywords = []
+keywords = ["api", "pdf", "html", "client", "office", "tika"]
 authors = [
   { name = "Trenton H", email = "rda0128ou@mozmail.com" },
 ]
@@ -31,7 +31,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy"
+  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
   "httpx ~= 0.27; python_version >= '3.9'",
@@ -43,6 +43,7 @@ dependencies = [
 Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
 Issues = "https://github.com/stumpylog/tika-rest-client/issues"
 Source = "https://github.com/stumpylog/tika-rest-client"
+Changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
 
 #
 # Hatch Configuration
@@ -61,7 +62,7 @@ installer = "uv"
 
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = ["ruff ~= 0.4.2"]
+dependencies = ["ruff ~= 0.4.8"]
 config-path = "none"
 
 [tool.hatch.envs.hatch-test]
@@ -72,7 +73,7 @@ dependencies = [
   "coverage-enable-subprocess == 1.0",
   "coverage[toml] ~= 7.4",
   "pytest < 8.0; python_version < '3.9'",
-  "pytest ~= 8.1; python_version >= '3.9'",
+  "pytest ~= 8.2; python_version >= '3.9'",
   "pytest-mock ~= 3.12",
   "pytest-randomly ~= 3.15",
   "pytest-rerunfailures ~= 14.0",
@@ -84,7 +85,7 @@ extra-dependencies = [
   "pytest-httpx ~= 0.22; python_version < '3.9'",
   "python-magic",
 ]
-extra-args = ["--maxprocesses=8"]
+extra-args = ["--maxprocesses=8", "--pythonwarnings=all"]
 
 [tool.hatch.envs.hatch-test.scripts]
 run = [
@@ -203,6 +204,8 @@ ignore = [
   "S105", "S106", "S107",
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  # Ignore no author and missing issue link in TODO tags
+  "TD002", "TD003"
 ]
 
 [tool.ruff.lint.isort]
@@ -237,7 +240,7 @@ tests = ["tests", "*/tika-client/tests"]
 [tool.coverage.report]
 exclude_lines = [
   "no cov",
-  "if __name__ == .__main__.:",
+  "if __name__ == '__main__':",
   "if TYPE_CHECKING:",
 ]
 
