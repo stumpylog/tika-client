@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pypa/gh-action-pypi-publish` updated to v1.8.10
 - CI testing now uses the official Apache Tika image (minimal) instead of the paperless-ngx image
 
+### Fixed
+
+- Typo in README codeblock by @Chaostheorie ([#19](https://github.com/stumpylog/tika-client/pull/19))
+
 ## [0.4.0] - 2023-07-27
 
 ### Added
