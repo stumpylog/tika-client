@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Final
-from typing import List
 
-from httpx import Client
-
-from tika_client._types import MimeType
 from tika_client._utils import BaseResource
-from tika_client.data_models import TikaResponse
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from httpx import Client
+
+    from tika_client._types import MimeType
+    from tika_client.data_models import TikaResponse
 
 logger = logging.getLogger("tika-client.rmeta")
 
@@ -18,7 +23,7 @@ class _TikaRmetaBase(BaseResource):
         endpoint: str,
         filepath: Path,
         mime_type: MimeType = None,
-    ) -> List[TikaResponse]:
+    ) -> list[TikaResponse]:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint
         """

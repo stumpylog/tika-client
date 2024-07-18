@@ -26,21 +26,27 @@ jobs:
         uses: actions/checkout@v4
       -
         name: Set up Python 3.10
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Lint project
         run: |
-          hatch run lint:all
+          hatch fmt --check
+      -
+        name: Check project typing
+        run: |
+          hatch run typing:run
       -
         name: Check files with pre-commit
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -66,26 +72,30 @@ jobs:
           sleep 5
       -
         name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
+        id: py-setup
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
-        name: List installed dependencies
+        name: Show environment
         run: |
-          hatch run pip-list
+          hatch test --show --python ${{ matrix.python-version }}
       -
         name: Run tests
         run: |
-          hatch run cov
+          hatch test --cover --python ${{ matrix.python-version }}
+          ls -ahl .
       -
         name: Upload coverage to Codecov
         if: matrix.python-version == '3.10'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           # not required for public repos, but intermittently fails otherwise
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -108,20 +118,22 @@ jobs:
         uses: actions/checkout@v4
       -
         name: Set up Python 3.10
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
       -
         name: Install Hatch
         run: |
-          pip3 --quiet install --upgrade hatch
+          pip3 --quiet install --upgrade hatch uv
+          hatch --version
+          uv --version
       -
         name: Build
         run: |
           hatch build --clean
       -
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: build-artifacts
             path: dist/*
@@ -141,14 +153,14 @@ jobs:
       -
         uses: actions/checkout@v4
       -
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: dist
       -
         name: Get latest release info
         id: query-release-info
-        uses: release-flow/keep-a-changelog-action@v2
+        uses: release-flow/keep-a-changelog-action@v3
         with:
           command: query
           version: ${{ github.ref_name }}
@@ -175,10 +187,10 @@ jobs:
       - test
     steps:
       -
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: dist
       -
         name: Publish build to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.10
+        uses: pypa/gh-action-pypi-publish@v1.9.0

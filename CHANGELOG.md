@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2024-07-18
+
+### Changed
+
+- Updated development tools
+- Bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (by [@dependabot](https://github.com/apps/dependabot) in [#16](https://github.com/stumpylog/tika-client/pull/16))
+- Update development to use `hatch test` and `hatch fmt` ([#17](https://github.com/stumpylog/tika-client/pull/17))
+- Included `mypy` typing in the linting checks
+
 ## [0.5.0] - 2023-11-07
 
 ### Added
@@ -18,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the license to Mozilla Public License Version 2.0
 - `pypa/gh-action-pypi-publish` updated to v1.8.10
 - CI testing now uses the official Apache Tika image (minimal) instead of the paperless-ngx image
+
+### Fixed
+
+- Typo in README codeblock by @Chaostheorie ([#19](https://github.com/stumpylog/tika-client/pull/19))
 
 ## [0.4.0] - 2023-07-27
 

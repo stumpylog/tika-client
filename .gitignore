@@ -62,10 +62,6 @@ target/
 # PyCharm
 .idea
 
-# VS Code
-.vscode
-/src-ui/.vscode
-/docs/.vscode
 
 # Other stuff that doesn't belong
 .virtualenv
@@ -75,26 +71,7 @@ virtualenv
 /docker-compose.env
 /docker-compose.yml
 .ruff_cache/
-
-# Used for development
-scripts/import-for-development
-scripts/nuke
-
-# Static files collected by the collectstatic command
-/static/
-
-# Stored PDFs
-/media/
-/data/
-/paperless.conf
-/consume/
-/export/
-
-# this is where the compiled frontend is moved to.
-/src/documents/static/frontend/
+.mypy_cache/
 
 # mac os
 .DS_Store
-
-# celery schedule file
-celerybeat-schedule*
