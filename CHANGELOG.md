@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the README referring to the wrong license text
+- Fixed the creation of loggers for the library which were never utilized
 
 ## [0.6.0] - 2024-07-18
 

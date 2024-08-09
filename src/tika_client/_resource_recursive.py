@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -17,8 +16,6 @@ if TYPE_CHECKING:
 
     from tika_client._types import MimeType
     from tika_client.data_models import TikaResponse
-
-logger = logging.getLogger("tika-client.rmeta")
 
 
 class _TikaRmetaBase(BaseResource):

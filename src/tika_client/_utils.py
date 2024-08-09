@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import logging
 import urllib.parse
 from typing import TYPE_CHECKING
 
@@ -18,8 +17,6 @@ if TYPE_CHECKING:
 
     from tika_client._types import MimeType
     from tika_client._types import RequestContent
-
-logger = logging.getLogger("tika-client.utils")
 
 
 class BaseResource:
