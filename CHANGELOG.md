@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- SPDX license headers were added to source files
+
 ### Fixed
 
 - Fixed the README referring to the wrong license text
