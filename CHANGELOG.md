@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the README referring to the wrong license text
 - Fixed the creation of loggers for the library which were never utilized
 
+### Changed
+
+- Bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.2 (by [@dependabot](https://github.com/apps/dependabot) in [#22](https://github.com/stumpylog/tika-client/pull/22))
+
 ## [0.6.0] - 2024-07-18
 
 ### Changed
