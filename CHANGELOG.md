@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.2 (by [@dependabot](https://github.com/apps/dependabot) in [#22](https://github.com/stumpylog/tika-client/pull/22))
+- Update `pre-commit` to 4.0.1 ([#23](https://github.com/stumpylog/tika-client/pull/23))
 
 ## [0.6.0] - 2024-07-18
 
