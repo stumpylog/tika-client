@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - SPDX license headers were added to source files
+- Official support and testing for Python 3.13 ([#25](https://github.com/stumpylog/tika-client/pull/25))
 
 ### Fixed
 
