@@ -3,12 +3,13 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
+from pytest_docker.plugin import Services
 
 from tika_client.client import TikaClient
 
 
 @pytest.fixture(scope="session")
-def tika_host(docker_services, docker_ip) -> str:
+def tika_host(docker_services: Services, docker_ip: str) -> str:
     def is_responsive(url):
         import httpx
 
@@ -19,12 +20,14 @@ def tika_host(docker_services, docker_ip) -> str:
         except httpx.HTTPError:
             return False
 
+    url = f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
+
     docker_services.wait_until_responsive(
         timeout=30.0,
         pause=0.1,
-        check=lambda: is_responsive(tika_host),
+        check=lambda: is_responsive(url),
     )
-    return f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
+    return url
 
 
 @pytest.fixture(scope="session")
