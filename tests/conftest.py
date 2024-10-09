@@ -1,16 +1,41 @@
 import logging
-import os
 from pathlib import Path
 from typing import Generator
 
 import pytest
+from pytest_docker.plugin import Services
 
 from tika_client.client import TikaClient
 
+logger = logging.getLogger("tika-client.tests")
+
 
 @pytest.fixture(scope="session")
-def tika_host() -> str:
-    return os.getenv("TIKA_URL", "http://localhost:9998")
+def docker_compose_file() -> Path:
+    return Path(__file__).parent / "docker" / "docker-compose.ci-test.yml"
+
+
+@pytest.fixture(scope="session")
+def tika_host(docker_services: Services, docker_ip: str) -> str:
+    def is_responsive(url):
+        import httpx
+
+        try:
+            response = httpx.get(url)
+        except httpx.HTTPError:
+            logger.exception("Error connecting to service")
+            return False
+        else:
+            return response.status_code == httpx.codes.OK
+
+    url = f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=1,
+        check=lambda: is_responsive(url),
+    )
+    return url
 
 
 @pytest.fixture(scope="session")
