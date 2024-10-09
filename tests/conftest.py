@@ -44,7 +44,7 @@ def sample_doc_file(samples_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def c(samples_dir: Path) -> Path:
+def sample_html_file(samples_dir: Path) -> Path:
     return samples_dir / "sample.html"
 
 
