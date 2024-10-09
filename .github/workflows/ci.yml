@@ -64,13 +64,6 @@ jobs:
       -
         uses: actions/checkout@v4
       -
-        name: Start containers
-        run: |
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml pull --quiet
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml up --detach
-          echo "Wait for container to be started"
-          sleep 5
-      -
         name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         id: py-setup
@@ -99,12 +92,6 @@ jobs:
         with:
           # not required for public repos, but intermittently fails otherwise
           token: ${{ secrets.CODECOV_TOKEN }}
-      -
-        name: Stop containers
-        if: always()
-        run: |
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml logs
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml down
 
   build:
     name: Build
