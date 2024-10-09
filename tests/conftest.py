@@ -16,7 +16,7 @@ def tika_host(docker_services, docker_ip) -> str:
             response = httpx.get(url)
             if response.status_code == httpx.codes.OK:
                 return True
-        except ConnectionError:
+        except httpx.HTTPError:
             return False
 
     docker_services.wait_until_responsive(
