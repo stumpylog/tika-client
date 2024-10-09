@@ -6,5 +6,3 @@
 services:
   tika:
     image: docker.io/apache/tika:latest
-    hostname: tika
-    container_name: tika

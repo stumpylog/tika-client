@@ -12,7 +12,7 @@ def tika_host(docker_services, docker_ip) -> str:
     return f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def _tika_service(docker_services, tika_host: str) -> None:
     def is_responsive(url):
         import httpx
