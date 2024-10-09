@@ -9,11 +9,6 @@ from tika_client.client import TikaClient
 
 @pytest.fixture(scope="session")
 def tika_host(docker_services, docker_ip) -> str:
-    return f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
-
-
-@pytest.fixture(scope="session")
-def _tika_service(docker_services, tika_host: str) -> None:
     def is_responsive(url):
         import httpx
 
@@ -29,6 +24,7 @@ def _tika_service(docker_services, tika_host: str) -> None:
         pause=0.1,
         check=lambda: is_responsive(tika_host),
     )
+    return f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
 
 
 @pytest.fixture(scope="session")
