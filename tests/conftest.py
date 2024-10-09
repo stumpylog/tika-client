@@ -11,6 +11,11 @@ logger = logging.getLogger("tika-client.tests")
 
 
 @pytest.fixture(scope="session")
+def docker_compose_file() -> Path:
+    return Path(__file__).parent / "docker" / "docker-compose.ci-test.yml"
+
+
+@pytest.fixture(scope="session")
 def tika_host(docker_services: Services, docker_ip: str) -> str:
     def is_responsive(url):
         import httpx
@@ -91,11 +96,6 @@ def sample_ods_file(samples_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def sample_xlsx_file(samples_dir: Path) -> Path:
     return samples_dir / "sample-spreadsheet.xlsx"
-
-
-@pytest.fixture(scope="session")
-def docker_compose_file() -> Path:
-    return Path(__file__).parent / "docker" / "docker-compose.ci-test.yml"
 
 
 @pytest.fixture
