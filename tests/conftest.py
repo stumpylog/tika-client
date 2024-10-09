@@ -7,6 +7,8 @@ from pytest_docker.plugin import Services
 
 from tika_client.client import TikaClient
 
+logger = logging.getLogger("tika-client.tests")
+
 
 @pytest.fixture(scope="session")
 def tika_host(docker_services: Services, docker_ip: str) -> str:
@@ -15,16 +17,17 @@ def tika_host(docker_services: Services, docker_ip: str) -> str:
 
         try:
             response = httpx.get(url)
-            if response.status_code == httpx.codes.OK:
-                return True
         except httpx.HTTPError:
+            logger.exception("Error connecting to service")
             return False
+        else:
+            return response.status_code == httpx.codes.OK
 
     url = f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
 
     docker_services.wait_until_responsive(
         timeout=30.0,
-        pause=0.1,
+        pause=1,
         check=lambda: is_responsive(url),
     )
     return url

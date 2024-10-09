@@ -6,3 +6,5 @@
 services:
   tika:
     image: docker.io/apache/tika:latest
+    ports:
+      - "9998/tcp"
