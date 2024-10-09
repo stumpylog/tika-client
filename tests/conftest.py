@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import Generator
 
@@ -9,8 +8,27 @@ from tika_client.client import TikaClient
 
 
 @pytest.fixture(scope="session")
-def tika_host() -> str:
-    return os.getenv("TIKA_URL", "http://localhost:9998")
+def tika_host(docker_services, docker_ip) -> str:
+    return f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _tika_service(docker_services, tika_host: str) -> None:
+    def is_responsive(url):
+        import httpx
+
+        try:
+            response = httpx.get(url)
+            if response.status_code == httpx.codes.OK:
+                return True
+        except ConnectionError:
+            return False
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: is_responsive(tika_host),
+    )
 
 
 @pytest.fixture(scope="session")
@@ -71,6 +89,11 @@ def sample_ods_file(samples_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def sample_xlsx_file(samples_dir: Path) -> Path:
     return samples_dir / "sample-spreadsheet.xlsx"
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file() -> Path:
+    return Path(__file__).parent / "docker" / "docker-compose.ci-test.yml"
 
 
 @pytest.fixture
