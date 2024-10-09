@@ -1,20 +1,23 @@
 from datetime import datetime
+from pathlib import Path
 
 import magic
 
-from tests.conftest import SAMPLE_DIR
 from tika_client.client import TikaClient
 
 
 class TestLibreOfficeFormats:
-    def test_parse_libre_office_writer_document(self, tika_client: TikaClient):
+    def test_parse_libre_office_writer_document(self, tika_client: TikaClient, sample_libre_office_writer_file: Path):
         """
         Test handling of a ODT document produced by LibreOffice
         """
-        test_file = SAMPLE_DIR / "sample-libre-office.odt"
-        resp = tika_client.tika.as_html.from_file(test_file, magic.from_file(str(test_file), mime=True))
+        resp = tika_client.tika.as_html.from_file(
+            sample_libre_office_writer_file,
+            magic.from_file(str(sample_libre_office_writer_file), mime=True),
+        )
 
         assert resp.type == "application/vnd.oasis.opendocument.text"
+        assert resp.content is not None
         assert (
             "<body><p>This is a document created by LibreOffice Writer 7.5.12, on July 19th, 2023</p>\n</body>"
             in resp.content
