@@ -1,6 +1,8 @@
+# SPDX-FileCopyrightText: 2023-present Trenton H <rda0128ou@mozmail.com>
+#
+# SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-import logging
 import re
 from datetime import datetime
 from datetime import timedelta
@@ -8,8 +10,6 @@ from datetime import timezone
 from enum import Enum
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
-
-logger = logging.getLogger("tika-client.data")
 
 _TIME_RE = re.compile(
     r"(?P<year>\d{4})-"

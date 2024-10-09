@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2024-10-09
+
+### Added
+
+- SPDX license headers were added to source files
+- Official support and testing for Python 3.13 ([#25](https://github.com/stumpylog/tika-client/pull/25))
+
+### Fixed
+
+- Fixed the README referring to the wrong license text
+- Fixed the creation of loggers for the library which were never utilized
+
+### Changed
+
+- Bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.2 (by [@dependabot](https://github.com/apps/dependabot) in [#22](https://github.com/stumpylog/tika-client/pull/22))
+- Update `pre-commit` to 4.0.1 ([#23](https://github.com/stumpylog/tika-client/pull/23))
+- Use pytest fixtures effectively ([#24](https://github.com/stumpylog/tika-client/pull/24))
+- Use pytest-docker in place of manual Docker ([#26](https://github.com/stumpylog/tika-client/pull/26))
+
 ## [0.6.0] - 2024-07-18
 
 ### Changed
@@ -13,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (by [@dependabot](https://github.com/apps/dependabot) in [#16](https://github.com/stumpylog/tika-client/pull/16))
 - Update development to use `hatch test` and `hatch fmt` ([#17](https://github.com/stumpylog/tika-client/pull/17))
 - Included `mypy` typing in the linting checks
+
+### Fixed
+
+- Typo in README codeblock by @Chaostheorie ([#19](https://github.com/stumpylog/tika-client/pull/19))
 
 ## [0.5.0] - 2023-11-07
 
@@ -27,10 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the license to Mozilla Public License Version 2.0
 - `pypa/gh-action-pypi-publish` updated to v1.8.10
 - CI testing now uses the official Apache Tika image (minimal) instead of the paperless-ngx image
-
-### Fixed
-
-- Typo in README codeblock by @Chaostheorie ([#19](https://github.com/stumpylog/tika-client/pull/19))
 
 ## [0.4.0] - 2023-07-27
 

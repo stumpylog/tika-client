@@ -1,13 +1,10 @@
 # docker-compose file for running testing with Tika container
 # for a more end to end test of the Tika related functionality
-# Can be used locally or by the CI to start the nessecary container with the
+# Can be used locally or by the CI to start the necessary container with the
 # correct networking for the tests
 
-version: "3"
 services:
   tika:
     image: docker.io/apache/tika:latest
-    hostname: tika
-    container_name: tika
-    network_mode: host
-    restart: unless-stopped
+    ports:
+      - "9998/tcp"

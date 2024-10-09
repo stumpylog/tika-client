@@ -58,18 +58,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy3.8', 'pypy3.9', 'pypy3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', 'pypy3.8', 'pypy3.9', 'pypy3.10']
 
     steps:
       -
         uses: actions/checkout@v4
-      -
-        name: Start containers
-        run: |
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml pull --quiet
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml up --detach
-          echo "Wait for container to be started"
-          sleep 5
       -
         name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -99,12 +92,6 @@ jobs:
         with:
           # not required for public repos, but intermittently fails otherwise
           token: ${{ secrets.CODECOV_TOKEN }}
-      -
-        name: Stop containers
-        if: always()
-        run: |
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml logs
-          docker compose --file ${GITHUB_WORKSPACE}/.docker/docker-compose.ci-test.yml down
 
   build:
     name: Build
@@ -193,4 +180,4 @@ jobs:
           path: dist
       -
         name: Publish build to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9.0
+        uses: pypa/gh-action-pypi-publish@v1.10.2

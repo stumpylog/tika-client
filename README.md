@@ -87,4 +87,4 @@ This library attempts to provide a simpler interface, minimal lines of code and 
 
 ## License
 
-`tika-client` is distributed under the terms of the [GPL-3.0-only](https://spdx.org/licenses/GPL-3.0-only.html) license.
+`tika-client` is distributed under the terms of the [Mozilla Public License 2.0](https://spdx.org/licenses/MPL-2.0.html) license.

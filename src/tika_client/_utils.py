@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2023-present Trenton H <rda0128ou@mozmail.com>
+#
+# SPDX-License-Identifier: MPL-2.0
+
 from __future__ import annotations
 
-import logging
 import urllib.parse
 from typing import TYPE_CHECKING
 
@@ -14,8 +17,6 @@ if TYPE_CHECKING:
 
     from tika_client._types import MimeType
     from tika_client._types import RequestContent
-
-logger = logging.getLogger("tika-client.utils")
 
 
 class BaseResource:
