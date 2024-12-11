@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- Dropped support for Python 3.8 ([#36](https://github.com/stumpylog/tika-client/pull/36))
+
 ### Fixed
 
 - Tests failed when run with Tika v3 ([#28](https://github.com/stumpylog/tika-client/pull/28))

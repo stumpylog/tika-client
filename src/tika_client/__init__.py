@@ -7,4 +7,4 @@ from tika_client.data_models import DublinCoreKey
 from tika_client.data_models import TikaKey
 from tika_client.data_models import XmpKey
 
-__all__ = ["TikaClient", "TikaKey", "XmpKey", "DublinCoreKey"]
+__all__ = ["DublinCoreKey", "TikaClient", "TikaKey", "XmpKey"]
