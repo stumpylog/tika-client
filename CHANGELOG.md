@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bump pypa/gh-action-pypi-publish from 1.10.2 to 1.12.2 (by [@dependabot](https://github.com/apps/dependabot) in [#33](https://github.com/stumpylog/tika-client/pull/33))
+- Bump codecov/codecov-action from 4 to 5 by (by [@dependabot](https://github.com/apps/dependabot)) ([#32](https://github.com/stumpylog/tika-client/pull/32))
 
 ## [0.7.0] - 2024-10-09
 
