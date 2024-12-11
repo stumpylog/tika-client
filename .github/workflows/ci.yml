@@ -71,6 +71,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       -
+        name: Pull Docker images
+        run: |
+          docker compose --file tests/docker/docker-compose.ci-test.yml pull
+      -
         name: Install Hatch
         run: |
           pip3 --quiet install --upgrade hatch uv
@@ -83,15 +87,20 @@ jobs:
       -
         name: Run tests
         run: |
-          hatch test --cover --python ${{ matrix.python-version }}
-          ls -ahl .
+          hatch test --cover --junitxml=junit.xml -o junit_family=legacy --python ${{ matrix.python-version }}
       -
         name: Upload coverage to Codecov
-        if: matrix.python-version == '3.10'
+        if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v5
         with:
-          # not required for public repos, but intermittently fails otherwise
           token: ${{ secrets.CODECOV_TOKEN }}
+      -
+        name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: python-${{ matrix.python-version }}
 
   build:
     name: Build
