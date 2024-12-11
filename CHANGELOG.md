@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Integrated Codecov test analytics ([#33](https://github.com/stumpylog/tika-client/pull/33))
+- Integrated Codecov test analytics ([#34](https://github.com/stumpylog/tika-client/pull/34))
 
 ## [0.7.0] - 2024-10-09
 
