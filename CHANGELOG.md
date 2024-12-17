@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Tests failed when run with Tika v3 ([#28](https://github.com/stumpylog/tika-client/pull/28))
+- Relaxed version restriction on `httpx`
 
 ### Changed
 
