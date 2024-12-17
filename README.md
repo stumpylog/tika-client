@@ -6,7 +6,7 @@
 
 ---
 
-**Table of Contents**
+## Table of Contents
 
 - [Features](#features)
 - [Installation](#installation)
@@ -17,7 +17,7 @@
 ## Features
 
 - Simplified: No need to worry about XML or JSON responses, downloading a Tika jar file or Python 2
-- Support for Tika 2+ only
+- Support for Tika 2+ only (including Tika v3, which didn't change the API)
 - Based on the modern [httpx](https://github.com/encode/httpx) library
 - Full support for type hinting
 - Nearly full test coverage run against an actual Tika server for multiple Python and PyPy versions
@@ -39,7 +39,7 @@ from tika_client import TikaClient
 test_file = Path("sample.docx")
 
 
-with TikaClient("http://localhost:9998") as client
+with TikaClient("http://localhost:9998") as client:
 
     # Extract a document's metadata
     metadata = client.metadata.from_file(test_file)

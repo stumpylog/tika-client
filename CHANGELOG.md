@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2024-12-17
+
+### Breaking Change
+
+- Dropped support for Python 3.8 ([#36](https://github.com/stumpylog/tika-client/pull/36))
+
+### Fixed
+
+- Tests failed when run with Tika v3 ([#28](https://github.com/stumpylog/tika-client/pull/28))
+- Relaxed version restriction on `httpx`
+
+### Changed
+
+- Bump pypa/gh-action-pypi-publish from 1.10.2 to 1.12.2 (by [@dependabot](https://github.com/apps/dependabot) in [#33](https://github.com/stumpylog/tika-client/pull/33))
+- Bump codecov/codecov-action from 4 to 5 by (by [@dependabot](https://github.com/apps/dependabot)) ([#32](https://github.com/stumpylog/tika-client/pull/32))
+
+### Added
+
+- Integrated Codecov test analytics ([#34](https://github.com/stumpylog/tika-client/pull/34))
+
 ## [0.7.0] - 2024-10-09
 
 ### Added

@@ -25,13 +25,26 @@ _TIME_RE = re.compile(
 
 
 class TikaKey(str, Enum):
+    """
+    Based on
+      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaProcess
+      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaGeneral
+    """
+
     Parsers = "X-TIKA:Parsed-By"
+    Parser_Full = "X-TIKA:Parsed-By-Full-Set"
+    Parse_Time = "X-TIKA:parse_time_millis"
     ContentType = "Content-Type"
     ContentLength = "Content-Length"
     Content = "X-TIKA:content"
 
 
 class DublinCoreKey(str, Enum):
+    """
+    Based on:
+      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-DublinCore
+    """
+
     Creator = "dc:creator"
     Created = "dcterms:created"
     Modified = "dcterms:modified"
@@ -49,6 +62,11 @@ class DublinCoreKey(str, Enum):
 
 
 class XmpKey(str, Enum):
+    """
+    Based on:
+      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-XMP(eXtensibleMetadataPlatform)
+    """
+
     About = "xmp:About"
     Created = "xmp:CreateDate"
     NumPages = "xmpTPg:NPages"

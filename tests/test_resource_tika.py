@@ -146,7 +146,7 @@ class TestParseContentPlain:
         resp = tika_client.tika.as_text.from_buffer(buffer)
 
         assert resp.type == "text/html; charset=UTF-8"
-        assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.HtmlParser"]
+        assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.JSoupParser"]
         assert "Hello world! This is HTML5 content in a file for" in resp.data["X-TIKA:content"]
         assert resp.data["dc:title"] == "This Is A Test"
         assert resp.data["description"] == "A sample HTML file"
