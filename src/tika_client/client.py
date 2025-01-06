@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from httpx import Client
 
+from tika_client.__about__ import __version__
 from tika_client._resource_meta import Metadata
 from tika_client._resource_recursive import Recursive
 from tika_client._resource_tika import Tika
@@ -22,14 +23,15 @@ if TYPE_CHECKING:
 class TikaClient:
     def __init__(
         self,
-        *,
         tika_url: str,
+        user_agent: str = f"tika-client/{__version__}",
+        *,
         timeout: float = 30.0,
         log_level: int = logging.ERROR,
         compress: bool = False,
     ):
         # Configure the client
-        self._client = Client(base_url=tika_url, timeout=timeout)
+        self._client = Client(base_url=tika_url, timeout=timeout, headers={"User-Agent": user_agent})
 
         # Set the log level
         logging.getLogger("httpx").setLevel(log_level)
