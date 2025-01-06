@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Allow setting user agent string and provide a default ([#34](https://github.com/stumpylog/tika-client/pull/34))
+- Allow setting user agent string and provide a default ([#37](https://github.com/stumpylog/tika-client/pull/37))
 
 ## [0.8.1] - 2024-12-17
 
