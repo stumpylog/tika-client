@@ -39,7 +39,7 @@ from tika_client import TikaClient
 test_file = Path("sample.docx")
 
 
-with TikaClient("http://localhost:9998") as client:
+with TikaClient(tika_url="http://localhost:9998") as client:
 
     # Extract a document's metadata
     metadata = client.metadata.from_file(test_file)
