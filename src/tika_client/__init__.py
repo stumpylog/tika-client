@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
+from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 from tika_client.data_models import DublinCoreKey
 from tika_client.data_models import TikaKey
 from tika_client.data_models import XmpKey
 
-__all__ = ["DublinCoreKey", "TikaClient", "TikaKey", "XmpKey"]
+__all__ = ["AsyncTikaClient", "DublinCoreKey", "TikaClient", "TikaKey", "XmpKey"]

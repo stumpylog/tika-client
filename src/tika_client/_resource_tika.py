@@ -1,52 +1,85 @@
 # SPDX-FileCopyrightText: 2023-present Trenton H <rda0128ou@mozmail.com>
 #
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Final
 
-from httpx import Client
+from tika_client._base import AsyncResource
+from tika_client._base import SyncResource
 
-from tika_client._types import MimeType
-from tika_client._types import RequestContent
-from tika_client._utils import BaseResource
+PLAIN_TEXT_ENDPOINT: Final[str] = "/tika/text"
+PLAIN_TEXT_MULTI_PART_ENDPOINT: Final[str] = "/tika/form/text"
+HTML_ENDPOINT: Final[str] = "/tika"
+HTML_MULTI_PART_ENDPOINT: Final[str] = "/tika/form"
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from httpx import AsyncClient
+    from httpx import Client
+
+    from tika_client.data_models import TikaResponse
 
 
-class _TikaHtml(BaseResource):
-    ENDPOINT: Final[str] = "/tika"
-    MULTI_PART_ENDPOINT = "/tika/form"
-
-    def from_file(self, filepath: Path, mime_type: MimeType = None):
+class SyncTikaHtml(SyncResource):
+    def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the formatted (as HTML) document data
-        """
-        return self._decoded_response(self._put_multipart(self.MULTI_PART_ENDPOINT, filepath, mime_type))
+        Returns the formatted (as HTML) document data.
 
-    def from_buffer(self, content: RequestContent, mime_type: MimeType = None):
-        """
-        Returns the HTML formatted document data from a given string of document content
-        """
-        return self._decoded_response(self._put_content(self.ENDPOINT, content, mime_type))
+        Args:
+            filepath: The path to the file to be sent to the Tika server
+            mime_type: The mime type of the file to be sent to the Tika server
 
+        Returns:
+            The JSON response from the Tika server
+        """
+        return self.decoded_response(self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
 
-class _TikaPlain(BaseResource):
-    PLAIN_TEXT_CONTENT: Final[str] = "/tika/text"
-    MULTI_PART_PLAIN_TEXT_CONTENT = "/tika/form/text"
+    def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the HTML formatted document data from a given string of document content.
 
-    def from_file(self, filepath: Path, mime_type: MimeType = None):
-        """
-        Returns the plain text document data
-        """
-        return self._decoded_response(self._put_multipart(self.MULTI_PART_PLAIN_TEXT_CONTENT, filepath, mime_type))
+        Args:
+            content: The content to be sent to the Tika server
+            mime_type: The mime type of the content to be sent to the Tika server
 
-    def from_buffer(self, content: RequestContent, mime_type: MimeType = None):
+        Returns:
+            The JSON response from the Tika server
         """
-        Returns the plain text document data from a given string of document content
-        """
-        return self._decoded_response(self._put_content(self.PLAIN_TEXT_CONTENT, content, mime_type))
+        return self.decoded_response(self.put_content(HTML_ENDPOINT, content, mime_type))
 
 
-class Tika(BaseResource):
+class SyncTikaPlain(SyncResource):
+    def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the plain text document data.
+
+        Args:
+            filepath: The path to the file to be sent to the Tika server
+            mime_type: The mime type of the file to be sent to the Tika server
+
+        Returns:
+            The JSON response from the Tika server
+        """
+        return self.decoded_response(self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
+
+    def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the plain text document data from a given string of document content.
+
+        Args:
+            content: The content to be sent to the Tika server
+            mime_type: The mime type of the content to be sent to the Tika server
+
+        Returns:
+            The JSON response from the
+        """
+        return self.decoded_response(self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type))
+
+
+class SyncTika(SyncResource):
     """
     Handles interaction with the /tika endpoint of a Tika server REST API, returning the HTML
     formatted content or the plain text, depending on how the client is accessed
@@ -57,5 +90,76 @@ class Tika(BaseResource):
 
     def __init__(self, client: Client, *, compress: bool) -> None:
         super().__init__(client, compress=compress)
-        self.as_html = _TikaHtml(self.client, compress=compress)
-        self.as_text = _TikaPlain(self.client, compress=compress)
+        self.as_html = SyncTikaHtml(self.client, compress=compress)
+        self.as_text = SyncTikaPlain(self.client, compress=compress)
+
+
+class AsyncTikaHtml(AsyncResource):
+    async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the formatted (as HTML) document data.
+
+        Args:
+            filepath: The path to the file to be sent to the Tika server
+            mime_type: The mime type of the file to be sent to the Tika server
+
+        Returns:
+            The JSON response from the Tika server
+        """
+        return self.decoded_response(await self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
+
+    async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the HTML formatted document data from a given string of document content.
+
+        Args:
+            content: The content to be sent to the Tika server
+            mime_type: The mime type of the content to be sent to the Tika server
+
+        Returns:
+            The JSON response from the Tika server
+        """
+        return self.decoded_response(await self.put_content(HTML_ENDPOINT, content, mime_type))
+
+
+class AsyncTikaPlain(AsyncResource):
+    async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the plain text document data.
+
+        Args:
+            filepath: The path to the file to be sent to the Tika server
+            mime_type: The mime type of the file to be sent to the Tika server
+
+        Returns:
+            The JSON response from the Tika server
+        """
+        return self.decoded_response(await self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
+
+    async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
+        """
+        Returns the plain text document data from a given string of document content.
+
+        Args:
+            content: The content to be sent to the Tika server
+            mime_type: The mime type of the content to be sent to the Tika server
+
+        Returns:
+            The JSON response from the
+        """
+        return self.decoded_response(await self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type))
+
+
+class AsyncTika(AsyncResource):
+    """
+    Handles interaction with the /tika endpoint of a Tika server REST API, returning the HTML
+    formatted content or the plain text, depending on how the client is accessed
+
+    See documentation:
+    https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-TikaResource
+    """
+
+    def __init__(self, client: AsyncClient, *, compress: bool) -> None:
+        super().__init__(client, compress=compress)
+        self.as_html = AsyncTikaHtml(self.client, compress=compress)
+        self.as_text = AsyncTikaPlain(self.client, compress=compress)
