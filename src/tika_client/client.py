@@ -62,22 +62,22 @@ class BaseTikaClient(ABC, Generic[T, R]):
     @property
     @abstractmethod
     def client(self) -> T:
-        raise NotImplementedError
+        pass
 
     @property
     @abstractmethod
     def metadata(self) -> R:
-        raise NotImplementedError
+        pass
 
     @property
     @abstractmethod
     def tika(self) -> R:
-        raise NotImplementedError
+        pass
 
     @property
     @abstractmethod
     def rmeta(self) -> R:
-        raise NotImplementedError
+        pass
 
 
 class TikaClient(AbstractContextManager["TikaClient"], BaseTikaClient[Client, SyncResource]):
