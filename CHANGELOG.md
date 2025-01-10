@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow setting user agent string and provide a default ([#37](https://github.com/stumpylog/tika-client/pull/37))
 - Support for async (by [@Goldziher](https://github.com/stumpylog/tika-client/pull/39) in [#39](https://github.com/stumpylog/tika-client/pull/39))
 
+### Documentation
+
+- Added contribution guide
+
 ## [0.8.1] - 2024-12-17
 
 ### Fixed
