@@ -75,3 +75,6 @@ virtualenv
 
 # mac os
 .DS_Store
+
+# lock files
+*.lock

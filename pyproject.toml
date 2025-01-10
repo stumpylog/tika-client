@@ -34,19 +34,25 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = [ "version" ]
+
+#
+# Dependencies
+#
+
 dependencies = [
+  "anyio>=4.8",
   "httpx>=0.27",
   "typing-extensions; python_version<'3.11'",
 ]
 
-urls.Changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
-
+urls.changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
+urls.documentation = "https://github.com/stumpylog/tika-rest-client#readme"
+urls.issues = "https://github.com/stumpylog/tika-rest-client/issues"
 #
 # Hatch Configuration
 #
-urls.Documentation = "https://github.com/stumpylog/tika-rest-client#readme"
-urls.Issues = "https://github.com/stumpylog/tika-rest-client/issues"
-urls.Source = "https://github.com/stumpylog/tika-rest-client"
+
+urls.source = "https://github.com/stumpylog/tika-rest-client"
 
 [tool.hatch.version]
 path = "src/tika_client/__about__.py"
@@ -77,6 +83,7 @@ dependencies = [
   "pytest-randomly ~= 3.15",
   "pytest-rerunfailures ~= 15.0",
   "pytest-xdist[psutil] ~= 3.6",
+  "pytest-asyncio ~= 0.25",
 ]
 extra-dependencies = [
   "pytest-sugar",
@@ -237,14 +244,14 @@ max_supported_python = "3.13"
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = [ "tests" ]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.coverage.run]
-source_pkgs = [ "tika_client", "tests" ]
+source = [ "src" ]
 branch = true
 parallel = true
-omit = [
-  "src/tika_client/__about__.py",
-]
+omit = [ "tests/*", "src/tika_client/__about__.py" ]
 
 [tool.coverage.paths]
 tika_client = [ "src/tika_client", "*/tika-client/src/tika_client" ]
@@ -256,15 +263,12 @@ exclude_lines = [
   "if __name__ == '__main__':",
   "if TYPE_CHECKING:",
 ]
+fail_under = 80 # adjust this as required, for libraries i prefer 100 or there about
 
 [tool.mypy]
-#disallow_any_expr = true
-#disallow_untyped_defs = true
-#disallow_incomplete_defs = true
-check_untyped_defs = true
-strict_optional = true
-
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_unreachable = true
-warn_unused_configs = true
+packages = [ "tika_client", "tests" ]
+python_version = "3.9"
+disable_error_code = 'import-untyped'
+implicit_reexport = false
+show_error_codes = true
+strict = true

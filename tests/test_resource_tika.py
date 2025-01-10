@@ -3,6 +3,7 @@ from pathlib import Path
 
 import magic
 
+from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 
 
@@ -11,7 +12,7 @@ class TestParseFormatted:
     Test the Tika endpoint for returning HTML formatted content
     """
 
-    def test_parse_docx_from_file_as_html(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path):
+    def test_parse_docx_from_file_as_html(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path) -> None:
         resp = tika_client.tika.as_html.from_file(
             sample_google_docs_to_docx_file,
             magic.from_file(str(sample_google_docs_to_docx_file), mime=True),
@@ -22,7 +23,7 @@ class TestParseFormatted:
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
         assert resp.content_length == 6424
 
-    def test_parse_doc_from_file_as_html(self, tika_client: TikaClient, sample_doc_file: Path):
+    def test_parse_doc_from_file_as_html(self, tika_client: TikaClient, sample_doc_file: Path) -> None:
         resp = tika_client.tika.as_html.from_file(sample_doc_file, magic.from_file(str(sample_doc_file), mime=True))
 
         assert resp.type == "application/msword"
@@ -37,14 +38,18 @@ class TestParseFormatted:
         assert resp.revision == 1
         assert resp.last_author == "cloudconvert_4"
 
-    def test_parse_docx_no_mime_from_file_as_html(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path):
+    def test_parse_docx_no_mime_from_file_as_html(
+        self,
+        tika_client: TikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
         resp = tika_client.tika.as_html.from_file(sample_google_docs_to_docx_file)
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert resp.content is not None
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
 
-    def test_parse_microsoft_word_docx_from_file_as_html(self, tika_client: TikaClient, sample_docx_file: Path):
+    def test_parse_microsoft_word_docx_from_file_as_html(self, tika_client: TikaClient, sample_docx_file: Path) -> None:
         resp = tika_client.tika.as_html.from_file(sample_docx_file, magic.from_file(str(sample_docx_file), mime=True))
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -58,7 +63,7 @@ class TestParseFormatted:
         self,
         tika_client: TikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
-    ):
+    ) -> None:
         resp = tika_client.tika.as_html.from_file(
             sample_google_docs_to_libre_office_writer_file,
             magic.from_file(str(sample_google_docs_to_libre_office_writer_file), mime=True),
@@ -68,7 +73,11 @@ class TestParseFormatted:
         assert resp.content is not None
         assert "<body><p>This is an ODT test document, created September 14, 2022</p>\n</body>" in resp.content
 
-    def test_parse_docx_from_buffer_as_html(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path):
+    def test_parse_docx_from_buffer_as_html(
+        self,
+        tika_client: TikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
         content = sample_google_docs_to_docx_file.read_bytes()
         resp = tika_client.tika.as_html.from_buffer(content, magic.from_buffer(content, mime=True))
 
@@ -79,7 +88,7 @@ class TestParseFormatted:
 
 
 class TestParsePlain:
-    def test_parse_docx_from_file_as_text(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path):
+    def test_parse_docx_from_file_as_text(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path) -> None:
         resp = tika_client.tika.as_text.from_file(
             sample_google_docs_to_docx_file,
             magic.from_file(str(sample_google_docs_to_docx_file), mime=True),
@@ -93,7 +102,7 @@ class TestParsePlain:
         self,
         tika_client: TikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
-    ):
+    ) -> None:
         resp = tika_client.tika.as_text.from_file(
             sample_google_docs_to_libre_office_writer_file,
             magic.from_file(str(sample_google_docs_to_libre_office_writer_file), mime=True),
@@ -105,7 +114,7 @@ class TestParsePlain:
 
 
 class TestParseContentPlain:
-    def test_parse_docx_from_bytes_buffer(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path):
+    def test_parse_docx_from_bytes_buffer(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path) -> None:
         buffer = sample_google_docs_to_docx_file.read_bytes()
 
         resp = tika_client.tika.as_text.from_buffer(buffer)
@@ -118,7 +127,7 @@ class TestParseContentPlain:
         self,
         tika_client: TikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
-    ):
+    ) -> None:
         buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
 
         resp = tika_client.tika.as_text.from_buffer(buffer)
@@ -131,7 +140,7 @@ class TestParseContentPlain:
         self,
         tika_client: TikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
-    ):
+    ) -> None:
         buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
 
         resp = tika_client.tika.as_text.from_buffer(buffer, "application/vnd.oasis.opendocument.text")
@@ -140,7 +149,7 @@ class TestParseContentPlain:
         assert resp.content is not None
         assert "This is an ODT test document, created September 14, 2022" in resp.content
 
-    def test_html_document_from_string_buffer(self, tika_client: TikaClient, sample_html_file: Path):
+    def test_html_document_from_string_buffer(self, tika_client: TikaClient, sample_html_file: Path) -> None:
         buffer = sample_html_file.read_text()
 
         resp = tika_client.tika.as_text.from_buffer(buffer)
@@ -157,7 +166,7 @@ class TestParseContentCompress:
         self,
         tika_client_compressed: TikaClient,
         sample_office_doc_with_images_file: Path,
-    ):
+    ) -> None:
         buffer = sample_office_doc_with_images_file.read_bytes()
 
         resp = tika_client_compressed.tika.as_text.from_buffer(buffer)
@@ -166,13 +175,230 @@ class TestParseContentCompress:
 
 
 class TestFilenameContentDisposition:
-    def test_non_ascii_filename(self, tika_client: TikaClient, sample_google_docs_to_docx_file: Path, tmp_path: Path):
+    def test_non_ascii_filename(
+        self,
+        tika_client: TikaClient,
+        sample_google_docs_to_docx_file: Path,
+        tmp_path: Path,
+    ) -> None:
         copy = shutil.copy(
             sample_google_docs_to_docx_file,
             tmp_path / "Kostenerstattung für Meldebescheinigung Familienzuschlag.docx",
         )
 
         resp = tika_client.tika.as_text.from_file(copy, magic.from_file(str(copy), mime=True))
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "This is an DOCX test document, also made September 14, 2022" in resp.content
+
+
+class TestAsyncParseFormatted:
+    """
+    Test the Tika endpoint for returning HTML formatted content using async client
+    """
+
+    async def test_parse_docx_from_file_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_html.from_file(
+            sample_google_docs_to_docx_file,
+            magic.from_file(str(sample_google_docs_to_docx_file), mime=True),
+        )
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
+        assert resp.content_length == 6424
+
+    async def test_parse_doc_from_file_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_doc_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_html.from_file(
+            sample_doc_file,
+            magic.from_file(str(sample_doc_file), mime=True),
+        )
+
+        assert resp.type == "application/msword"
+        assert resp.content is not None
+        assert (
+            "body><p>This is a test document, saved in the older .doc format for Word documents (but created in Google Drive)</p>\n</body>"  # noqa: E501
+            in resp.content
+        )
+        assert resp.content_length == 23739
+        assert resp.character_count == 90
+        assert resp.page_count == 1
+        assert resp.revision == 1
+        assert resp.last_author == "cloudconvert_4"
+
+    async def test_parse_docx_no_mime_from_file_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_html.from_file(sample_google_docs_to_docx_file)
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
+
+    async def test_parse_microsoft_word_docx_from_file_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_docx_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_html.from_file(
+            sample_docx_file,
+            magic.from_file(str(sample_docx_file), mime=True),
+        )
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert (
+            "<body><p>This is a sample document, generated by Microsoft Office on Wednesday, May 17, 2023.</p>\n<p>It is in English.</p>\n</body>"  # noqa: E501
+            in resp.content
+        )
+
+    async def test_parse_odt_from_file_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_libre_office_writer_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_html.from_file(
+            sample_google_docs_to_libre_office_writer_file,
+            magic.from_file(str(sample_google_docs_to_libre_office_writer_file), mime=True),
+        )
+
+        assert resp.type == "application/vnd.oasis.opendocument.text"
+        assert resp.content is not None
+        assert "<body><p>This is an ODT test document, created September 14, 2022</p>\n</body>" in resp.content
+
+    async def test_parse_docx_from_buffer_as_html(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
+        content = sample_google_docs_to_docx_file.read_bytes()
+        resp = await async_tika_client.tika.as_html.from_buffer(
+            content,
+            magic.from_buffer(content, mime=True),
+        )
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
+        assert resp.content_length == 6183
+
+
+class TestAsyncParsePlain:
+    async def test_parse_docx_from_file_as_text(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_text.from_file(
+            sample_google_docs_to_docx_file,
+            magic.from_file(str(sample_google_docs_to_docx_file), mime=True),
+        )
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "This is an DOCX test document, also made September 14, 2022" in resp.content
+
+    async def test_parse_odt_from_file_as_text(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_libre_office_writer_file: Path,
+    ) -> None:
+        resp = await async_tika_client.tika.as_text.from_file(
+            sample_google_docs_to_libre_office_writer_file,
+            magic.from_file(str(sample_google_docs_to_libre_office_writer_file), mime=True),
+        )
+
+        assert resp.type == "application/vnd.oasis.opendocument.text"
+        assert resp.content is not None
+        assert "This is an ODT test document, created September 14, 2022" in resp.content
+
+
+class TestAsyncParseContentPlain:
+    async def test_parse_docx_from_bytes_buffer(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+    ) -> None:
+        buffer = sample_google_docs_to_docx_file.read_bytes()
+
+        resp = await async_tika_client.tika.as_text.from_buffer(buffer)
+
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert resp.content is not None
+        assert "This is an DOCX test document, also made September 14, 2022" in resp.content
+
+    async def test_parse_odt_from_bytes_buffer(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_libre_office_writer_file: Path,
+    ) -> None:
+        buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
+
+        resp = await async_tika_client.tika.as_text.from_buffer(buffer)
+
+        assert resp.type == "application/vnd.oasis.opendocument.text"
+        assert resp.content is not None
+        assert "This is an ODT test document, created September 14, 2022" in resp.content
+
+    async def test_parse_odt_from_bytes_buffer_with_mime(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_libre_office_writer_file: Path,
+    ) -> None:
+        buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
+
+        resp = await async_tika_client.tika.as_text.from_buffer(
+            buffer,
+            "application/vnd.oasis.opendocument.text",
+        )
+
+        assert resp.type == "application/vnd.oasis.opendocument.text"
+        assert resp.content is not None
+        assert "This is an ODT test document, created September 14, 2022" in resp.content
+
+    async def test_html_document_from_string_buffer(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_html_file: Path,
+    ) -> None:
+        buffer = sample_html_file.read_text()
+
+        resp = await async_tika_client.tika.as_text.from_buffer(buffer)
+
+        assert resp.type == "text/html; charset=UTF-8"
+        assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.JSoupParser"]
+        assert "Hello world! This is HTML5 content in a file for" in resp.data["X-TIKA:content"]
+        assert resp.data["dc:title"] == "This Is A Test"
+        assert resp.data["description"] == "A sample HTML file"
+
+
+class TestAsyncFilenameContentDisposition:
+    async def test_non_ascii_filename(
+        self,
+        async_tika_client: AsyncTikaClient,
+        sample_google_docs_to_docx_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        copy = shutil.copy(
+            sample_google_docs_to_docx_file,
+            tmp_path / "Kostenerstattung für Meldebescheinigung Familienzuschlag.docx",
+        )
+
+        resp = await async_tika_client.tika.as_text.from_file(
+            copy,
+            magic.from_file(str(copy), mime=True),
+        )
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert resp.content is not None

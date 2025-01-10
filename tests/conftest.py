@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from pytest_docker.plugin import Services
 
+from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 
 logger = logging.getLogger("tika-client.tests")
@@ -17,7 +18,7 @@ def docker_compose_file() -> Path:
 
 @pytest.fixture(scope="session")
 def tika_host(docker_services: Services, docker_ip: str) -> str:
-    def is_responsive(url):
+    def is_responsive(url: str) -> bool:
         import httpx
 
         try:
@@ -108,3 +109,13 @@ def tika_client(tika_host: str) -> Generator[TikaClient, None, None]:
 def tika_client_compressed(tika_host: str) -> Generator[TikaClient, None, None]:
     with TikaClient(tika_url=tika_host, log_level=logging.INFO, compress=True) as client:
         yield client
+
+
+@pytest.fixture
+async def async_tika_client(tika_host: str) -> AsyncTikaClient:
+    return AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO)
+
+
+@pytest.fixture
+async def async_tika_client_compressed(tika_host: str) -> AsyncTikaClient:
+    return AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO, compress=True)
