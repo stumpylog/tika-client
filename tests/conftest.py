@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from collections.abc import Generator
 from pathlib import Path
 
@@ -112,10 +113,12 @@ def tika_client_compressed(tika_host: str) -> Generator[TikaClient, None, None]:
 
 
 @pytest.fixture
-async def async_tika_client(tika_host: str) -> AsyncTikaClient:
-    return AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO)
+async def async_tika_client(tika_host: str) -> AsyncGenerator[AsyncTikaClient, None]:
+    async with AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO) as client:
+        yield client
 
 
 @pytest.fixture
-async def async_tika_client_compressed(tika_host: str) -> AsyncTikaClient:
-    return AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO, compress=True)
+async def async_tika_client_compressed(tika_host: str) -> AsyncGenerator[AsyncTikaClient, None]:
+    async with AsyncTikaClient(tika_url=tika_host, log_level=logging.INFO, compress=True) as client:
+        yield client

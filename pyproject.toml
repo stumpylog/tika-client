@@ -68,28 +68,19 @@ installer = "uv"
 
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = [ "ruff ~= 0.8" ]
+dependencies = [ "ruff ~= 0.9" ]
 config-path = "none"
 
 [tool.hatch.envs.hatch-test]
 # https://hatch.pypa.io/latest/config/internal/testing/
 parallel = true
 randomize = true
-dependencies = [
-  "coverage-enable-subprocess == 1.0",
-  "coverage[toml] ~= 7.6",
-  "pytest ~= 8.3",
-  "pytest-mock ~= 3.14",
-  "pytest-randomly ~= 3.15",
-  "pytest-rerunfailures ~= 15.0",
-  "pytest-xdist[psutil] ~= 3.6",
-  "pytest-asyncio ~= 0.25",
-]
 extra-dependencies = [
   "pytest-sugar",
   "pytest-httpx ~= 0.33",
   "python-magic",
   "pytest-docker ~= 3.1",
+  "pytest-asyncio ~= 0.25",
 ]
 extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
 
@@ -245,7 +236,7 @@ max_supported_python = "3.13"
 minversion = "8.0"
 testpaths = [ "tests" ]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "session"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 source_pkgs = [ "tika_client", "tests" ]
