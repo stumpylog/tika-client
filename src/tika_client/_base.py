@@ -57,7 +57,7 @@ class BaseResource(ABC, Generic[T]):
             }
 
     @abstractmethod
-    def put_multipart(
+    def put_multipart(  # pragma: no cover
         self,
         endpoint: str,
         filepath: Path,
@@ -79,7 +79,7 @@ class BaseResource(ABC, Generic[T]):
         """
 
     @abstractmethod
-    def put_content(
+    def put_content(  # pragma: no cover
         self,
         endpoint: str,
         content: str | bytes,

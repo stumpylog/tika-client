@@ -294,6 +294,19 @@ class TestAsyncParseFormatted:
         assert resp.content_length == 6183
 
 
+class TestAsyncParseContentCompress:
+    async def test_parse_odt_from_bytes_buffer_compress(
+        self,
+        async_tika_client_compressed: AsyncTikaClient,
+        sample_office_doc_with_images_file: Path,
+    ) -> None:
+        buffer = sample_office_doc_with_images_file.read_bytes()
+
+        resp = await async_tika_client_compressed.tika.as_text.from_buffer(buffer)
+
+        assert resp.type == "application/vnd.oasis.opendocument.text"
+
+
 class TestAsyncParsePlain:
     async def test_parse_docx_from_file_as_text(
         self,

@@ -61,22 +61,22 @@ class BaseTikaClient(ABC, Generic[T, R]):
 
     @property
     @abstractmethod
-    def client(self) -> T:
+    def client(self) -> T:  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def metadata(self) -> R:
+    def metadata(self) -> R:  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def tika(self) -> R:
+    def tika(self) -> R:  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def rmeta(self) -> R:
+    def rmeta(self) -> R:  # pragma: no cover
         pass
 
 
