@@ -8,6 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from enum import Enum
+from typing import Any
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
 
@@ -88,44 +89,35 @@ class TikaResponse:
     All returned data is available in the decoded JSON form under the .data attribute
     """
 
-    def __init__(self, data: dict) -> None:
+    def __init__(self, data: dict[str | TikaKey | DublinCoreKey | XmpKey | OtherTikaKeys, Any]) -> None:
         self.data = data
+
         # Always set keys
         self.type: str = self.data[TikaKey.ContentType]
         self.parsers: list[str] = self.data[TikaKey.Parsers]
 
         # Tika keys
-        self.content = self.get_optional_string(TikaKey.Content)
-        self.content_length = self.get_optional_int(TikaKey.ContentLength)
+        self.content: str | None = data.get(TikaKey.Content)
+        self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 
         # Dublin Core keys
-        self.created = self.get_optional_datetime(DublinCoreKey.Created)
-        self.modified = self.get_optional_datetime(DublinCoreKey.Modified)
-        self.title = self.get_optional_string(DublinCoreKey.Title)
+        self.created: datetime | None = self.parse_datetime_string(self.data.get(DublinCoreKey.Created))
+        self.modified: datetime | None = self.parse_datetime_string(self.data.get(DublinCoreKey.Modified))
+        self.title: str | None = self.data.get(DublinCoreKey.Title)
 
         # Xmp keys
-        self.xmp_created = self.get_optional_datetime(XmpKey.Created)
-        self.page_count = self.get_optional_int(XmpKey.NumPages)
+        self.xmp_created: datetime | None = self.parse_datetime_string(self.data.get(XmpKey.Created))
+        self.page_count: int | None = int(self.data.get(XmpKey.NumPages, "0")) or None
 
         # Other general keys
-        self.character_count = self.get_optional_int(OtherTikaKeys.CharacterCount)
-        self.revision = self.get_optional_int(OtherTikaKeys.Revision)
-        self.language = self.get_optional_string(OtherTikaKeys.Language)
-        self.last_author = self.get_optional_string(OtherTikaKeys.LastAuthor)
+        self.character_count: int | None = int(self.data.get(OtherTikaKeys.CharacterCount, "0")) or None
+        self.revision: int | None = int(self.data.get(OtherTikaKeys.Revision, "0")) or None
+        self.language: str | None = self.data.get(OtherTikaKeys.Language)
+        self.last_author: str | None = self.data.get(OtherTikaKeys.LastAuthor)
 
-    # Helpers
-
-    def get_optional_int(
-        self,
-        key: TikaKey | DublinCoreKey | XmpKey | str,
-    ) -> int | None:
-        if key not in self.data:  # pragma: no cover
-            return None
-        return int(self.data[key])
-
-    def get_optional_datetime(
-        self,
-        key: TikaKey | DublinCoreKey | XmpKey | str,
+    @staticmethod
+    def parse_datetime_string(
+        date_str: str | None,
     ) -> datetime | None:
         """
         If present, attempts to parse the given key as an ISO-8061 format
@@ -133,10 +125,8 @@ class TikaResponse:
 
         If not present, return None
         """
-        if key not in self.data:  # pragma: no cover
+        if not date_str:
             return None
-
-        date_str: str = self.data[key]
 
         m = _TIME_RE.match(date_str)
         if not m:
@@ -166,14 +156,6 @@ class TikaResponse:
             microsecond=microseconds,
             tzinfo=tzinfo,
         )
-
-    def get_optional_string(
-        self,
-        key: TikaKey | DublinCoreKey | XmpKey | str,
-    ) -> str | None:
-        if key not in self.data:
-            return None
-        return self.data[key]
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"{self.type} response"
