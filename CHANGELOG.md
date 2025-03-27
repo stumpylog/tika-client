@@ -5,12 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Transitions CI to use astral-sh/setup-uv ([#42](https://github.com/stumpylog/tika-client/pull/42))
+- Improves the content-disposition header construction ([#43](https://github.com/stumpylog/tika-client/pull/43))
+
 ## [0.9.0] - 2025-01-15
 
 ### Added
 
 - Allow setting user agent string and provide a default ([#37](https://github.com/stumpylog/tika-client/pull/37))
-- Support for async (by [@Goldziher](https://github.com/stumpylog/tika-client/pull/39) in [#39](https://github.com/stumpylog/tika-client/pull/39))
+- Support for async (by [@Goldziher](https://github.com/Goldziher) in [#39](https://github.com/stumpylog/tika-client/pull/39))
 
 ### Documentation
 
