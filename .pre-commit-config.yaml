@@ -29,7 +29,7 @@ repos:
       - id: detect-private-key
   # See https://github.com/prettier/prettier/issues/15742 for the fork reason
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.4.2"
+    rev: "v3.5.3"
     hooks:
       - id: prettier
         types_or:
@@ -37,7 +37,7 @@ repos:
           - ts
           - markdown
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         exclude: ^tests
@@ -45,13 +45,13 @@ repos:
           - tomli
   # Python hooks
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    rev: v0.9.9
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
   - repo: https://github.com/jsh9/pydoclint
-    rev: 0.5.15
+    rev: 0.6.2
     hooks:
       - id: pydoclint
         args:
@@ -61,11 +61,11 @@ repos:
             --arg-type-hints-in-docstring=False,
           ]
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.5.0"
+    rev: "v2.5.1"
     hooks:
       - id: pyproject-fmt
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.14.1'
+    rev: 'v1.15.0'
     hooks:
       -   id: mypy
           additional_dependencies: ["httpx", "pytest"]
