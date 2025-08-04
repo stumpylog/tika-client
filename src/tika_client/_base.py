@@ -183,7 +183,7 @@ class SyncResource(BaseResource[Client]):
 
         headers = {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
-            from gzip import compress
+            from gzip import compress  # noqa: PLC0415
 
             content_bytes = compress(content_bytes)
             content_length = len(content_bytes)
@@ -254,7 +254,7 @@ class AsyncResource(BaseResource[AsyncClient]):
 
         headers = {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
-            from gzip import compress
+            from gzip import compress  # noqa: PLC0415
 
             content_bytes = await run_sync(compress, content_bytes)
             content_length = len(content_bytes)
