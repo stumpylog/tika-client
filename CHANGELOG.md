@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Transitions CI to use astral-sh/setup-uv ([#42](https://github.com/stumpylog/tika-client/pull/42))
 - Improves the content-disposition header construction ([#43](https://github.com/stumpylog/tika-client/pull/43))
+- Bump astral-sh/setup-uv from 5 to 6 ([#44](https://github.com/stumpylog/tika-client/pull/44))
 
 ## [0.9.0] - 2025-01-15
 
