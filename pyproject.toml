@@ -68,7 +68,7 @@ installer = "uv"
 
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = [ "ruff ~= 0.9" ]
+dependencies = [ "ruff ~= 0.12" ]
 config-path = "none"
 
 [tool.hatch.envs.hatch-test]
@@ -77,10 +77,10 @@ parallel = true
 randomize = true
 extra-dependencies = [
   "pytest-sugar",
-  "pytest-httpx ~= 0.33",
+  "pytest-httpx ~= 0.35",
   "python-magic",
-  "pytest-docker ~= 3.1",
-  "pytest-asyncio ~= 0.25",
+  "pytest-docker ~= 3.2",
+  "pytest-asyncio ~= 1.1",
 ]
 extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
 
@@ -125,7 +125,7 @@ run = [
 template = "pre-commit"
 detached = true
 dependencies = [
-  "pre-commit ~= 4.0",
+  "pre-commit ~= 4.1",
   "pre-commit-uv",
 ]
 
