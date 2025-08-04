@@ -33,27 +33,39 @@ class BaseResource(ABC, Generic[T]):
         self.client = client
         self.compress = compress
 
-    def get_content_headers(self, filename: str) -> dict[str, str]:
+    def get_content_headers(self, filename: str, disposition: str = "attachment") -> dict[str, str]:
         """
         Given a filename, returns the attachment header.
 
         Args:
             filename: The filename to encode
+            disposition: The disposition of the file, defaults to attachment
 
         Returns:
             The attachment header
         """
         try:
+            # Test if filename is ASCII
             filename.encode("ascii")
         except UnicodeEncodeError:
-            filename_safed = filename.encode("ascii", "ignore").decode("ascii")
-            filepath_quoted = quote(filename, encoding="utf-8")
+            # For non-ASCII, provide ASCII fallback and UTF-8 encoded version
+            ascii_filename = filename.encode("ascii", "replace").decode("ascii")
+            # Replace ? marks from replace encoding with underscore for better readability
+            ascii_filename = ascii_filename.replace("?", "_")
+            # Escape quotes in ASCII version
+            ascii_filename = ascii_filename.replace('"', '\\"')
+            # UTF-8 encode the original filename and percent-encode the bytes
+            utf8_filename = quote(filename.encode("utf-8"))
+
             return {
-                "Content-Disposition": f"attachment; filename={filename_safed}; filename*=UTF-8''{filepath_quoted}",
+                "Content-Disposition": f'{disposition}; filename="{ascii_filename}"; '
+                f"filename*=UTF-8''{utf8_filename}",
             }
         else:
+            # If ASCII, we still need to escape quotes
+            escaped_filename = filename.replace('"', '\\"')
             return {
-                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Disposition": f'{disposition}; filename="{escaped_filename}"',
             }
 
     @abstractmethod
@@ -171,7 +183,7 @@ class SyncResource(BaseResource[Client]):
 
         headers = {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
-            from gzip import compress
+            from gzip import compress  # noqa: PLC0415
 
             content_bytes = compress(content_bytes)
             content_length = len(content_bytes)
@@ -242,7 +254,7 @@ class AsyncResource(BaseResource[AsyncClient]):
 
         headers = {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
-            from gzip import compress
+            from gzip import compress  # noqa: PLC0415
 
             content_bytes = await run_sync(compress, content_bytes)
             content_length = len(content_bytes)

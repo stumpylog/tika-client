@@ -185,6 +185,7 @@ class TestFilenameContentDisposition:
             sample_google_docs_to_docx_file,
             tmp_path / "Kostenerstattung für Meldebescheinigung Familienzuschlag.docx",
         )
+        copy = Path(copy)
 
         resp = tika_client.tika.as_text.from_file(copy, magic.from_file(str(copy), mime=True))
 
@@ -407,6 +408,7 @@ class TestAsyncFilenameContentDisposition:
             sample_google_docs_to_docx_file,
             tmp_path / "Kostenerstattung für Meldebescheinigung Familienzuschlag.docx",
         )
+        copy = Path(copy)
 
         resp = await async_tika_client.tika.as_text.from_file(
             copy,

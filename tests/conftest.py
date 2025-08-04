@@ -20,7 +20,7 @@ def docker_compose_file() -> Path:
 @pytest.fixture(scope="session")
 def tika_host(docker_services: Services, docker_ip: str) -> str:
     def is_responsive(url: str) -> bool:
-        import httpx
+        import httpx  # noqa: PLC0415
 
         try:
             response = httpx.get(url)
