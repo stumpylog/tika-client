@@ -25,7 +25,7 @@ jobs:
       contents: read
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Set up Python 3.11
         id: setup-python
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Pull Docker images
         run: |
@@ -142,7 +142,7 @@ jobs:
       - lint
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Set up Python ${{ env.DEFAULT_PYTHON_VERSION }}
         id: setup-python
@@ -182,7 +182,7 @@ jobs:
       - tests
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         uses: actions/download-artifact@v5.0.0
         with:
