@@ -143,7 +143,15 @@ class TikaResponse:
 
         (year, month, day, hour, minute, second, frac_sec, timezone_str) = m.groups()
 
-        microseconds = int(float(frac_sec) * 1000000.0) if frac_sec is not None else 0
+        # Parse fractional seconds without float conversion to avoid precision loss
+        if frac_sec is not None:
+            # Remove the leading dot and pad/truncate to 6 digits
+            frac_str = frac_sec[1:]  # Remove the '.'
+            frac_str = frac_str.ljust(6, "0")[:6]  # Pad with zeros or truncate to 6 digits
+            microseconds = int(frac_str)
+        else:
+            microseconds = 0
+
         tzinfo = None
         if timezone_str is not None:
             if timezone_str.lower() == "z":
