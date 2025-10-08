@@ -72,7 +72,7 @@ jobs:
           persist-credentials: false
       - name: Pull Docker images
         run: |
-          docker compose --file tests/docker/docker-compose.ci-test.yml pull
+          docker compose --file tests/docker/docker-compose.ci-test.yml pull --quiet
       - name: Set up Python ${{ matrix.python-version }}
         id: setup-python
         uses: actions/setup-python@v6.0.0
