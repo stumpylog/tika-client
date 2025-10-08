@@ -23,7 +23,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a UTC timezone in the +xx:yy format
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-05-17T16:30:44+00:00"},
         )
@@ -52,7 +51,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a UTC timezone in the Z format
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-01-17T16:35:44Z"},
         )
@@ -81,7 +79,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the +xx:yy format offset from UTC
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-06-17T16:30:44+08:00"},
         )
@@ -105,7 +102,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the -xx:yy format offset from UTC
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-06-17T16:30:44-08:00"},
         )
@@ -137,7 +133,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the ISO 8061 format (as done by Python)
         """
-
         expected = datetime.now(tz=timezone.utc)
 
         httpx_mock.add_response(
@@ -160,7 +155,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time string which doesn't match the correct formats
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "202-06-17T16:30:44-0"},
         )

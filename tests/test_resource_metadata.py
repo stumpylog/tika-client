@@ -16,7 +16,6 @@ class TestMetadataResource:
         """
         Test parsing of a DOCX produced by Google Docs conversion
         """
-
         resp = tika_client.metadata.from_file(
             sample_google_docs_to_docx_file,
             magic.from_file(str(sample_google_docs_to_docx_file), mime=True),
@@ -29,7 +28,6 @@ class TestMetadataResource:
         """
         Test parsing of a DOCX produced by Google Docs conversion, when no mime type is provided
         """
-
         resp = tika_client.metadata.from_file(sample_google_docs_to_docx_file)
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -80,7 +78,6 @@ class TestMetadataResource:
         """
         Test handling of HTTP errors returned from Tika
         """
-
         httpx_mock.add_response(status_code=500)
         with pytest.raises(httpx.HTTPStatusError) as err, TikaClient(tika_url=tika_host) as client:
             client.metadata.from_file(sample_google_docs_to_libre_office_writer_file)

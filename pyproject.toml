@@ -52,7 +52,7 @@ urls.issues = "https://github.com/stumpylog/tika-rest-client/issues"
 # Hatch Configuration
 #
 
-urls.source = "https://github.com/stumpylog/tika-rest-client"
+urls.source = "https://github.com/stumpylog/tika-client"
 
 [tool.hatch.version]
 path = "src/tika_client/__about__.py"
@@ -68,7 +68,7 @@ installer = "uv"
 
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = [ "ruff ~= 0.12" ]
+dependencies = [ "ruff ~= 0.13" ]
 config-path = "none"
 
 [tool.hatch.envs.hatch-test]
@@ -80,7 +80,7 @@ extra-dependencies = [
   "pytest-httpx ~= 0.35",
   "python-magic",
   "pytest-docker ~= 3.2",
-  "pytest-asyncio ~= 1.1",
+  "pytest-asyncio ~= 1.2",
 ]
 extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
 
@@ -111,7 +111,7 @@ python = [ "3.9", "3.10", "3.11", "3.12", "3.13", "pypy3.8", "pypy3.9", "pypy3.1
 [tool.hatch.envs.typing]
 detached = true
 dependencies = [
-  "mypy ~= 1.13",
+  "mypy ~= 1.18",
   "httpx",
 ]
 
@@ -146,12 +146,15 @@ fix = true
 output-format = "grouped"
 # https://docs.astral.sh/ruff/rules/
 lint.extend-select = [
-  "A",
+  "A",     # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+  "ANN",   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ARG",
-  "B",
+  "ASYNC", # https://docs.astral.sh/ruff/rules/#flake8-async-async
+  "B",     # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
   "C",
   "C4",
   "COM",
+  "D",     # https://docs.astral.sh/ruff/rules/#pydocstyle-d
   "DTZ",
   "E",
   "EM",
@@ -159,13 +162,16 @@ lint.extend-select = [
   "EXE",
   "F",
   "FA",
-  "FBT",
+  "FBT",   # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
   "FLY",
+  "FURB",  # https://docs.astral.sh/ruff/rules/#refurb-furb
+  "G",     # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
   "I",
   "ICN",
-  "INP",
+  "INP",   # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
   "INT",
   "ISC",
+  "LOG",   # https://docs.astral.sh/ruff/rules/#flake8-logging-log
   "N",
   "PERF",
   "PGH",
@@ -179,7 +185,7 @@ lint.extend-select = [
   "PTH",
   "Q",
   "RSE",
-  "RUF",
+  "RUF",   # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
   "S",
   "SIM",
   "SLF",
@@ -192,37 +198,25 @@ lint.extend-select = [
   "TRY",
   "UP",
   "W",
-  "YTT",
+  "YTT",   # https://docs.astral.sh/ruff/rules/#flake8-2020-ytt
 ]
 lint.ignore = [
-  # Allow non-abstract empty methods in abstract base classes
-  "B027",
-  # Ignore complexity
-  "C901",
-  # Allow boolean positional values in function calls, like `dict.get(... True)`
-  "FBT003",
-  "PLR0911",
-  "PLR0912",
-  "PLR0913",
-  "PLR0915",
-  # Ignore checks for possible passwords
-  "S105",
-  "S106",
-  "S107",
-  # Ignore no author and missing issue link in TODO tags
-  "TD002",
-  "TD003",
+  # Don't require a public docstring for everything
+  "D100",
+  # I prefer no blank line before a class docstring
+  "D203",
+  # I prefer a different style
+  "D212",
 ]
-# Tests can use magic values, assertions, and relative imports
 lint.per-file-ignores."tests/**/*" = [
-  "DTZ001",
+  # Tests do not need docstrings
+  "D",
+  # Tests can use magic numbers
   "PLR2004",
-  # Allow more complex pytest.raises
-  "PT012",
+  # Test can (and must) use assert
   "S101",
-  "TID252",
 ]
-# No relative imports
+# No relative imports allowed anywhere
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 # One import per line
 lint.isort.force-single-line = true
@@ -254,12 +248,19 @@ exclude_lines = [
   "if __name__ == '__main__':",
   "if TYPE_CHECKING:",
 ]
-fail_under = 80 # adjust this as required, for libraries i prefer 100 or there about
+fail_under = 95
 
 [tool.mypy]
 packages = [ "tika_client", "tests" ]
 python_version = "3.9"
 disable_error_code = 'import-untyped'
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
 implicit_reexport = false
 show_error_codes = true
+check_untyped_defs = true
 strict = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+warn_unused_configs = true
