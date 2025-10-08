@@ -33,7 +33,8 @@ class BaseResource(ABC, Generic[T]):
         self.client = client
         self.compress = compress
 
-    def get_content_headers(self, filename: str, disposition: str = "attachment") -> dict[str, str]:
+    @staticmethod
+    def get_content_headers(filename: str, disposition: str = "attachment") -> dict[str, str]:
         """
         Given a filename, returns the attachment header.
 
@@ -43,6 +44,7 @@ class BaseResource(ABC, Generic[T]):
 
         Returns:
             The attachment header
+
         """
         try:
             # Test if filename is ASCII
@@ -74,10 +76,9 @@ class BaseResource(ABC, Generic[T]):
         endpoint: str,
         filepath: Path,
         mime_type: str | None = None,
-    ) -> Any | Coroutine[Any, Any, Any]:
+    ) -> Any | Coroutine[Any, Any, Any]:  # noqa: ANN401
         """
-        Given an endpoint, file and an optional mime type, does a multi-part form
-        data upload of the file to the end point.
+        Given an endpoint, file and a mime type, does a multi-part form data upload of the file to the end point.
 
         Returns the JSON response of the server
 
@@ -88,6 +89,7 @@ class BaseResource(ABC, Generic[T]):
 
         Returns:
             The JSON response of the server
+
         """
 
     @abstractmethod
@@ -96,7 +98,7 @@ class BaseResource(ABC, Generic[T]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
-    ) -> Any | Coroutine[Any, Any, Any]:
+    ) -> Any | Coroutine[Any, Any, Any]:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
 
@@ -109,20 +111,20 @@ class BaseResource(ABC, Generic[T]):
 
         Returns:
             The JSON response of the server
+
         """
 
     @staticmethod
     def decoded_response(resp_json: dict[str, Any]) -> TikaResponse:
         """
-        If possible, returns a more detailed class with properties that appear often in this
-        mime type.  Otherwise, it's a basically raw data response, but with some helpers
-        for processing fields into Python types
+        Return the decoded JSON from Tika with helpers for access.
 
         Args:
             resp_json: The JSON response from the server
 
         Returns:
             The decoded response
+
         """
         return TikaResponse(resp_json)
 
@@ -133,10 +135,9 @@ class SyncResource(BaseResource[Client]):
         endpoint: str,
         filepath: Path,
         mime_type: str | None = None,
-    ) -> Any:
+    ) -> Any:  # noqa: ANN401
         """
-        Given an endpoint, file and an optional mime type, does a multi-part form
-        data upload of the file to the end point.
+        Given an endpoint, file and a mime type, does a multi-part form data upload of the file to the end point.
 
         Args:
             endpoint: The endpoint to send the file to
@@ -145,6 +146,7 @@ class SyncResource(BaseResource[Client]):
 
         Returns:
             Returns the JSON response of the server
+
         """
         with filepath.open("rb") as handler:
             response = self.client.post(
@@ -156,7 +158,7 @@ class SyncResource(BaseResource[Client]):
                         mime_type if mime_type else guess_type(filepath.name)[0] or "",
                     ),
                 },
-                headers=self.get_content_headers(filepath.name),
+                headers=BaseResource.get_content_headers(filepath.name),
             )
         response.raise_for_status()
         return response.json()
@@ -166,7 +168,7 @@ class SyncResource(BaseResource[Client]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
-    ) -> Any:
+    ) -> Any:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
 
@@ -177,6 +179,7 @@ class SyncResource(BaseResource[Client]):
 
         Returns:
             Returns the JSON response of the server
+
         """
         content_bytes = content.encode() if isinstance(content, str) else content
         content_length = len(content_bytes)
@@ -204,10 +207,9 @@ class AsyncResource(BaseResource[AsyncClient]):
         endpoint: str,
         filepath: Path,
         mime_type: str | None = None,
-    ) -> Any:
+    ) -> Any:  # noqa: ANN401
         """
-        Given an endpoint, file and an optional mime type, does a multi-part form
-        data upload of the file to the end point.
+        Given an endpoint, file and a mime type, does a multi-part form data upload of the file to the end point.
 
         Args:
             endpoint: The endpoint to send the file to
@@ -216,6 +218,7 @@ class AsyncResource(BaseResource[AsyncClient]):
 
         Returns:
             Returns the JSON response of the server
+
         """
         with filepath.open("rb") as handler:
             response = await self.client.post(
@@ -237,7 +240,7 @@ class AsyncResource(BaseResource[AsyncClient]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
-    ) -> Any:
+    ) -> Any:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
 
@@ -248,6 +251,7 @@ class AsyncResource(BaseResource[AsyncClient]):
 
         Returns:
             Returns the JSON response of the server
+
         """
         content_bytes = content.encode() if isinstance(content, str) else content
         content_length = len(content_bytes)

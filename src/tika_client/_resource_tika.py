@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class SyncTikaHtml(SyncResource):
     def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the formatted (as HTML) document data.
+        Return the formatted (as HTML) document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -34,12 +34,13 @@ class SyncTikaHtml(SyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the HTML formatted document data from a given string of document content.
+        Return the HTML formatted document data from a given string of document content.
 
         Args:
             content: The content to be sent to the Tika server
@@ -47,6 +48,7 @@ class SyncTikaHtml(SyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(self.put_content(HTML_ENDPOINT, content, mime_type))
 
@@ -54,7 +56,7 @@ class SyncTikaHtml(SyncResource):
 class SyncTikaPlain(SyncResource):
     def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the plain text document data.
+        Return the plain text document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -62,12 +64,13 @@ class SyncTikaPlain(SyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the plain text document data from a given string of document content.
+        Return the plain text document data from a given string of document content.
 
         Args:
             content: The content to be sent to the Tika server
@@ -75,14 +78,14 @@ class SyncTikaPlain(SyncResource):
 
         Returns:
             The JSON response from the
+
         """
         return self.decoded_response(self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type))
 
 
 class SyncTika(SyncResource):
     """
-    Handles interaction with the /tika endpoint of a Tika server REST API, returning the HTML
-    formatted content or the plain text, depending on how the client is accessed
+    Handles interaction with the /tika endpoint of a Tika server REST API.
 
     See documentation:
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-TikaResource
@@ -97,7 +100,7 @@ class SyncTika(SyncResource):
 class AsyncTikaHtml(AsyncResource):
     async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the formatted (as HTML) document data.
+        Return the formatted (as HTML) document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -105,12 +108,13 @@ class AsyncTikaHtml(AsyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(await self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the HTML formatted document data from a given string of document content.
+        Return the HTML formatted document data from a given string of document content.
 
         Args:
             content: The content to be sent to the Tika server
@@ -118,6 +122,7 @@ class AsyncTikaHtml(AsyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(await self.put_content(HTML_ENDPOINT, content, mime_type))
 
@@ -125,7 +130,7 @@ class AsyncTikaHtml(AsyncResource):
 class AsyncTikaPlain(AsyncResource):
     async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the plain text document data.
+        Return the plain text document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -133,12 +138,13 @@ class AsyncTikaPlain(AsyncResource):
 
         Returns:
             The JSON response from the Tika server
+
         """
         return self.decoded_response(await self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
-        Returns the plain text document data from a given string of document content.
+        Return the plain text document data from a given string of document content.
 
         Args:
             content: The content to be sent to the Tika server
@@ -146,14 +152,14 @@ class AsyncTikaPlain(AsyncResource):
 
         Returns:
             The JSON response from the
+
         """
         return self.decoded_response(await self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type))
 
 
 class AsyncTika(AsyncResource):
     """
-    Handles interaction with the /tika endpoint of a Tika server REST API, returning the HTML
-    formatted content or the plain text, depending on how the client is accessed
+    Handles interaction with the /tika endpoint of a Tika server REST API.
 
     See documentation:
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-TikaResource

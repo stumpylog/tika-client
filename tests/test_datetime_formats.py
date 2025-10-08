@@ -23,7 +23,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a UTC timezone in the +xx:yy format
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-05-17T16:30:44+00:00"},
         )
@@ -52,7 +51,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a UTC timezone in the Z format
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-01-17T16:35:44Z"},
         )
@@ -81,7 +79,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the +xx:yy format offset from UTC
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-06-17T16:30:44+08:00"},
         )
@@ -105,7 +102,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the -xx:yy format offset from UTC
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "2023-06-17T16:30:44-08:00"},
         )
@@ -137,8 +133,7 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the ISO 8061 format (as done by Python)
         """
-
-        expected = datetime.now(tz=timezone.utc)
+        expected = datetime(2025, 9, 1, 10, 41, 38, 516674, tzinfo=timezone.utc)
 
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: expected.isoformat()},
@@ -149,7 +144,7 @@ class TestDateTimeFormat:
             magic.from_file(str(sample_libre_office_writer_file), mime=True),
         )
 
-        assert resp.created == pytest.approx(expected, rel=timedelta(seconds=1))
+        assert resp.created == expected
 
     def test_parse_offset_date_no_match(
         self,
@@ -160,7 +155,6 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time string which doesn't match the correct formats
         """
-
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: "202-06-17T16:30:44-0"},
         )
@@ -293,7 +287,7 @@ class TestAsyncDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the ISO 8061 format (as done by Python)
         """
-        expected = datetime.now(tz=timezone.utc)
+        expected = datetime(2025, 9, 1, 10, 41, 38, 516994, tzinfo=timezone.utc)
 
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: expected.isoformat()},
@@ -304,7 +298,7 @@ class TestAsyncDateTimeFormat:
             magic.from_file(str(sample_libre_office_writer_file), mime=True),
         )
 
-        assert resp.created == pytest.approx(expected, rel=timedelta(seconds=1))
+        assert resp.created == expected
 
     async def test_parse_offset_date_no_match(
         self,

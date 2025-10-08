@@ -41,6 +41,7 @@ class SyncTikaRmetaBase(SyncResource):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return [self.decoded_response(item) for item in self.put_multipart(endpoint, filepath, mime_type)]
 
@@ -48,7 +49,7 @@ class SyncTikaRmetaBase(SyncResource):
 class SyncRecursiveMetaHtml(SyncTikaRmetaBase):
     def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
         """
-        Returns the formatted (as HTML) document data.
+        Return the formatted (as HTML) document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -56,6 +57,7 @@ class SyncRecursiveMetaHtml(SyncTikaRmetaBase):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return self.common_call(HTML_MULTI_PART_ENDPOINT, filepath, mime_type)
 
@@ -63,7 +65,7 @@ class SyncRecursiveMetaHtml(SyncTikaRmetaBase):
 class SyncRecursiveMetaPlain(SyncTikaRmetaBase):
     def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
         """
-        Returns the plain text document data.
+        Return the plain text document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -71,14 +73,14 @@ class SyncRecursiveMetaPlain(SyncTikaRmetaBase):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return self.common_call(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type)
 
 
 class SyncRecursive(SyncResource):
     """
-    Handles interaction with the /rmeta endpoint of a Tika server REST API, returning the HTML
-    formatted content or the plain text, depending on how the client is accessed
+    Handles interaction with the /rmeta endpoint of a Tika server REST API.
 
     See documentation:
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-RecursiveMetadataandContent
@@ -108,6 +110,7 @@ class AsyncTikaRmetaBase(AsyncResource):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return [self.decoded_response(item) for item in await self.put_multipart(endpoint, filepath, mime_type)]
 
@@ -115,7 +118,7 @@ class AsyncTikaRmetaBase(AsyncResource):
 class AsyncRecursiveMetaHtml(AsyncTikaRmetaBase):
     async def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
         """
-        Returns the formatted (as HTML) document data
+        Return the formatted (as HTML) document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -123,6 +126,7 @@ class AsyncRecursiveMetaHtml(AsyncTikaRmetaBase):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return await self.common_call(HTML_MULTI_PART_ENDPOINT, filepath, mime_type)
 
@@ -130,7 +134,7 @@ class AsyncRecursiveMetaHtml(AsyncTikaRmetaBase):
 class AsyncRecursiveMetaPlain(AsyncTikaRmetaBase):
     async def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
         """
-        Returns the plain text document data.
+        Return the plain text document data.
 
         Args:
             filepath: The path to the file to be sent to the Tika server
@@ -138,14 +142,14 @@ class AsyncRecursiveMetaPlain(AsyncTikaRmetaBase):
 
         Returns:
             A list of JSON responses from the Tika server
+
         """
         return await self.common_call(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type)
 
 
 class AsyncRecursive(AsyncResource):
     """
-    Handles interaction with the /rmeta endpoint of a Tika server REST API, returning the HTML
-    formatted content or the plain text, depending on how the client is accessed
+    Handles interaction with the /rmeta endpoint of a Tika server REST API.
 
     See documentation:
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-RecursiveMetadataandContent

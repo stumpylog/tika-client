@@ -29,7 +29,7 @@ class TestLibreOfficeFormats:
         )
         assert resp.content_length == 11149
         assert resp.created is not None
-        assert resp.created == datetime(
+        assert resp.created == datetime(  # noqa: DTZ001
             year=2023,
             month=7,
             day=19,
@@ -63,7 +63,7 @@ class TestAsyncLibreOfficeFormats:
         )
         assert resp.content_length == 11149
         assert resp.created is not None
-        assert resp.created == datetime(
+        assert resp.created == datetime(  # noqa: DTZ001
             year=2023,
             month=7,
             day=19,

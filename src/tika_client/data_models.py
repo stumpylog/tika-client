@@ -27,6 +27,8 @@ _TIME_RE = re.compile(
 
 class TikaKey(str, Enum):
     """
+    Keys for access to certain Tika returned values in the JSON.
+
     Based on
       - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaProcess
       - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaGeneral
@@ -42,6 +44,8 @@ class TikaKey(str, Enum):
 
 class DublinCoreKey(str, Enum):
     """
+    Dublin Core keys for access to certain Tika returned values in the JSON.
+
     Based on:
       - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-DublinCore
     """
@@ -64,6 +68,8 @@ class DublinCoreKey(str, Enum):
 
 class XmpKey(str, Enum):
     """
+    XMP keys for access to certain Tika returned values in the JSON.
+
     Based on:
       - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-XMP(eXtensibleMetadataPlatform)
     """
@@ -74,6 +80,8 @@ class XmpKey(str, Enum):
 
 
 class OtherTikaKeys(str, Enum):
+    """Other keys Tika may return in the JSON."""
+
     CharacterCount = "meta:character-count"
     LastAuthor = "meta:last-author"
     Revision = "cp:revision"
@@ -82,14 +90,16 @@ class OtherTikaKeys(str, Enum):
 
 class TikaResponse:
     """
-    A basic response from the API.  It sets fields which the response
-    always appears to have, and some small helpers for getting and converting
+    A basic wrapper class for the JSON data returned from the Tika server.
+
+    It sets fields which the response always appears to have, and some small helpers for getting and converting
     other data types, including handling the chance those don't exist in the response.
 
     All returned data is available in the decoded JSON form under the .data attribute
     """
 
     def __init__(self, data: dict[str | TikaKey | DublinCoreKey | XmpKey | OtherTikaKeys, Any]) -> None:
+        """Construct a TikaResponse using the provided JSON data from a Tika server."""
         self.data = data
 
         # Always set keys
@@ -120,8 +130,7 @@ class TikaResponse:
         date_str: str | None,
     ) -> datetime | None:
         """
-        If present, attempts to parse the given key as an ISO-8061 format
-        datetime, including timezone handling and return if.
+        If present, attempts to parse the given key as an ISO-8061 format datetime, including timezone handling.
 
         If not present, return None
         """
@@ -134,7 +143,15 @@ class TikaResponse:
 
         (year, month, day, hour, minute, second, frac_sec, timezone_str) = m.groups()
 
-        microseconds = int(float(frac_sec) * 1000000.0) if frac_sec is not None else 0
+        # Parse fractional seconds without float conversion to avoid precision loss
+        if frac_sec is not None:
+            # Remove the leading dot and pad/truncate to 6 digits
+            frac_str = frac_sec[1:]  # Remove the '.'
+            frac_str = frac_str.ljust(6, "0")[:6]  # Pad with zeros or truncate to 6 digits
+            microseconds = int(frac_str)
+        else:
+            microseconds = 0
+
         tzinfo = None
         if timezone_str is not None:
             if timezone_str.lower() == "z":
@@ -158,4 +175,5 @@ class TikaResponse:
         )
 
     def __repr__(self) -> str:  # pragma: no cover
+        """Representation of this class."""
         return f"{self.type} response"
