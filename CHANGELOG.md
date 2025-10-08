@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumps actions/download-artifact from 4 to 5
 - Bumps pypa/gh-action-pypi-publish from 1.12.4 to 1.13.0
 - Bumps actions/setup-python from 5 to 6
+- Bumps actions/checkout from 4 to 5
 
 ## [0.10.0] - 2025-08-04
 
