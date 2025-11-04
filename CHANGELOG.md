@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Validates the changelog format is correct during CI linting job
 - Enables `zizmor` for action linting
+- Transitions to `prek` over pre-commit
 
 ## [0.10.0] - 2025-08-04
 
