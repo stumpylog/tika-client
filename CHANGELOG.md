@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumps actions/setup-python from 5 to 6
 - Bumps actions/checkout from 4 to 5
 - Bumps astral-sh/setup-uv from 6 to 7
+- Bumps astral-sh/setup-uv from 7.0.0 to 7.1.2
 - Updates default `uv` version to 0.9.x
 - Applies yamlfmt to all files
 - `ruff` rule maintenance and additional rules enabled
