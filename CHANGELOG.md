@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bumps actions/download-artifact from 4 to 5
+- Bumps actions/download-artifact from 5.0.0 to 6.0.0
 - Bumps actions/upload-artifact from 4.6.2 to 5.0.0
 - Bumps pypa/gh-action-pypi-publish from 1.12.4 to 1.13.0
 - Bumps actions/setup-python from 5 to 6
