@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updates default `uv` version to 0.9.x
 - Applies yamlfmt to all files
 - `ruff` rule maintenance and additional rules enabled
+- Bumps github/codeql-action from 3 to 4
 
 ### Added
 
