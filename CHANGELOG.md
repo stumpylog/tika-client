@@ -7,26 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Support for EoL Python 3.9 has been removed
+
 ### Changed
 
-- Bumps actions/download-artifact from 4 to 5
-- Bumps actions/download-artifact from 5.0.0 to 6.0.0
-- Bumps actions/upload-artifact from 4.6.2 to 5.0.0
-- Bumps pypa/gh-action-pypi-publish from 1.12.4 to 1.13.0
-- Bumps actions/setup-python from 5 to 6
-- Bumps actions/checkout from 4 to 5
-- Bumps astral-sh/setup-uv from 6 to 7
-- Bumps astral-sh/setup-uv from 7.0.0 to 7.1.2
-- Updates default `uv` version to 0.9.x
+- Various GitHub action dependency updates
 - Applies yamlfmt to all files
 - `ruff` rule maintenance and additional rules enabled
-- Bumps github/codeql-action from 3 to 4
 
 ### Added
 
 - Validates the changelog format is correct during CI linting job
 - Enables `zizmor` for action linting
 - Transitions to `prek` over pre-commit
+- Testing and official support for Python 3.14
 
 ## [0.10.0] - 2025-08-04
 
