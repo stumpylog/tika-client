@@ -16,7 +16,7 @@ license = "MPL-2.0"
 authors = [
   { name = "Trenton H", email = "rda0128ou@mozmail.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Web Environment",
@@ -25,7 +25,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -138,7 +137,7 @@ update = [ "pre-commit autoupdate" ]
 #
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 120
 
 # https://docs.astral.sh/ruff/settings/
