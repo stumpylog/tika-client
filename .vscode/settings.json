@@ -8,6 +8,7 @@
 		"**/.coverage*": true
 	},
 	"yaml.schemas": {
-		"https://json.schemastore.org/github-issue-config.json": "file:///u%3A/projects/tika-client/.github/ISSUE_TEMPLATE/config.yml"
+		"https://json.schemastore.org/github-issue-config.json": "/.github/ISSUE_TEMPLATE/config.yml",
+		"https://www.schemastore.org/github-issue-forms.json": "/.github/ISSUE_TEMPLATE/bug_report.yml"
 	}
 }
