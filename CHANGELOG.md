@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Various GitHub action dependency updates Bumps actions/download-artifact from 4 to 5
+- Various GitHub action dependency updates
 - Applies yamlfmt to all files
 - `ruff` rule maintenance and additional rules enabled
 
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validates the changelog format is correct during CI linting job
 - Enables `zizmor` for action linting
 - Transitions to `prek` over pre-commit
+- Testing and official support for Python 3.14
 
 ## [0.10.0] - 2025-08-04
 
