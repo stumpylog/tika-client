@@ -94,8 +94,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anyio", specifier = ">=4.12" },
-    { name = "httpx", specifier = ">=0.28" },
+    { name = "anyio", specifier = ">=4.12,<5" },
+    { name = "httpx", specifier = ">=0.28,<1" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 

@@ -67,6 +67,8 @@ jobs:
       - name: Pull Docker images
         run: |
           docker compose --file tests/docker/docker-compose.ci-test.yml pull --quiet
+          docker image ls
+          docker image inspect docker.io/apache/tika:latest
       - name: Set up Python ${{ matrix.python-version }}
         id: setup-python
         uses: actions/setup-python@v6.0.0

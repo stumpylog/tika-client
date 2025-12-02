@@ -40,8 +40,8 @@ dynamic = [ "version" ]
 #
 
 dependencies = [
-  "anyio>=4.12",
-  "httpx>=0.28",
+  "anyio>=4.12,<5",
+  "httpx>=0.28,<1",
   "typing-extensions; python_version<'3.11'",
 ]
 
@@ -68,7 +68,7 @@ installer = "uv"
 
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = [ "ruff ~= 0.13" ]
+dependencies = [ "ruff ~= 0.14" ]
 config-path = "none"
 
 [tool.hatch.envs.hatch-test]
@@ -80,7 +80,7 @@ extra-dependencies = [
   "pytest-httpx ~= 0.36",
   "python-magic",
   "pytest-docker ~= 3.2",
-  "pytest-asyncio ~= 1.2",
+  "pytest-asyncio ~= 1.3",
 ]
 extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
 
@@ -103,7 +103,7 @@ cov-report = [
 ]
 
 [[tool.hatch.envs.hatch-test.matrix]]
-python = [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.8", "pypy3.9", "pypy3.10", "pypy3.11" ]
+python = [ "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.8", "pypy3.10", "pypy3.11" ]
 
 #
 # Custom Environments
@@ -111,7 +111,7 @@ python = [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.8", "pypy3.9", 
 [tool.hatch.envs.typing]
 detached = true
 dependencies = [
-  "mypy ~= 1.18",
+  "mypy ~= 1.19",
   "httpx",
 ]
 
@@ -125,7 +125,7 @@ run = [
 template = "pre-commit"
 detached = true
 dependencies = [
-  "pre-commit ~= 4.1",
+  "pre-commit ~= 4.5",
   "pre-commit-uv",
 ]
 
