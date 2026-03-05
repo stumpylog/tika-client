@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 import magic
+from anyio import Path as AsyncPath
 
 from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
@@ -283,7 +284,7 @@ class TestAsyncParseFormatted:
         async_tika_client: AsyncTikaClient,
         sample_google_docs_to_docx_file: Path,
     ) -> None:
-        content = sample_google_docs_to_docx_file.read_bytes()
+        content = await AsyncPath(sample_google_docs_to_docx_file).read_bytes()
         resp = await async_tika_client.tika.as_html.from_buffer(
             content,
             magic.from_buffer(content, mime=True),
@@ -301,7 +302,7 @@ class TestAsyncParseContentCompress:
         async_tika_client_compressed: AsyncTikaClient,
         sample_office_doc_with_images_file: Path,
     ) -> None:
-        buffer = sample_office_doc_with_images_file.read_bytes()
+        buffer = await AsyncPath(sample_office_doc_with_images_file).read_bytes()
 
         resp = await async_tika_client_compressed.tika.as_text.from_buffer(buffer)
 
@@ -344,7 +345,7 @@ class TestAsyncParseContentPlain:
         async_tika_client: AsyncTikaClient,
         sample_google_docs_to_docx_file: Path,
     ) -> None:
-        buffer = sample_google_docs_to_docx_file.read_bytes()
+        buffer = await AsyncPath(sample_google_docs_to_docx_file).read_bytes()
 
         resp = await async_tika_client.tika.as_text.from_buffer(buffer)
 
@@ -357,7 +358,7 @@ class TestAsyncParseContentPlain:
         async_tika_client: AsyncTikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
     ) -> None:
-        buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
+        buffer = await AsyncPath(sample_google_docs_to_libre_office_writer_file).read_bytes()
 
         resp = await async_tika_client.tika.as_text.from_buffer(buffer)
 
@@ -370,7 +371,7 @@ class TestAsyncParseContentPlain:
         async_tika_client: AsyncTikaClient,
         sample_google_docs_to_libre_office_writer_file: Path,
     ) -> None:
-        buffer = sample_google_docs_to_libre_office_writer_file.read_bytes()
+        buffer = await AsyncPath(sample_google_docs_to_libre_office_writer_file).read_bytes()
 
         resp = await async_tika_client.tika.as_text.from_buffer(
             buffer,
@@ -386,7 +387,7 @@ class TestAsyncParseContentPlain:
         async_tika_client: AsyncTikaClient,
         sample_html_file: Path,
     ) -> None:
-        buffer = sample_html_file.read_text()
+        buffer = await AsyncPath(sample_html_file).read_text()
 
         resp = await async_tika_client.tika.as_text.from_buffer(buffer)
 

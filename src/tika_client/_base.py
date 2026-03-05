@@ -155,7 +155,7 @@ class SyncResource(BaseResource[Client]):
                     "upload-file": (
                         filepath.name,
                         handler,
-                        mime_type if mime_type else guess_type(filepath.name)[0] or "",
+                        mime_type or guess_type(filepath.name)[0] or "",
                     ),
                 },
                 headers=BaseResource.get_content_headers(filepath.name),
@@ -227,7 +227,7 @@ class AsyncResource(BaseResource[AsyncClient]):
                     "upload-file": (
                         filepath.name,
                         handler,
-                        mime_type if mime_type else guess_type(filepath.name)[0] or "",
+                        mime_type or guess_type(filepath.name)[0] or "",
                     ),
                 },
                 headers=self.get_content_headers(filepath.name),
