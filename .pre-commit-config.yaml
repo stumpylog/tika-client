@@ -35,7 +35,7 @@ repos:
         additional_dependencies:
           - tomli
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.22.0
+    rev: v1.23.1
     hooks:
       - id: zizmor
         args:
@@ -53,7 +53,7 @@ repos:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.16.2"
+    rev: "v2.18.1"
     hooks:
       - id: pyproject-fmt
   # TODO: Disabled due to odd issues around a pytest file?
@@ -65,7 +65,7 @@ repos:
   #       language_version: python3.12
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.10.8
+    rev: 0.10.9
     hooks:
       # Update the uv lockfile
       - id: uv-lock

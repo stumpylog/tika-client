@@ -1,7 +1,6 @@
 #
 # Project Configuration
 #
-
 [build-system]
 build-backend = "hatchling.build"
 requires = [ "hatchling" ]
@@ -110,7 +109,6 @@ version.path = "src/tika_client/__about__.py"
 #
 # Tool Configuration
 #
-
 [tool.ruff]
 target-version = "py310"
 line-length = 120
