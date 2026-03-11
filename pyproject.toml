@@ -11,9 +11,6 @@ description = "A modern REST client for Apache Tika server"
 readme = "README.md"
 keywords = [ "api", "client", "html", "office", "pdf", "tika" ]
 license = "MPL-2.0"
-authors = [
-  { name = "Trenton H", email = "rda0128ou@mozmail.com" },
-]
 requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -40,71 +37,94 @@ dependencies = [
   "httpx>=0.28,<1",
   "typing-extensions; python_version<'3.11'",
 ]
-urls.changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
-urls.documentation = "https://github.com/stumpylog/tika-rest-client#readme"
-urls.issues = "https://github.com/stumpylog/tika-rest-client/issues"
-#
-# Hatch Configuration
-#
-urls.source = "https://github.com/stumpylog/tika-client"
+[[project.authors]]
+name = "Trenton H"
+email = "rda0128ou@mozmail.com"
+[project.urls]
+changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
+documentation = "https://github.com/stumpylog/tika-rest-client#readme"
+issues = "https://github.com/stumpylog/tika-rest-client/issues"
+source = "https://github.com/stumpylog/tika-client"
 
-[tool.hatch]
-build.targets.sdist.exclude = [
+[tool.hatch.build.targets.sdist]
+exclude = [
   ".github",
   ".docker",
 ]
-envs.default.installer = "uv"
+[tool.hatch.envs.default]
+installer = "uv"
+[tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-envs.hatch-static-analysis.dependencies = [ "ruff ~= 0.14" ]
-envs.hatch-static-analysis.config-path = "none"
+dependencies = [ "ruff ~= 0.15" ]
+config-path = "none"
+[tool.hatch.envs.hatch-test]
 # https://hatch.pypa.io/latest/config/internal/testing/
-envs.hatch-test.parallel = true
-envs.hatch-test.randomize = true
-envs.hatch-test.extra-dependencies = [
+parallel = true
+randomize = true
+dependencies = [
+  "coverage-enable-subprocess == 1.0",
+  "coverage[toml] ~= 7.13",
+  "pytest ~= 9.0",
+  "pytest-mock ~= 3.15",
+  "pytest-randomly ~= 4.0.1",
+  "pytest-rerunfailures ~= 16.1",
+  "pytest-xdist[psutil] ~= 3.8",
+]
+extra-dependencies = [
   "pytest-sugar",
   "pytest-httpx ~= 0.36",
+  "pikepdf",
   "python-magic",
   "pytest-docker ~= 3.2",
-  "pytest-asyncio ~= 1.3",
+  "pytest-asyncio",
+  "pypdf",
 ]
-envs.hatch-test.extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
-envs.hatch-test.matrix = [ { python = [ "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.8", "pypy3.10", "pypy3.11" ] } ]
-envs.hatch-test.scripts.run = [
+extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
+[[tool.hatch.envs.hatch-test.matrix]]
+python = [ "3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.10", "pypy3.11" ]
+[tool.hatch.envs.hatch-test.scripts]
+run = [
   "python3 --version",
   "pytest{env:HATCH_TEST_ARGS:} {args}",
 ]
-envs.hatch-test.scripts.run-cov = [
+run-cov = [
   "python3 --version",
   "coverage erase",
   "coverage run -m pytest{env:HATCH_TEST_ARGS:} {args}",
 ]
-envs.hatch-test.scripts.cov-combine = [ "coverage combine" ]
-envs.hatch-test.scripts.cov-report = [
+cov-combine = [ "coverage combine" ]
+cov-report = [
   "coverage report",
   "coverage json",
   "coverage html",
 ]
-envs.pre-commit.template = "pre-commit"
-envs.pre-commit.detached = true
-envs.pre-commit.dependencies = [
+[tool.hatch.envs.prek]
+template = "prek"
+detached = true
+dependencies = [
   "pre-commit ~= 4.5",
-  "pre-commit-uv",
+  "prek ~= 0.3.5",
 ]
-envs.pre-commit.scripts.check = [ "pre-commit run --all-files" ]
-envs.pre-commit.scripts.update = [ "pre-commit autoupdate" ]
+[tool.hatch.envs.prek.scripts]
+check = [ "prek run --all-files" ]
+update = [ "pre-commit autoupdate" ]
+
 #
 # Custom Environments
 #
-envs.typing.detached = true
-envs.typing.dependencies = [
+[tool.hatch.envs.typing]
+detached = true
+dependencies = [
   "mypy ~= 1.19",
   "httpx",
 ]
-envs.typing.scripts.run = [
+[tool.hatch.envs.typing.scripts]
+run = [
   "mypy --version",
   "mypy --install-types --non-interactive {args:src/tika_client}",
 ]
-version.path = "src/tika_client/__about__.py"
+[tool.hatch.version]
+path = "src/tika_client/__about__.py"
 
 #
 # Tool Configuration
@@ -115,8 +135,8 @@ line-length = 120
 # https://docs.astral.sh/ruff/settings/
 fix = true
 output-format = "grouped"
-# https://docs.astral.sh/ruff/rules/
-lint.extend-select = [
+[tool.ruff.lint]
+extend-select = [
   "A",     # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
   "ANN",   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ARG",
@@ -171,7 +191,7 @@ lint.extend-select = [
   "W",
   "YTT",   # https://docs.astral.sh/ruff/rules/#flake8-2020-ytt
 ]
-lint.ignore = [
+ignore = [
   # Don't require a public docstring for everything
   "D100",
   # I prefer no blank line before a class docstring
@@ -179,7 +199,7 @@ lint.ignore = [
   # I prefer a different style
   "D212",
 ]
-lint.per-file-ignores."tests/**/*" = [
+per-file-ignores."tests/**/*" = [
   # Tests do not need docstrings
   "D",
   # Tests can use magic numbers
@@ -187,39 +207,39 @@ lint.per-file-ignores."tests/**/*" = [
   # Test can (and must) use assert
   "S101",
 ]
-# No relative imports allowed anywhere
-lint.flake8-tidy-imports.ban-relative-imports = "all"
-# One import per line
-lint.isort.force-single-line = true
-# Recognize us please
-lint.isort.known-first-party = [ "tika_client" ]
+flake8-tidy-imports.ban-relative-imports = "all"
+isort.force-single-line = true
+isort.known-first-party = [ "tika_client" ]
 
 [tool.pyproject-fmt]
-max_supported_python = "3.14"
+table_format = "long"
 
 [tool.pytest]
-minversion = "8.0"
+minversion = "9.0"
 testpaths = [ "tests" ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage]
-run.branch = true
-run.omit = [ "src/tika_client/__about__.py" ]
-run.parallel = true
-run.source_pkgs = [ "tests", "tika_client" ]
-paths.tests = [ "tests", "*/tika-client/tests" ]
-paths.tika_client = [ "src/tika_client", "*/tika-client/src/tika_client" ]
-report.exclude_lines = [
+[tool.coverage.paths]
+tests = [ "tests", "*/tika-client/tests" ]
+tika_client = [ "src/tika_client", "*/tika-client/src/tika_client" ]
+[tool.coverage.report]
+exclude_lines = [
   "if __name__ == '__main__':",
   "if TYPE_CHECKING:",
   "no cov",
 ]
-report.fail_under = 95
+fail_under = 95
+[tool.coverage.run]
+branch = true
+omit = [ "src/tika_client/__about__.py" ]
+parallel = true
+source_pkgs = [ "tests", "tika_client" ]
 
 [tool.mypy]
 packages = [ "tika_client", "tests" ]
-python_version = "3.9"
+python_version = "3.10"
 disable_error_code = "import-untyped"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
