@@ -73,6 +73,7 @@ dependencies = [
 extra-dependencies = [
   "pytest-sugar",
   "pytest-httpx ~= 0.36",
+  "python-magic",
   "pytest-docker ~= 3.2",
   "pytest-asyncio",
   "pypdf",
