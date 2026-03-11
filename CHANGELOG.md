@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Various GitHub action dependency updates
 - Applies yamlfmt to all files
 - `ruff` rule maintenance and additional rules enabled
+- Resolved additional `zizmor` reports
 
 ### Added
 
