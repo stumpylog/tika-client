@@ -40,6 +40,8 @@ dependencies = [
 [[project.authors]]
 name = "Trenton H"
 email = "rda0128ou@mozmail.com"
+[project.optional-dependencies]
+niquests = [ "niquests>=3,<4" ]
 [project.urls]
 changelog = "https://github.com/stumpylog/tika-rest-client/blob/main/CHANGELOG.md"
 documentation = "https://github.com/stumpylog/tika-rest-client#readme"
@@ -77,6 +79,7 @@ extra-dependencies = [
   "pytest-docker ~= 3.2",
   "pytest-asyncio",
   "pypdf",
+  "niquests>=3.0,<4",
 ]
 extra-args = [ "--maxprocesses=8", "--pythonwarnings=all" ]
 [[tool.hatch.envs.hatch-test.matrix]]
@@ -116,6 +119,7 @@ detached = true
 dependencies = [
   "mypy ~= 1.19",
   "httpx",
+  "niquests",
 ]
 [tool.hatch.envs.typing.scripts]
 run = [

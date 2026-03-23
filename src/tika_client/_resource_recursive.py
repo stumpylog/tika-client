@@ -13,9 +13,8 @@ from tika_client._base import SyncResource
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from httpx import AsyncClient
-    from httpx import Client
-
+    from tika_client._http_backends._protocols import AsyncClientProtocol
+    from tika_client._http_backends._protocols import SyncClientProtocol
     from tika_client.data_models import TikaResponse
 
 HTML_ENDPOINT: Final[str] = "/rmeta"
@@ -86,7 +85,7 @@ class SyncRecursive(SyncResource):
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-RecursiveMetadataandContent
     """
 
-    def __init__(self, client: Client, *, compress: bool) -> None:
+    def __init__(self, client: SyncClientProtocol, *, compress: bool) -> None:
         super().__init__(client, compress=compress)
         # No support for XML endpoint.  Who wants that?
         self.as_html = SyncRecursiveMetaHtml(self.client, compress=compress)
@@ -155,7 +154,7 @@ class AsyncRecursive(AsyncResource):
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-RecursiveMetadataandContent
     """
 
-    def __init__(self, client: AsyncClient, *, compress: bool) -> None:
+    def __init__(self, client: AsyncClientProtocol, *, compress: bool) -> None:
         super().__init__(client, compress=compress)
         # No support for XML endpoint.  Who wants that?
         self.as_html = AsyncRecursiveMetaHtml(self.client, compress=compress)

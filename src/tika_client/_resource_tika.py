@@ -17,9 +17,8 @@ HTML_MULTI_PART_ENDPOINT: Final[str] = "/tika/form"
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from httpx import AsyncClient
-    from httpx import Client
-
+    from tika_client._http_backends._protocols import AsyncClientProtocol
+    from tika_client._http_backends._protocols import SyncClientProtocol
     from tika_client.data_models import TikaResponse
 
 
@@ -91,7 +90,7 @@ class SyncTika(SyncResource):
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-TikaResource
     """
 
-    def __init__(self, client: Client, *, compress: bool) -> None:
+    def __init__(self, client: SyncClientProtocol, *, compress: bool) -> None:
         super().__init__(client, compress=compress)
         self.as_html = SyncTikaHtml(self.client, compress=compress)
         self.as_text = SyncTikaPlain(self.client, compress=compress)
@@ -165,7 +164,7 @@ class AsyncTika(AsyncResource):
     https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-TikaResource
     """
 
-    def __init__(self, client: AsyncClient, *, compress: bool) -> None:
+    def __init__(self, client: AsyncClientProtocol, *, compress: bool) -> None:
         super().__init__(client, compress=compress)
         self.as_html = AsyncTikaHtml(self.client, compress=compress)
         self.as_text = AsyncTikaPlain(self.client, compress=compress)

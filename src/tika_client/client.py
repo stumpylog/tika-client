@@ -14,12 +14,14 @@ from typing import TYPE_CHECKING
 from typing import Generic
 from typing import TypeVar
 
-from httpx import AsyncClient
-from httpx import Client
-
 from tika_client.__about__ import __version__
 from tika_client._base import AsyncResource
 from tika_client._base import SyncResource
+from tika_client._http_backends import BackendType
+from tika_client._http_backends import make_async_client
+from tika_client._http_backends import make_sync_client
+from tika_client._http_backends._protocols import AsyncClientProtocol
+from tika_client._http_backends._protocols import SyncClientProtocol
 from tika_client._resource_meta import AsyncMetadata
 from tika_client._resource_meta import SyncMetadata
 from tika_client._resource_recursive import AsyncRecursive
@@ -30,7 +32,7 @@ from tika_client._resource_tika import SyncTika
 if TYPE_CHECKING:
     from types import TracebackType
 
-T = TypeVar("T", bound="Client | AsyncClient")
+T = TypeVar("T", bound="SyncClientProtocol | AsyncClientProtocol")
 R = TypeVar("R", bound="SyncResource | AsyncResource")
 
 
@@ -44,10 +46,11 @@ class BaseTikaClient(ABC, Generic[T, R]):
         timeout: The timeout for the HTTP request
         log_level: The logging level
         compress: Whether to compress the response
+        backend: The HTTP backend to use. One of "httpx", "niquests", or "auto".
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         tika_url: str,
         user_agent: str = f"tika-client/{__version__}",
@@ -55,6 +58,7 @@ class BaseTikaClient(ABC, Generic[T, R]):
         timeout: float = 30.0,
         log_level: int = logging.ERROR,
         compress: bool = False,
+        backend: BackendType = "auto",
     ) -> None:
         """Construct a Tika client with the specific server URL, timeout and compression."""
         self.tika_url = tika_url
@@ -62,9 +66,7 @@ class BaseTikaClient(ABC, Generic[T, R]):
         self.log_level = log_level
         self.compress = compress
         self.user_agent = user_agent
-
-        logging.getLogger("httpx").setLevel(log_level)
-        logging.getLogger("httpcore").setLevel(log_level)
+        self.backend = backend
 
     @cached_property
     def _default_headers(self) -> dict[str, str]:
@@ -96,7 +98,7 @@ class BaseTikaClient(ABC, Generic[T, R]):
         pass
 
 
-class TikaClient(AbstractContextManager["TikaClient"], BaseTikaClient[Client, SyncResource]):
+class TikaClient(AbstractContextManager["TikaClient"], BaseTikaClient[SyncClientProtocol, SyncResource]):
     """A sync client to interface with a Tika server."""
 
     def __enter__(self) -> TikaClient:
@@ -113,9 +115,15 @@ class TikaClient(AbstractContextManager["TikaClient"], BaseTikaClient[Client, Sy
         self.client.close()
 
     @cached_property
-    def client(self) -> Client:
+    def client(self) -> SyncClientProtocol:
         """Create and return the client instance for this TikaClient."""
-        return Client(base_url=self.tika_url, timeout=self.timeout, headers=self._default_headers)
+        return make_sync_client(
+            backend=self.backend,
+            base_url=self.tika_url,
+            timeout=self.timeout,
+            headers=self._default_headers,
+            log_level=self.log_level,
+        )
 
     @cached_property
     def metadata(self) -> SyncMetadata:
@@ -133,7 +141,10 @@ class TikaClient(AbstractContextManager["TikaClient"], BaseTikaClient[Client, Sy
         return SyncRecursive(self.client, compress=self.compress)
 
 
-class AsyncTikaClient(AbstractAsyncContextManager["AsyncTikaClient"], BaseTikaClient[AsyncClient, AsyncResource]):
+class AsyncTikaClient(
+    AbstractAsyncContextManager["AsyncTikaClient"],
+    BaseTikaClient[AsyncClientProtocol, AsyncResource],
+):
     """An async client to interface with a Tika server."""
 
     async def __aenter__(self) -> AsyncTikaClient:
@@ -150,9 +161,15 @@ class AsyncTikaClient(AbstractAsyncContextManager["AsyncTikaClient"], BaseTikaCl
         await self.client.aclose()
 
     @cached_property
-    def client(self) -> AsyncClient:
+    def client(self) -> AsyncClientProtocol:
         """Create and return the client instance for this TikaClient."""
-        return AsyncClient(base_url=self.tika_url, timeout=self.timeout, headers=self._default_headers)
+        return make_async_client(
+            backend=self.backend,
+            base_url=self.tika_url,
+            timeout=self.timeout,
+            headers=self._default_headers,
+            log_level=self.log_level,
+        )
 
     @cached_property
     def metadata(self) -> AsyncMetadata:

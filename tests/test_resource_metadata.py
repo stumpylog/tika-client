@@ -1,12 +1,13 @@
 from datetime import datetime
 from datetime import timezone
+from http import HTTPStatus
 from pathlib import Path
 
-import httpx
 import magic
 import pytest
 from pytest_httpx import HTTPXMock
 
+from tika_client import HttpStatusError
 from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 
@@ -79,9 +80,9 @@ class TestMetadataResource:
         Test handling of HTTP errors returned from Tika
         """
         httpx_mock.add_response(status_code=500)
-        with pytest.raises(httpx.HTTPStatusError) as err, TikaClient(tika_url=tika_host) as client:
+        with pytest.raises(HttpStatusError) as err, TikaClient(tika_url=tika_host) as client:
             client.metadata.from_file(sample_google_docs_to_libre_office_writer_file)
-        assert err.value.response.status_code == httpx.codes.INTERNAL_SERVER_ERROR
+        assert err.value.response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 class TestAsyncMetadataResource:
@@ -176,7 +177,7 @@ class TestAsyncMetadataResource:
         httpx_mock.add_response(status_code=500)
 
         async with AsyncTikaClient(tika_url=tika_host) as client:
-            with pytest.raises(httpx.HTTPStatusError) as err:
+            with pytest.raises(HttpStatusError) as err:
                 await client.metadata.from_file(sample_google_docs_to_libre_office_writer_file)
 
-            assert err.value.response.status_code == httpx.codes.INTERNAL_SERVER_ERROR
+            assert err.value.response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

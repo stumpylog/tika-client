@@ -14,10 +14,10 @@ from typing import TypeVar
 from urllib.parse import quote
 
 from anyio.to_thread import run_sync
-from httpx import AsyncClient
-from httpx import Client
 
 from tika_client._constants import MIN_COMPRESS_LEN
+from tika_client._http_backends._protocols import AsyncClientProtocol
+from tika_client._http_backends._protocols import SyncClientProtocol
 from tika_client.data_models import TikaResponse
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-T = TypeVar("T", bound="Client | AsyncClient")
+T = TypeVar("T", bound="SyncClientProtocol | AsyncClientProtocol")
 
 
 class BaseResource(ABC, Generic[T]):
@@ -129,7 +129,7 @@ class BaseResource(ABC, Generic[T]):
         return TikaResponse(resp_json)
 
 
-class SyncResource(BaseResource[Client]):
+class SyncResource(BaseResource[SyncClientProtocol]):
     def put_multipart(
         self,
         endpoint: str,
@@ -201,7 +201,7 @@ class SyncResource(BaseResource[Client]):
         return response.json()
 
 
-class AsyncResource(BaseResource[AsyncClient]):
+class AsyncResource(BaseResource[AsyncClientProtocol]):
     async def put_multipart(
         self,
         endpoint: str,
