@@ -1,8 +1,11 @@
-# Tika Rest Client
+# tika-client
 
 [![PyPI - Version](https://img.shields.io/pypi/v/tika-client.svg)](https://pypi.org/project/tika-client)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/tika-client.svg)](https://pypi.org/project/tika-client)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tika-client.svg)](https://pypi.org/project/tika-client)
 [![codecov](https://codecov.io/github/stumpylog/tika-client/branch/main/graph/badge.svg?token=PTESS6YUK5)](https://codecov.io/github/stumpylog/tika-client)
+
+A simple, fully-typed Python client for extracting text, HTML, and metadata from documents via the Apache Tika server REST API.
 
 ---
 
@@ -11,79 +14,267 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Response Data](#response-data)
+- [HTTP Backend Selection](#http-backend-selection)
+- [Configuration](#configuration)
 - [Why](#why)
 - [License](#license)
 
 ## Features
 
-- Simplified: No need to worry about XML or JSON responses, downloading a Tika jar file or Python 2
-- Support for Tika 2+ only (including Tika v3, which didn't change the API)
-- Based on the modern [httpx](https://github.com/encode/httpx) library
-- Full support for type hinting
-- Nearly full test coverage run against an actual Tika server for multiple Python and PyPy versions
-- Uses HTTP multipart/form-data to stream files to the server (instead of reading into memory)
-- Optional compression for parsing from a file content already in a buffer (as opposed to a file)
+- Synchronous and asynchronous client support
+- Pluggable HTTP backend (httpx, niquests, or requests)
+- Uses HTTP multipart/form-data to stream files to the server (no full file reads into memory)
+- Full type annotations with typed response properties
+- Support for Tika 2 and Tika 3 (the API did not change between versions)
+- Tested against a real Tika server across multiple Python and PyPy versions
+- Optional gzip response compression
 
 ## Installation
 
+`httpx` is included as a regular dependency. Two optional extras provide alternative backends:
+
 ```console
-pip3 install tika-client
+pip install tika-client
+pip install "tika-client[niquests]"
+pip install "tika-client[requests]"
 ```
 
 ## Usage
 
-```python3
+All examples use `http://localhost:9998` as the Tika server URL. Replace this with your own server address.
+
+### Metadata Extraction
+
+Extract metadata from a file:
+
+```python
 from pathlib import Path
 from tika_client import TikaClient
 
-test_file = Path("sample.docx")
-
-
 with TikaClient("http://localhost:9998") as client:
-
-    # Extract a document's metadata
-    metadata = client.metadata.from_file(test_file)
-
-    # Get the content of a document as HTML
-    data = client.tika.as_html.from_file(test_file)
-
-    # Or as plain text
-    text = client.tika.as_text.from_file(test_file)
-
-    # Content and metadata combined
-    data = client.rmeta.as_text.from_file(test_file)
-
-    # The mime type can also be given
-    # This allows Content-Type to be set most accurately
-    text = client.tika.as_text.from_file(test_file,
-                                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
+    metadata = client.metadata.from_file(Path("sample.docx"))
+    print(metadata.title)
+    print(metadata.created)
 ```
 
-The Tika REST API documentation can be found [here](https://cwiki.apache.org/confluence/display/TIKA/TikaServer).
-At the moment, only the metadata, tika and recursive metadata endpoints are implemented.
+```python
+from pathlib import Path
+from tika_client import AsyncTikaClient
 
-Unfortunately, the set of possible return values of the Tika API are not very well documented. The library makes
-a best effort to extract relevant fields into type properties where it understands more about the mime type
-of the document (as returned by Tika). This includes information like created/modified information as time zone
-aware `datetime` objects. The full JSON response is always available to the user under the `.data`
-attribute.
+async with AsyncTikaClient("http://localhost:9998") as client:
+    metadata = await client.metadata.from_file(Path("sample.docx"))
+    print(metadata.title)
+    print(metadata.created)
+```
 
-When a particular key is not present in the response, all properties will return `None` instead.
+### Content Extraction as Plain Text
+
+Extract content as plain text from a file or a buffer:
+
+```python
+from pathlib import Path
+from tika_client import TikaClient
+
+with TikaClient("http://localhost:9998") as client:
+    # From a file
+    result = client.tika.as_text.from_file(Path("sample.pdf"))
+    print(result.content)
+
+    # From a buffer
+    data = Path("sample.pdf").read_bytes()
+    result = client.tika.as_text.from_buffer(data, "application/pdf")
+    print(result.content)
+```
+
+```python
+from pathlib import Path
+from tika_client import AsyncTikaClient
+
+async with AsyncTikaClient("http://localhost:9998") as client:
+    result = await client.tika.as_text.from_file(Path("sample.pdf"))
+    print(result.content)
+
+    data = Path("sample.pdf").read_bytes()
+    result = await client.tika.as_text.from_buffer(data, "application/pdf")
+    print(result.content)
+```
+
+### Content Extraction as HTML
+
+Extract content formatted as HTML:
+
+```python
+from pathlib import Path
+from tika_client import TikaClient
+
+with TikaClient("http://localhost:9998") as client:
+    result = client.tika.as_html.from_file(Path("sample.docx"))
+    print(result.content)
+
+    data = Path("sample.docx").read_bytes()
+    result = client.tika.as_html.from_buffer(data)
+    print(result.content)
+```
+
+```python
+from pathlib import Path
+from tika_client import AsyncTikaClient
+
+async with AsyncTikaClient("http://localhost:9998") as client:
+    result = await client.tika.as_html.from_file(Path("sample.docx"))
+    print(result.content)
+
+    data = Path("sample.docx").read_bytes()
+    result = await client.tika.as_html.from_buffer(data)
+    print(result.content)
+```
+
+### Recursive Metadata
+
+Extract metadata and content from all embedded documents (attachments, embedded files):
+
+```python
+from pathlib import Path
+from tika_client import TikaClient
+
+with TikaClient("http://localhost:9998") as client:
+    # Returns a list, one entry per embedded document
+    results = client.rmeta.as_text.from_file(Path("sample.docx"))
+    for item in results:
+        print(item.content)
+
+    results = client.rmeta.as_html.from_file(Path("sample.docx"))
+    for item in results:
+        print(item.content)
+```
+
+```python
+from pathlib import Path
+from tika_client import AsyncTikaClient
+
+async with AsyncTikaClient("http://localhost:9998") as client:
+    results = await client.rmeta.as_text.from_file(Path("sample.docx"))
+    for item in results:
+        print(item.content)
+```
+
+The MIME type can be provided to all methods for more accurate `Content-Type` detection:
+
+```python
+result = client.tika.as_text.from_file(
+    Path("sample.docx"),
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+)
+```
+
+Currently, the metadata, tika, and recursive metadata endpoints are implemented. If you need
+support for additional Tika endpoints, please open an idea in
+[GitHub Discussions](https://github.com/stumpylog/tika-client/discussions/categories/ideas).
+
+## Response Data
+
+All methods return a `TikaResponse` (or `list[TikaResponse]` for `rmeta`). Commonly used typed properties:
+
+```python
+result = client.tika.as_text.from_file(Path("sample.pdf"))
+
+result.content          # str | None - extracted text or HTML
+result.type             # str - detected MIME type
+result.parsers          # list[str] - Tika parsers used
+result.content_length   # int | None
+result.title            # str | None
+result.created          # datetime | None (timezone-aware)
+result.modified         # datetime | None (timezone-aware)
+result.xmp_created      # datetime | None (timezone-aware)
+result.page_count       # int | None
+result.language         # str | None
+result.character_count  # int | None
+result.revision         # int | None
+result.last_author      # str | None
+```
+
+Tika returns many additional fields depending on the file type. The complete parsed JSON response
+is always available via `result.data`. The `TikaKey`, `DublinCoreKey`, and `XmpKey` enums provide
+typed constants for accessing common keys in `result.data`:
+
+```python
+from tika_client import TikaKey, DublinCoreKey, XmpKey
+
+print(result.data[DublinCoreKey.Creator])
+print(result.data[TikaKey.ParseTime])
+```
+
+`HttpStatusError` is raised for 4xx and 5xx responses from the Tika server:
+
+```python
+from tika_client import TikaClient, HttpStatusError
+
+with TikaClient("http://localhost:9998") as client:
+    try:
+        result = client.tika.as_text.from_file(Path("sample.pdf"))
+    except HttpStatusError as e:
+        print(f"Tika returned an error: {e}")
+```
+
+## HTTP Backend Selection
+
+By default, `tika-client` uses `httpx`. You can select a different backend explicitly or let the
+library auto-detect one:
+
+```python
+from tika_client import TikaClient
+
+# Auto-detect: prefers httpx, then niquests, then requests (default)
+with TikaClient("http://localhost:9998") as client: ...
+
+# Explicit httpx
+with TikaClient("http://localhost:9998", backend="httpx") as client: ...
+
+# Explicit niquests
+with TikaClient("http://localhost:9998", backend="niquests") as client: ...
+
+# Explicit requests (sync only)
+with TikaClient("http://localhost:9998", backend="requests") as client: ...
+```
+
+The same `backend` parameter is available on `AsyncTikaClient`. Note that the `requests` backend
+does not support async and will raise a `ValueError` if used with `AsyncTikaClient`.
+
+## Configuration
+
+All constructor parameters for both `TikaClient` and `AsyncTikaClient`:
+
+| Parameter    | Default                 | Description                                                      |
+| ------------ | ----------------------- | ---------------------------------------------------------------- |
+| `tika_url`   | (required)              | URL of the Tika server                                           |
+| `timeout`    | `30.0`                  | Request timeout in seconds                                       |
+| `compress`   | `False`                 | Request gzip-compressed responses from the server                |
+| `user_agent` | `tika-client/{version}` | Value sent as the User-Agent header                              |
+| `log_level`  | `logging.ERROR`         | Log level for the HTTP backend logger                            |
+| `backend`    | `"auto"`                | HTTP backend: `"httpx"`, `"niquests"`, `"requests"`, or `"auto"` |
 
 ## Why
 
-Only one other library for interfacing with Tika exists that I know of. I find it too complicated, trying to handle
-a lot of differing uses.
+The primary alternative is [tika-python](https://github.com/chrismattmann/tika-python), which is
+a capable library with a long history. If it works well for your use case, it is a fine choice.
 
-The biggest issue I have with the library is its downloading and running of a jar file if needed. To me, an
-API client should only interface to the API and not try to provide functionality to start
-the API as well. The user is responsible for providing the server with the Tika version they desire.
+`tika-client` takes a different philosophy:
 
-The library also provides a lot of knobs to turn, but I argue most developers will not want to configure XML as
-the response type, they just want the data, already parsed to the maximum extend possible.
+**No Java required at runtime.** `tika-python` can download and start the Tika JAR automatically,
+which requires Java to be installed. `tika-client` is a pure REST client. You bring your own
+Tika server (a single Docker image does the job), and the library only talks to it over HTTP.
 
-This library attempts to provide a simpler interface, minimal lines of code and typing of the parsed response.
+**Typed responses, not raw dicts.** `tika-python` returns plain Python dicts. `tika-client`
+parses the response into a typed `TikaResponse` object with `datetime`, `int`, and `str` fields
+where the type is known, so your editor and type checker can help you.
+
+**Async support.** `tika-client` provides `AsyncTikaClient` alongside the synchronous client,
+making it straightforward to use in async applications.
+
+**Minimal surface area.** `tika-python` exposes language detection, translation, and
+configuration inspection endpoints. `tika-client` focuses on what most developers actually use:
+extracting text, HTML, and metadata from documents.
 
 ## License
 
