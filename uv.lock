@@ -384,11 +384,13 @@ name = "tika-client"
 source = { editable = "." }
 dependencies = [
     { name = "anyio" },
-    { name = "httpx" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 
 [package.optional-dependencies]
+httpx = [
+    { name = "httpx" },
+]
 niquests = [
     { name = "niquests" },
 ]
@@ -399,12 +401,12 @@ requests = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4.12,<5" },
-    { name = "httpx", specifier = ">=0.28,<1" },
+    { name = "httpx", marker = "extra == 'httpx'", specifier = ">=0.28,<1" },
     { name = "niquests", marker = "extra == 'niquests'", specifier = ">=3,<4" },
     { name = "requests", marker = "extra == 'requests'", specifier = ">=2.32,<3" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
-provides-extras = ["niquests", "requests"]
+provides-extras = ["httpx", "niquests", "requests"]
 
 [[package]]
 name = "typing-extensions"
