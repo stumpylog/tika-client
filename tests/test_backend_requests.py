@@ -37,6 +37,11 @@ class TestRequestsBackendSync:
         assert len(results) > 0
         assert results[0].type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
+    def test_tika_from_buffer_uses_put(self, requests_tika_client: TikaClient, sample_docx_file: Path) -> None:
+        content = sample_docx_file.read_bytes()
+        resp = requests_tika_client.tika.as_text.from_buffer(content)
+        assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
 
 class TestRequestsBackendAsyncRejected:
     async def test_async_raises(self, tika_host: str) -> None:
