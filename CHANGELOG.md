@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- `httpx` is no longer installed by default. Install at least one backend via an extra:
+  `pip install "tika-client[httpx]"`, `pip install "tika-client[niquests]"`, or
+  `pip install "tika-client[requests]"`. The default `backend="auto"` on `TikaClient`
+  and `AsyncTikaClient` discovers whichever backend is present at runtime.
+
 ### Added
 
 - Pluggable HTTP backend system, decoupling the client from any single HTTP library
+- `httpx` as an optional HTTP backend (`pip install tika-client[httpx]`)
 - `niquests` as an optional HTTP backend supporting both sync and async (`pip install tika-client[niquests]`)
 - `requests` as an optional sync-only HTTP backend (`pip install tika-client[requests]`)
 - `backend` parameter on `TikaClient` and `AsyncTikaClient` accepting `"httpx"`, `"niquests"`, `"requests"`, or `"auto"` (default); `"auto"` tries each in order

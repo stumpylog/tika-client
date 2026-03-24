@@ -52,13 +52,13 @@ dynamic = [ "version" ]
 #
 dependencies = [
   "anyio>=4.12,<5",
-  "httpx>=0.28,<1",
   "typing-extensions; python_version<'3.11'",
 ]
 [[project.authors]]
 name = "Trenton H"
 email = "rda0128ou@mozmail.com"
 [project.optional-dependencies]
+httpx = [ "httpx>=0.28,<1" ]
 niquests = [ "niquests>=3,<4" ]
 requests = [ "requests>=2.32,<3" ]
 [project.urls]
@@ -98,6 +98,7 @@ extra-dependencies = [
   "pytest-docker ~= 3.2",
   "pytest-asyncio",
   "pypdf",
+  "httpx>=0.28,<1",
   "niquests>=3.0,<4",
   "requests>=2.32,<3",
 ]

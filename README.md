@@ -32,13 +32,17 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 ## Installation
 
-`httpx` is included as a regular dependency. Two optional extras provide alternative backends:
+No HTTP backend is installed by default. Install `tika-client` with one of the three backend extras:
 
 ```console
-pip install tika-client
+pip install "tika-client[httpx]"
 pip install "tika-client[niquests]"
 pip install "tika-client[requests]"
 ```
+
+All three extras can be combined. The default `backend="auto"` discovers whichever backend is present
+at runtime, trying `httpx` first, then `niquests`, then `requests`. A bare `pip install tika-client`
+with no extras will raise `ImportError` on first use.
 
 ## Usage
 
@@ -219,8 +223,8 @@ with TikaClient("http://localhost:9998") as client:
 
 ## HTTP Backend Selection
 
-By default, `tika-client` uses `httpx`. You can select a different backend explicitly or let the
-library auto-detect one:
+No backend is installed by default. Install at least one extra and select it explicitly, or let
+`"auto"` (the default) detect whichever is present (tries `httpx`, then `niquests`, then `requests`):
 
 ```python
 from tika_client import TikaClient
