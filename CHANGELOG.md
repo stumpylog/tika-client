@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `requests` as an optional sync-only HTTP backend (`pip install tika-client[requests]`)
 - `backend` parameter on `TikaClient` and `AsyncTikaClient` accepting `"httpx"`, `"niquests"`, `"requests"`, or `"auto"` (default); `"auto"` tries each in order
 
+### Security
+
+- All GitHub Actions are now pinned to full commit SHAs instead of tags
+- `zizmor` configuration updated to enforce SHA hash-pinning for all actions
+
 ## [0.11.0] - 2026-03-11
 
 ### Removed
