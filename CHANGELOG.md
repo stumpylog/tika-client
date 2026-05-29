@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `requests` as an optional sync-only HTTP backend (`pip install tika-client[requests]`)
 - `backend` parameter on `TikaClient` and `AsyncTikaClient` accepting `"httpx"`, `"niquests"`, `"requests"`, or `"auto"` (default); `"auto"` tries each in order
 
+### Removed
+
+- PyPy 3.10 and PyPy 3.8 dropped from test matrix; `cryptography` 47.0.0 requires PyPy 3.11+
+
 ### Security
 
 - All GitHub Actions are now pinned to full commit SHAs instead of tags
