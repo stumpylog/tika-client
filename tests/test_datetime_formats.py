@@ -90,7 +90,7 @@ class TestDateTimeFormat:
 
         assert resp.created == pytest.approx(
             datetime(year=2023, month=6, day=17, hour=16, minute=30, second=44, tzinfo=timezone(timedelta(hours=8))),
-            rel=timedelta(seconds=1),
+            abs=timedelta(seconds=1),
         )
 
     def test_parse_offset_date_format_negative(
@@ -121,7 +121,7 @@ class TestDateTimeFormat:
                 second=44,
                 tzinfo=timezone(timedelta(hours=-8)),
             ),
-            rel=timedelta(seconds=1),
+            abs=timedelta(seconds=1),
         )
 
     def test_parse_offset_date_format_python_isoformat(
@@ -244,7 +244,7 @@ class TestAsyncDateTimeFormat:
 
         assert resp.created == pytest.approx(
             datetime(year=2023, month=6, day=17, hour=16, minute=30, second=44, tzinfo=timezone(timedelta(hours=8))),
-            rel=timedelta(seconds=1),
+            abs=timedelta(seconds=1),
         )
 
     async def test_parse_offset_date_format_negative(
@@ -275,7 +275,7 @@ class TestAsyncDateTimeFormat:
                 second=44,
                 tzinfo=timezone(timedelta(hours=-8)),
             ),
-            rel=timedelta(seconds=1),
+            abs=timedelta(seconds=1),
         )
 
     async def test_parse_offset_date_format_python_isoformat(

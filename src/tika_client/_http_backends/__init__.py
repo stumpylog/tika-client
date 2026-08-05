@@ -70,7 +70,7 @@ def make_sync_client(
         logging.getLogger("niquests").setLevel(log_level)
         logging.getLogger("urllib3").setLevel(log_level)
         session = niquests.Session()
-        session.headers.update(headers)
+        session.headers.update(headers.items())
         return NiquestsSyncAdapter(session, base_url, timeout)
 
     import requests  # noqa: PLC0415
@@ -111,5 +111,5 @@ def make_async_client(
     logging.getLogger("niquests").setLevel(log_level)
     logging.getLogger("urllib3").setLevel(log_level)
     session = niquests.AsyncSession()
-    session.headers.update(headers)
+    session.headers.update(headers.items())
     return NiquestsAsyncAdapter(session, base_url, timeout)

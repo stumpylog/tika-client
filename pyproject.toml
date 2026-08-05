@@ -76,7 +76,7 @@ exclude = [
 installer = "uv"
 [tool.hatch.envs.hatch-static-analysis]
 # https://hatch.pypa.io/latest/config/internal/static-analysis/
-dependencies = [ "ruff ~= 0.15" ]
+dependencies = [ "ruff == 0.15.22" ]
 config-path = "none"
 [tool.hatch.envs.hatch-test]
 # https://hatch.pypa.io/latest/config/internal/testing/
@@ -138,7 +138,7 @@ update = [ "pre-commit autoupdate" ]
 [tool.hatch.envs.typing]
 detached = true
 dependencies = [
-  "mypy ~= 1.19",
+  "mypy ~= 2.0",
   "httpx",
   "niquests",
   "requests",
