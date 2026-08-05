@@ -138,7 +138,7 @@ update = [ "pre-commit autoupdate" ]
 [tool.hatch.envs.typing]
 detached = true
 dependencies = [
-  "mypy ~= 1.19",
+  "mypy ~= 2.0",
   "httpx",
   "niquests",
   "requests",
