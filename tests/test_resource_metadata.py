@@ -68,7 +68,6 @@ class TestMetadataResource:
         resp = tika_client.metadata.from_file(sample_doc_file, magic.from_file(str(sample_doc_file), mime=True))
 
         assert resp.type == "application/msword"
-        assert resp.language == "en"
 
     def test_http_error(
         self,
@@ -163,7 +162,6 @@ class TestAsyncMetadataResource:
         )
 
         assert resp.type == "application/msword"
-        assert resp.language == "en"
 
     async def test_http_error(
         self,

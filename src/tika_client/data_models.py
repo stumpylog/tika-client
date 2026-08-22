@@ -29,17 +29,17 @@ class TikaKey(str, Enum):
     """
     Keys for access to certain Tika returned values in the JSON.
 
-    Based on
-      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaProcess
-      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=235835139#MetadataOverview-TikaGeneral
+    As of Tika 4.x, Tika-computed keys live under a single `tk:` prefix
+    (kebab-case), replacing the scattered `X-TIKA:` prefix used in 3.x.
+    Verified against a live Tika 4.0.0 server.
     """
 
-    Parsers = "X-TIKA:Parsed-By"
-    Parser_Full = "X-TIKA:Parsed-By-Full-Set"
-    Parse_Time = "X-TIKA:parse_time_millis"
+    Parsers = "tk:parsed-by"
+    Parser_Full = "tk:parsed-by-full-set"
+    Parse_Time = "tk:parse-time-millis"
     ContentType = "Content-Type"
     ContentLength = "Content-Length"
-    Content = "X-TIKA:content"
+    Content = "tk:content"
 
 
 class DublinCoreKey(str, Enum):
@@ -85,7 +85,6 @@ class OtherTikaKeys(str, Enum):
     CharacterCount = "meta:character-count"
     LastAuthor = "meta:last-author"
     Revision = "cp:revision"
-    Language = "language"
 
 
 class TikaResponse:
@@ -122,7 +121,6 @@ class TikaResponse:
         # Other general keys
         self.character_count: int | None = int(self.data.get(OtherTikaKeys.CharacterCount, "0")) or None
         self.revision: int | None = int(self.data.get(OtherTikaKeys.Revision, "0")) or None
-        self.language: str | None = self.data.get(OtherTikaKeys.Language)
         self.last_author: str | None = self.data.get(OtherTikaKeys.LastAuthor)
 
     @staticmethod
