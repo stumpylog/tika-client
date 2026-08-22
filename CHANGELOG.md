@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- **This release drops support for Tika Server 3.x.** Only Tika Server 4.0+ is supported.
+  The last release supporting Tika 3.x is 1.0.0.
+- Metadata keys that Tika computes itself moved from the `X-TIKA:` prefix to a `tk:` prefix
+  (e.g. `X-TIKA:content` -> `tk:content`), matching Tika 4's own key rename. `TikaKey.Parsers`,
+  `TikaKey.Parser_Full`, `TikaKey.Parse_Time`, and `TikaKey.Content` now hold the new spellings.
+  Dublin Core, XMP, and other file-claimed metadata keys (`dc:*`, `xmp:*`, `meta:*`, `cp:*`)
+  are unchanged.
+- `TikaResponse.language` has been removed — Tika 4's `/meta` and `/rmeta` no longer return a
+  `language` field.
+- `tika.as_html.from_file()` and `tika.as_text.from_file()` now read the whole file into memory
+  before sending it, instead of streaming it via multipart — Tika 4 removed the unauthenticated
+  multipart upload route these relied on. `metadata.from_file()` and `rmeta.*.from_file()` are
+  unaffected and continue to stream via multipart.
+- `tika.as_html` now explicitly targets `/tika/html` instead of the bare `/tika` endpoint, since
+  Tika 4 changed `/tika`'s default output format to Markdown.
+
+### Added
+
+- `tika_client.TikaServerError` and subclasses (`TikaTimeoutError`, `TikaCrashError`,
+  `TikaSaturatedError`, `TikaPayloadTooLargeError`, `TikaPartialParseError`) for Tika 4's new
+  error response envelope. All subclass the existing `HttpStatusError`, so existing
+  `except HttpStatusError` handling keeps working unchanged.
+
 ## [1.0.0] - 2026-08-06
 
 ### Breaking Change

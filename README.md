@@ -13,6 +13,7 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 - [Features](#features)
 - [Installation](#installation)
+- [Tika Server Compatibility](#tika-server-compatibility)
 - [Usage](#usage)
 - [Response Data](#response-data)
 - [HTTP Backend Selection](#http-backend-selection)
@@ -24,9 +25,9 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 - Synchronous and asynchronous client support
 - Pluggable HTTP backend (httpx, niquests, or requests)
-- Uses HTTP multipart/form-data to stream files to the server (no full file reads into memory)
+- `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` read the file into memory before sending it — Tika 4 removed the unauthenticated multipart route those used to rely on.
 - Full type annotations with typed response properties
-- Support for Tika 2 and Tika 3 (the API did not change between versions)
+- Supports Tika Server 4.0+ only (the last release supporting Tika 3.x is 1.0.0)
 - Tested against a real Tika server across multiple Python and PyPy versions
 - Optional gzip response compression
 
@@ -43,6 +44,13 @@ pip install "tika-client[requests]"
 All three extras can be combined. The default `backend="auto"` discovers whichever backend is present
 at runtime, trying `httpx` first, then `niquests`, then `requests`. A bare `pip install tika-client`
 with no extras will raise `ImportError` on first use.
+
+## Tika Server Compatibility
+
+This version requires **Tika Server 4.0 or later**. Tika 4.x is a wire-breaking
+release (endpoint paths, metadata key names, and error response formats all
+changed) — this client does not support Tika Server 3.x. If you need Tika 3.x
+support, use `tika-client` 1.0.0, the last release compatible with it.
 
 ## Usage
 
