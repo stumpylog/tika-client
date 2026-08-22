@@ -30,6 +30,16 @@ class NiquestsResponseAdapter:
         """HTTP status code."""
         return self._response.status_code  # type: ignore[return-value]
 
+    @property
+    def text(self) -> str:
+        """Raw response body as text."""
+        return self._response.text or ""
+
+    @property
+    def headers(self) -> Any:  # noqa: ANN401
+        """Response headers."""
+        return self._response.headers
+
     def raise_for_status(self) -> None:
         """Raise HttpStatusError for 4xx/5xx responses."""
         try:

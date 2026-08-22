@@ -5,8 +5,12 @@
 from __future__ import annotations
 
 from typing import IO
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Protocol
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class HttpStatusError(Exception):
@@ -24,6 +28,16 @@ class ResponseProtocol(Protocol):
     @property
     def status_code(self) -> int:
         """HTTP status code of the response."""
+        ...  # pragma: no cover
+
+    @property
+    def text(self) -> str:
+        """Raw response body as text."""
+        ...  # pragma: no cover
+
+    @property
+    def headers(self) -> Mapping[str, str]:
+        """Response headers."""
         ...  # pragma: no cover
 
     def raise_for_status(self) -> None:

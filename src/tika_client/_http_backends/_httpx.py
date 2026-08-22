@@ -28,6 +28,16 @@ class HttpxResponseAdapter:
         """HTTP status code."""
         return self._response.status_code
 
+    @property
+    def text(self) -> str:
+        """Raw response body as text."""
+        return self._response.text
+
+    @property
+    def headers(self) -> httpx.Headers:
+        """Response headers."""
+        return self._response.headers
+
     def raise_for_status(self) -> None:
         """Raise HttpStatusError for 4xx/5xx responses."""
         try:
