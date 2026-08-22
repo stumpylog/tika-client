@@ -19,6 +19,7 @@ from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._http_backends._protocols import AsyncClientProtocol
 from tika_client._http_backends._protocols import SyncClientProtocol
 from tika_client.data_models import TikaResponse
+from tika_client.exceptions import raise_for_tika_status
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -162,7 +163,7 @@ class SyncResource(BaseResource[SyncClientProtocol]):
                 },
                 headers=BaseResource.get_content_headers(filepath.name),
             )
-        response.raise_for_status()
+        raise_for_tika_status(response)
         return response.json()
 
     def put_content(
@@ -201,7 +202,7 @@ class SyncResource(BaseResource[SyncClientProtocol]):
             headers["Content-Type"] = mime_type
 
         response = self.client.put(endpoint, content=content_bytes, headers=headers)
-        response.raise_for_status()
+        raise_for_tika_status(response)
         return response.json()
 
 
@@ -236,7 +237,7 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
                 },
                 headers=self.get_content_headers(filepath.name),
             )
-        response.raise_for_status()
+        raise_for_tika_status(response)
         return response.json()
 
     async def put_content(
@@ -275,5 +276,5 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             headers["Content-Type"] = mime_type
 
         response = await self.client.put(endpoint, content=content_bytes, headers=headers)
-        response.raise_for_status()
+        raise_for_tika_status(response)
         return response.json()

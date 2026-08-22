@@ -8,6 +8,7 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from tika_client import HttpStatusError
+from tika_client import TikaPayloadTooLargeError
 from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 
@@ -82,6 +83,23 @@ class TestMetadataResource:
         with pytest.raises(HttpStatusError) as err, TikaClient(tika_url=tika_host) as client:
             client.metadata.from_file(sample_google_docs_to_libre_office_writer_file)
         assert err.value.response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+    def test_http_error_413_raises_typed_payload_too_large(
+        self,
+        httpx_mock: HTTPXMock,
+        tika_host: str,
+        sample_google_docs_to_libre_office_writer_file: Path,
+    ) -> None:
+        """
+        A 413 from tika-server 4.x raises the typed TikaPayloadTooLargeError,
+        which is also an HttpStatusError so existing except clauses keep working.
+        """
+        httpx_mock.add_response(status_code=413, text="Request body exceeds maxRequestSizeBytes")
+        with pytest.raises(TikaPayloadTooLargeError) as err, TikaClient(tika_url=tika_host) as client:
+            client.metadata.from_file(sample_google_docs_to_libre_office_writer_file)
+        assert err.value.status_code == HTTPStatus.REQUEST_ENTITY_TOO_LARGE
+        assert err.value.tika_status is None
+        assert isinstance(err.value, HttpStatusError)
 
 
 class TestAsyncMetadataResource:
