@@ -4,6 +4,6 @@
 # correct networking for the tests
 services:
   tika:
-    image: docker.io/apache/tika:latest
+    image: docker.io/apache/tika:4.0.0
     ports:
       - "9998/tcp"
