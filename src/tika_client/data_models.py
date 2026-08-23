@@ -103,7 +103,9 @@ class TikaResponse:
 
         # Always set keys
         self.type: str = self.data[TikaKey.ContentType]
-        self.parsers: list[str] = self.data[TikaKey.Parsers]
+        # Absent when Tika couldn't parse at all (e.g. a zero-byte file), even on an
+        # otherwise-200 response with an embedded tk:exception:container-exception.
+        self.parsers: list[str] = self.data.get(TikaKey.Parsers, [])
 
         # Tika keys
         self.content: str | None = data.get(TikaKey.Content)
