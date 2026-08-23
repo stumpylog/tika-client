@@ -98,6 +98,7 @@ class BaseResource(ABC, Generic[T]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
+        filename: str | None = None,
     ) -> Any | Coroutine[Any, Any, Any]:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
@@ -108,6 +109,7 @@ class BaseResource(ABC, Generic[T]):
             endpoint: The endpoint to send the content to
             content: The content to send
             mime_type: The mime type of the content, if it's not provided, it will be guessed
+            filename: If provided, sent as a Content-Disposition filename hint
 
         Returns:
             The JSON response of the server
@@ -168,6 +170,7 @@ class SyncResource(BaseResource[SyncClientProtocol]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
+        filename: str | None = None,
     ) -> Any:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
@@ -176,6 +179,7 @@ class SyncResource(BaseResource[SyncClientProtocol]):
             endpoint: The endpoint to send the content to
             content: The content to send
             mime_type: The mime type of the content, if it's not provided, it will be guessed
+            filename: If provided, sent as a Content-Disposition filename hint
 
         Returns:
             Returns the JSON response of the server
@@ -184,7 +188,7 @@ class SyncResource(BaseResource[SyncClientProtocol]):
         content_bytes = content.encode() if isinstance(content, str) else content
         content_length = len(content_bytes)
 
-        headers = {}
+        headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
             from gzip import compress  # noqa: PLC0415
 
@@ -240,6 +244,7 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
         endpoint: str,
         content: str | bytes,
         mime_type: str | None = None,
+        filename: str | None = None,
     ) -> Any:  # noqa: ANN401
         """
         Give, an endpoint, content and optional mime type, does an HTTP PUT with the given content.
@@ -248,6 +253,7 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             endpoint: The endpoint to send the content to
             content: The content to send
             mime_type: The mime type of the content, if it's not provided, it will be guessed
+            filename: If provided, sent as a Content-Disposition filename hint
 
         Returns:
             Returns the JSON response of the server
@@ -256,7 +262,7 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
         content_bytes = content.encode() if isinstance(content, str) else content
         content_length = len(content_bytes)
 
-        headers = {}
+        headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
         if self.compress and content_length > MIN_COMPRESS_LEN:
             from gzip import compress  # noqa: PLC0415
 

@@ -27,7 +27,7 @@ class TestLibreOfficeFormats:
             "<body><p>This is a document created by LibreOffice Writer 7.5.12, on July 19th, 2023</p>\n</body>"
             in resp.content
         )
-        assert resp.content_length == 11149
+        assert resp.content_length == 10928
         assert resp.created is not None
         assert resp.created == datetime(  # noqa: DTZ001
             year=2023,
@@ -61,7 +61,7 @@ class TestAsyncLibreOfficeFormats:
             "<body><p>This is a document created by LibreOffice Writer 7.5.12, on July 19th, 2023</p>\n</body>"
             in resp.content
         )
-        assert resp.content_length == 11149
+        assert resp.content_length == 10928
         assert resp.created is not None
         assert resp.created == datetime(  # noqa: DTZ001
             year=2023,

@@ -6,13 +6,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
+from anyio.to_thread import run_sync
+
 from tika_client._base import AsyncResource
 from tika_client._base import SyncResource
 
-PLAIN_TEXT_ENDPOINT: Final[str] = "/tika/text"
-PLAIN_TEXT_MULTI_PART_ENDPOINT: Final[str] = "/tika/form/text"
-HTML_ENDPOINT: Final[str] = "/tika"
-HTML_MULTI_PART_ENDPOINT: Final[str] = "/tika/form"
+PLAIN_TEXT_ENDPOINT: Final[str] = "/tika/json/body"
+HTML_ENDPOINT: Final[str] = "/tika/json/html"
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,7 +35,10 @@ class SyncTikaHtml(SyncResource):
             The JSON response from the Tika server
 
         """
-        return self.decoded_response(self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
+        content = filepath.read_bytes()
+        return self.decoded_response(
+            self.put_content(HTML_ENDPOINT, content, mime_type, filename=filepath.name),
+        )
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -65,7 +68,10 @@ class SyncTikaPlain(SyncResource):
             The JSON response from the Tika server
 
         """
-        return self.decoded_response(self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
+        content = filepath.read_bytes()
+        return self.decoded_response(
+            self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type, filename=filepath.name),
+        )
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -109,7 +115,10 @@ class AsyncTikaHtml(AsyncResource):
             The JSON response from the Tika server
 
         """
-        return self.decoded_response(await self.put_multipart(HTML_MULTI_PART_ENDPOINT, filepath, mime_type))
+        content = await run_sync(filepath.read_bytes)
+        return self.decoded_response(
+            await self.put_content(HTML_ENDPOINT, content, mime_type, filename=filepath.name),
+        )
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -139,7 +148,10 @@ class AsyncTikaPlain(AsyncResource):
             The JSON response from the Tika server
 
         """
-        return self.decoded_response(await self.put_multipart(PLAIN_TEXT_MULTI_PART_ENDPOINT, filepath, mime_type))
+        content = await run_sync(filepath.read_bytes)
+        return self.decoded_response(
+            await self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type, filename=filepath.name),
+        )
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """

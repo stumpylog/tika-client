@@ -22,7 +22,7 @@ class TestParseFormatted:
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert resp.content is not None
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
-        assert resp.content_length == 6424
+        assert resp.content_length == 6183
 
     def test_parse_doc_from_file_as_html(self, tika_client: TikaClient, sample_doc_file: Path) -> None:
         resp = tika_client.tika.as_html.from_file(sample_doc_file, magic.from_file(str(sample_doc_file), mime=True))
@@ -33,7 +33,7 @@ class TestParseFormatted:
             "body><p>This is a test document, saved in the older .doc format for Word documents (but created in Google Drive)</p>\n</body>"  # noqa: E501
             in resp.content
         )
-        assert resp.content_length == 23739
+        assert resp.content_length == 23552
         assert resp.character_count == 90
         assert resp.page_count == 1
         assert resp.revision == 1
@@ -157,9 +157,9 @@ class TestParseContentPlain:
 
         assert resp.type == "text/html; charset=UTF-8"
         assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.JSoupParser"]
-        assert "Hello world! This is HTML5 content in a file for" in resp.data["X-TIKA:content"]
+        assert "Hello world! This is HTML5 content in a file for" in resp.data["tk:content"]
         assert resp.data["dc:title"] == "This Is A Test"
-        assert resp.data["description"] == "A sample HTML file"
+        assert resp.data["dc:description"] == "A sample HTML file"
 
 
 class TestParseContentCompress:
@@ -213,7 +213,7 @@ class TestAsyncParseFormatted:
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         assert resp.content is not None
         assert "<body><p>This is an DOCX test document, also made September 14, 2022</p>\n</body>" in resp.content
-        assert resp.content_length == 6424
+        assert resp.content_length == 6183
 
     async def test_parse_doc_from_file_as_html(
         self,
@@ -231,7 +231,7 @@ class TestAsyncParseFormatted:
             "body><p>This is a test document, saved in the older .doc format for Word documents (but created in Google Drive)</p>\n</body>"  # noqa: E501
             in resp.content
         )
-        assert resp.content_length == 23739
+        assert resp.content_length == 23552
         assert resp.character_count == 90
         assert resp.page_count == 1
         assert resp.revision == 1
@@ -393,9 +393,9 @@ class TestAsyncParseContentPlain:
 
         assert resp.type == "text/html; charset=UTF-8"
         assert resp.parsers == ["org.apache.tika.parser.DefaultParser", "org.apache.tika.parser.html.JSoupParser"]
-        assert "Hello world! This is HTML5 content in a file for" in resp.data["X-TIKA:content"]
+        assert "Hello world! This is HTML5 content in a file for" in resp.data["tk:content"]
         assert resp.data["dc:title"] == "This Is A Test"
-        assert resp.data["description"] == "A sample HTML file"
+        assert resp.data["dc:description"] == "A sample HTML file"
 
 
 class TestAsyncFilenameContentDisposition:
