@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import re
 from abc import ABC
 from abc import abstractmethod
 from mimetypes import guess_type
@@ -29,6 +30,12 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound="SyncClientProtocol | AsyncClientProtocol")
 
+# Matches C0 control characters (including CR/LF) and DEL, none of which are
+# valid in an HTTP header value. httpx/niquests/requests all reject these at
+# send time with an opaque, backend-specific error; raising here fails fast
+# with a clear message instead.
+_CONTROL_CHAR_RE = re.compile(r"[\x00-\x1f\x7f]")
+
 
 class BaseResource(ABC, Generic[T]):
     def __init__(self, client: T, *, compress: bool) -> None:
@@ -47,7 +54,15 @@ class BaseResource(ABC, Generic[T]):
         Returns:
             The attachment header
 
+        Raises:
+            ValueError: If filename contains a control character, which is not valid in an
+                HTTP header value.
+
         """
+        if _CONTROL_CHAR_RE.search(filename):
+            msg = f"Filename {filename!r} contains a control character and cannot be used in a header value"
+            raise ValueError(msg)
+
         try:
             # Test if filename is ASCII
             filename.encode("ascii")

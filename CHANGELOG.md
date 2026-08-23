@@ -34,6 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   error response envelope. All subclass the existing `HttpStatusError`, so existing
   `except HttpStatusError` handling keeps working unchanged.
 
+### Fixed
+
+- `from_file()` now raises a clear `ValueError` if a filename contains a control character
+  (e.g. an embedded newline), instead of letting an opaque, backend-specific error surface
+  from deep inside httpx/niquests/requests when the resulting `Content-Disposition` header is
+  sent. Not exploitable in practice (all three backends already reject such headers at send
+  time), but the failure mode is now clear.
+
 ## [1.0.0] - 2026-08-06
 
 ### Breaking Change
