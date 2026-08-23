@@ -52,6 +52,17 @@ class TestTimeout:
         assert err.value.retry_after == 5.0
         assert err.value.status_code == 503
 
+    def test_500_timeout_status_also_maps_to_timeout_error(self) -> None:
+        """A 500 (not just 503) carrying a TIMEOUT envelope is still a timeout, matching
+        how TikaCrashError already treats OOM/UNSPECIFIED_CRASH regardless of status code."""
+        response = FakeResponse(500, '{"status":"TIMEOUT"}')
+
+        with pytest.raises(TikaTimeoutError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.tika_status == "TIMEOUT"
+        assert err.value.status_code == 500
+
 
 class TestSaturated:
     def test_429_no_message_field(self) -> None:
@@ -158,3 +169,73 @@ class TestFallback:
     def test_2xx_does_not_raise(self) -> None:
         response = FakeResponse(200, '{"ok": true}')
         raise_for_tika_status(response)  # type: ignore[arg-type]  # must not raise
+
+    def test_deeply_nested_json_body_does_not_raise_recursion_error(self) -> None:
+        """A hostile or corrupt server could return deeply nested JSON on an error path;
+        constructing the exception must degrade to tika_status=None, never crash instead."""
+        body = "[" * 100_000 + "]" * 100_000
+        response = FakeResponse(500, body)
+
+        with pytest.raises(TikaServerError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.tika_status is None
+        assert err.value.message is None
+
+
+class TestRetryAfterClamping:
+    def test_infinite_retry_after_is_discarded(self) -> None:
+        response = FakeResponse(429, '{"status":"CLIENT_UNAVAILABLE_WITHIN_MS"}', headers={"Retry-After": "inf"})
+
+        with pytest.raises(TikaSaturatedError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.retry_after is None
+
+    def test_nan_retry_after_is_discarded(self) -> None:
+        response = FakeResponse(429, '{"status":"CLIENT_UNAVAILABLE_WITHIN_MS"}', headers={"Retry-After": "nan"})
+
+        with pytest.raises(TikaSaturatedError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.retry_after is None
+
+    def test_negative_retry_after_is_discarded(self) -> None:
+        response = FakeResponse(429, '{"status":"CLIENT_UNAVAILABLE_WITHIN_MS"}', headers={"Retry-After": "-5"})
+
+        with pytest.raises(TikaSaturatedError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.retry_after is None
+
+    def test_normal_retry_after_is_unaffected(self) -> None:
+        response = FakeResponse(429, '{"status":"CLIENT_UNAVAILABLE_WITHIN_MS"}', headers={"Retry-After": "5"})
+
+        with pytest.raises(TikaSaturatedError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.retry_after == 5.0
+
+
+class TestStrRepresentation:
+    def test_str_includes_status_code_and_tika_status_and_message(self) -> None:
+        body = '{"status":"TIMEOUT","message":"progress timeout"}'
+        response = FakeResponse(503, body)
+
+        with pytest.raises(TikaTimeoutError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        rendered = str(err.value)
+        assert "503" in rendered
+        assert "TIMEOUT" in rendered
+        assert "progress timeout" in rendered
+
+    def test_str_degrades_gracefully_with_no_status_or_message(self) -> None:
+        response = FakeResponse(413, "Request body exceeds maxRequestSizeBytes")
+
+        with pytest.raises(TikaPayloadTooLargeError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        rendered = str(err.value)
+        assert "413" in rendered
+        assert rendered != ""
