@@ -23,8 +23,8 @@ body:
   - type: input
     id: server-version
     attributes:
-      label: Gotenberg Server Version
-      placeholder: "e.g., 7.8.3"
+      label: Apache Tika Server Version
+      placeholder: "e.g., 2.8.0"
     validations:
       required: true
   - type: textarea

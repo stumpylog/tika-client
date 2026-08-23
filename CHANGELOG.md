@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TikaTimeoutError` is now raised regardless of the specific non-2xx HTTP status code, matching
   how `TikaCrashError` already worked — a response carrying a `TIMEOUT` status envelope on a code
   other than `503` previously fell through to the generic `TikaServerError`.
+- Issue template now correctly references Apache Tika Server instead of an incorrectly copy-pasted
+  Gotenberg Server reference.
 - Constructing a `TikaServerError` (or subclass) no longer risks an uncaught `RecursionError` on
   a deeply-nested JSON error body, and `retry_after` now discards non-finite (`inf`/`nan`) or
   negative `Retry-After` values instead of passing them through — both would otherwise violate
