@@ -213,7 +213,7 @@ typed constants for accessing common keys in `result.data`:
 from tika_client import TikaKey, DublinCoreKey, XmpKey
 
 print(result.data[DublinCoreKey.Creator])
-print(result.data[TikaKey.ParseTime])
+print(result.data[TikaKey.Parse_Time])
 ```
 
 `HttpStatusError` is raised for 4xx and 5xx responses from the Tika server:
