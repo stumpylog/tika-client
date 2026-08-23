@@ -125,6 +125,16 @@ class TestCrashInference:
 
         assert err.value.tika_status == "OOM"
 
+    def test_500_oom_status_also_maps_to_crash_error(self) -> None:
+        """A 500 (not just 503) carrying an OOM status envelope is still a crash, not a bare TikaServerError."""
+        response = FakeResponse(500, '{"status":"OOM"}')
+
+        with pytest.raises(TikaCrashError) as err:
+            raise_for_tika_status(response)  # type: ignore[arg-type]
+
+        assert err.value.tika_status == "OOM"
+        assert err.value.status_code == 500
+
 
 class TestFallback:
     def test_unrecognized_status_code_falls_back_to_base_error(self) -> None:

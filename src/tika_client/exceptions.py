@@ -98,12 +98,13 @@ def _parse_retry_after(headers: object) -> float | None:
         return None
 
 
-def raise_for_tika_status(response: ResponseProtocol) -> None:
+def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | None = None) -> None:
     """
     Raise the appropriate TikaServerError subclass for a non-2xx response, or return if 2xx.
 
     Args:
         response: The response to inspect and potentially raise from.
+        cause: The underlying backend exception (if any) to chain via `raise ... from cause`.
 
     """
     status_code = response.status_code
@@ -111,21 +112,21 @@ def raise_for_tika_status(response: ResponseProtocol) -> None:
         return
 
     if status_code == 422:  # noqa: PLR2004
-        raise TikaPartialParseError(response=response)
+        raise TikaPartialParseError(response=response) from cause
 
     tika_status, _ = _try_parse_status_envelope(response.text)
 
     if status_code == 429:  # noqa: PLR2004
-        raise TikaSaturatedError(response=response)
+        raise TikaSaturatedError(response=response) from cause
     if status_code == 413:  # noqa: PLR2004
-        raise TikaPayloadTooLargeError(response=response)
+        raise TikaPayloadTooLargeError(response=response) from cause
     if status_code == 503:  # noqa: PLR2004
         if tika_status == "TIMEOUT":
-            raise TikaTimeoutError(response=response)
+            raise TikaTimeoutError(response=response) from cause
         if tika_status in {"UNSPECIFIED_CRASH", "OOM"}:
-            raise TikaCrashError(response=response)
-        raise TikaServerError(response=response)
+            raise TikaCrashError(response=response) from cause
+        raise TikaServerError(response=response) from cause
     if tika_status in {"UNSPECIFIED_CRASH", "OOM"}:
-        raise TikaCrashError(response=response)
+        raise TikaCrashError(response=response) from cause
 
-    raise TikaServerError(response=response)
+    raise TikaServerError(response=response) from cause

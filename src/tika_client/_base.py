@@ -17,6 +17,7 @@ from anyio.to_thread import run_sync
 
 from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._http_backends._protocols import AsyncClientProtocol
+from tika_client._http_backends._protocols import HttpStatusError
 from tika_client._http_backends._protocols import SyncClientProtocol
 from tika_client.data_models import TikaResponse
 from tika_client.exceptions import raise_for_tika_status
@@ -163,7 +164,10 @@ class SyncResource(BaseResource[SyncClientProtocol]):
                 },
                 headers=BaseResource.get_content_headers(filepath.name),
             )
-        raise_for_tika_status(response)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
         return response.json()
 
     def put_content(
@@ -202,7 +206,10 @@ class SyncResource(BaseResource[SyncClientProtocol]):
             headers["Content-Type"] = mime_type
 
         response = self.client.put(endpoint, content=content_bytes, headers=headers)
-        raise_for_tika_status(response)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
         return response.json()
 
 
@@ -237,7 +244,10 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
                 },
                 headers=self.get_content_headers(filepath.name),
             )
-        raise_for_tika_status(response)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
         return response.json()
 
     async def put_content(
@@ -276,5 +286,8 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             headers["Content-Type"] = mime_type
 
         response = await self.client.put(endpoint, content=content_bytes, headers=headers)
-        raise_for_tika_status(response)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
         return response.json()

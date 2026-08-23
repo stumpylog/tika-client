@@ -22,8 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   before sending it, instead of streaming it via multipart — Tika 4 removed the unauthenticated
   multipart upload route these relied on. `metadata.from_file()` and `rmeta.*.from_file()` are
   unaffected and continue to stream via multipart.
-- `tika.as_html` now explicitly targets `/tika/html` instead of the bare `/tika` endpoint, since
-  Tika 4 changed `/tika`'s default output format to Markdown.
+- `tika.as_html` and `tika.as_text` now target `/tika/json/html` and `/tika/json/body` respectively —
+  Tika 4's `/tika/html` and `/tika/text` routes return 406 Not Acceptable for this client's
+  `Accept: application/json` header, and only the `/tika/json/{handler}` routes produce the JSON
+  metadata-plus-content envelope this client parses.
 
 ### Added
 

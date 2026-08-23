@@ -200,7 +200,6 @@ result.created          # datetime | None (timezone-aware)
 result.modified         # datetime | None (timezone-aware)
 result.xmp_created      # datetime | None (timezone-aware)
 result.page_count       # int | None
-result.language         # str | None
 result.character_count  # int | None
 result.revision         # int | None
 result.last_author      # str | None
@@ -227,6 +226,43 @@ with TikaClient("http://localhost:9998") as client:
         result = client.tika.as_text.from_file(Path("sample.pdf"))
     except HttpStatusError as e:
         print(f"Tika returned an error: {e}")
+```
+
+### Typed Tika server errors
+
+For a non-2xx response, `tika-client` raises one of the following `TikaServerError` subclasses
+instead of a bare `HttpStatusError`:
+
+- `TikaTimeoutError` — a 503 response where the forked Tika worker exceeded its configured
+  processing timeout.
+- `TikaCrashError` — a 503 (or 500) response where the forked Tika JVM crashed, e.g. from an
+  out-of-memory condition.
+- `TikaSaturatedError` — a 429 response indicating the server's fork pool is saturated;
+  `retry_after` may carry a backoff hint.
+- `TikaPayloadTooLargeError` — a 413 response, either because the request body exceeded the
+  server's configured size limit or because the parse result exceeded the IPC payload limit.
+- `TikaPartialParseError` — a 422 response from a raw endpoint (e.g. `/tika/html`) indicating a
+  container-level parse exception.
+- `TikaServerError` — the base class, also raised directly as a fallback for any other non-2xx
+  response that doesn't match one of the more specific cases above.
+
+All of these subclass `HttpStatusError`, so any existing `except HttpStatusError` handling
+continues to work unchanged. Each instance also carries:
+
+- `tika_status` — the raw `status` value from Tika's JSON error envelope, when the body was
+  parseable JSON in that shape (`None` otherwise).
+- `message` — the raw `message` value from that same envelope, when present.
+- `retry_after` — the `Retry-After` response header parsed as a number of seconds, when present.
+- `response_text` — the raw, unparsed response body.
+
+```python
+from tika_client import TikaClient, TikaServerError
+
+with TikaClient("http://localhost:9998") as client:
+    try:
+        result = client.tika.as_text.from_file(Path("sample.pdf"))
+    except TikaServerError as e:
+        print(f"Tika server error: {e.tika_status} - {e.message}")
 ```
 
 ## HTTP Backend Selection
