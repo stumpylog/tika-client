@@ -41,6 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from deep inside httpx/niquests/requests when the resulting `Content-Disposition` header is
   sent. Not exploitable in practice (all three backends already reject such headers at send
   time), but the failure mode is now clear.
+- `TikaResponse.parsers` no longer raises a `KeyError` for inputs Tika couldn't parse at all
+  (e.g. a zero-byte file), which return a `200` with an embedded exception and no `tk:parsed-by`
+  key. It now defaults to `[]`, matching this class's existing behavior for every other optional
+  field.
+- `TikaTimeoutError` is now raised regardless of the specific non-2xx HTTP status code, matching
+  how `TikaCrashError` already worked — a response carrying a `TIMEOUT` status envelope on a code
+  other than `503` previously fell through to the generic `TikaServerError`.
+- Constructing a `TikaServerError` (or subclass) no longer risks an uncaught `RecursionError` on
+  a deeply-nested JSON error body, and `retry_after` now discards non-finite (`inf`/`nan`) or
+  negative `Retry-After` values instead of passing them through — both would otherwise violate
+  the "never raises while parsing" guarantee, directly or via a caller's `time.sleep()`.
+- `TikaServerError` and its subclasses now render a useful `str()` (status code, `tika_status`,
+  and message) instead of an empty string, so default log/traceback output is no longer silent.
 
 ## [1.0.0] - 2026-08-06
 
