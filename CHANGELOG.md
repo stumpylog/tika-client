@@ -19,8 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so entries that parsed are not discarded. See "Parse failures" in the README.
 - Tika-computed metadata keys moved from `X-TIKA:` to `tk:` (`X-TIKA:content` -> `tk:content`).
   `TikaKey.Parsers`, `TikaKey.Parser_Full`, `TikaKey.Parse_Time` and `TikaKey.Content` hold the
-  new spellings. `dc:*`, `xmp:*`, `meta:*` and `cp:*` are unchanged.
-- **If you index `result.data` by string, check your keys.** Tika 4 renamed roughly 55 more keys
+  new spellings. `dc:*`, `xmp:*` and `cp:*` are unchanged, being the file's own assertions
+  rather than Tika's. `meta:*` is mostly unchanged, but Office custom properties move to
+  `office:*` and curated MAPI keys move to `mapi:*` (`meta:mapi-importance` -> `mapi:importance`).
+- **If you index `result.data` by string, check your keys.** Tika 4 renamed roughly 50 more keys
   than the four above, kebab-casing format namespaces (`pdf:hasMarkedContent` ->
   `pdf:has-marked-content`) and moving others between prefixes (`resourceName` ->
   `tk:resource-name`). See [Metadata changes in Tika 4](https://tika.apache.org/docs/4.0.x/migration-to-4x/metadata-changes-4x.html);
@@ -29,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the type detected from the content (TIKA-4825).
 - `TikaResponse.language` removed. Tika 4's `/meta` no longer returns it. `/rmeta` and
   `/tika/json` still can, but only with a language-detection filter configured; read
-  `tk:detected-language` from `result.data`.
+  `tk:detected-language` from `result.data`. 1.0.0 read a plain `language` key, and the detector
+  behind it changed too (Tika 4 removes `tika-langdetect-tika`), so values may differ.
 - `tika.as_html` and `tika.as_text` now target `/tika/json/html` and `/tika/json/body`, the only
   routes producing the JSON envelope this client parses.
 - `tika.as_html.from_file()` and `tika.as_text.from_file()` now read the file into memory rather
@@ -51,7 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TikaServerError` and subclasses (`TikaBadRequestError`, `TikaTimeoutError`, `TikaCrashError`,
   `TikaSaturatedError`, `TikaPayloadTooLargeError`, `TikaPartialParseError`) for Tika 4's error
   envelope, all subclassing `HttpStatusError`
+- `TikaParseError`, the base for both parse failures above
+- `TikaKey.ContainerException`, `TikaKey.EmbeddedException` and `TikaKey.TaskDeadlineReached`
 - `TikaResponse` and `TikaResponseList` are now exported from the package root
+- `OtherTikaKeys` is now exported, matching its sibling key enums
 
 ### Fixed
 
