@@ -11,6 +11,10 @@ from datetime import timezone
 from enum import StrEnum
 from typing import Any
 
+from tika_client.exceptions import TikaContainerParseError
+from tika_client.exceptions import TikaEmbeddedParseError
+from tika_client.exceptions import TikaParseError
+
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
 
 _TIME_RE = re.compile(
@@ -41,6 +45,8 @@ class TikaKey(StrEnum):
     ContentType = "Content-Type"
     ContentLength = "Content-Length"
     Content = "tk:content"
+    ContainerException = "tk:exception:container-exception"
+    EmbeddedException = "tk:exception:embedded-exception"
 
 
 class DublinCoreKey(StrEnum):
@@ -110,6 +116,12 @@ class TikaResponse:
 
         # Tika keys
         self.content: str | None = data.get(TikaKey.Content)
+        # Tika 4 reports parse failures in-band on a 200. The /tika path raises on a
+        # container exception; here the failure is exposed so an /rmeta caller keeps the
+        # entries that did parse.
+        self._container_exception: str | None = data.get(TikaKey.ContainerException)
+        self._embedded_exception: str | None = data.get(TikaKey.EmbeddedException)
+        self.parse_exception: str | None = self._container_exception or self._embedded_exception
         self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 
         # Dublin Core keys
@@ -125,6 +137,23 @@ class TikaResponse:
         self.character_count: int | None = int(self.data.get(OtherTikaKeys.CharacterCount, "0")) or None
         self.revision: int | None = int(self.data.get(OtherTikaKeys.Revision, "0")) or None
         self.last_author: str | None = self.data.get(OtherTikaKeys.LastAuthor)
+
+    def raise_for_parse_status(self) -> None:
+        """
+        Raise if this document carries an in-band parse exception, otherwise return None.
+
+        Mirrors httpx's raise_for_status: the response is returned either way, and the
+        caller decides when a failure should become an exception.
+
+        Raises:
+            TikaContainerParseError: The container parser failed, so nothing was extracted.
+            TikaEmbeddedParseError: An embedded document failed while the container succeeded.
+
+        """
+        if self._container_exception is not None:
+            raise TikaContainerParseError(data=self.data, detail=self._container_exception)
+        if self._embedded_exception is not None:
+            raise TikaEmbeddedParseError(data=self.data, detail=self._embedded_exception)
 
     @staticmethod
     def parse_datetime_string(
@@ -178,3 +207,38 @@ class TikaResponse:
     def __repr__(self) -> str:  # pragma: no cover
         """Representation of this class."""
         return f"{self.type} response"
+
+
+class TikaResponseList(list["TikaResponse"]):
+    """
+    The list of documents returned by /rmeta, one entry per embedded document.
+
+    A plain list of TikaResponse, plus a convenience for the common question of
+    whether any document in the tree failed to parse.
+    """
+
+    @property
+    def has_parse_errors(self) -> bool:
+        """Whether any document in the response carries an in-band parse exception."""
+        return any(response.parse_exception is not None for response in self)
+
+    def raise_for_parse_status(self) -> None:
+        """
+        Raise an ExceptionGroup covering every failed document, or return None if all parsed.
+
+        A group rather than a single error because one /rmeta call can fail in several
+        places at once, and reporting only the first would hide the rest.
+
+        Raises:
+            ExceptionGroup: Containing one TikaParseError per failed document.
+
+        """
+        errors: list[TikaParseError] = []
+        for response in self:
+            try:
+                response.raise_for_parse_status()
+            except TikaParseError as e:
+                errors.append(e)
+        if errors:
+            msg = f"{len(errors)} of {len(self)} documents failed to parse"
+            raise ExceptionGroup(msg, errors)

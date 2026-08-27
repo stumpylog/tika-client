@@ -9,13 +9,13 @@ from typing import Final
 
 from tika_client._base import AsyncResource
 from tika_client._base import SyncResource
+from tika_client.data_models import TikaResponseList
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from tika_client._http_backends._protocols import AsyncClientProtocol
     from tika_client._http_backends._protocols import SyncClientProtocol
-    from tika_client.data_models import TikaResponse
 
 HTML_ENDPOINT: Final[str] = "/rmeta"
 HTML_MULTI_PART_ENDPOINT: Final[str] = "/rmeta/form/html"
@@ -29,7 +29,7 @@ class SyncTikaRmetaBase(SyncResource):
         endpoint: str,
         filepath: Path,
         mime_type: str | None = None,
-    ) -> list[TikaResponse]:
+    ) -> TikaResponseList:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint.
 
@@ -42,11 +42,14 @@ class SyncTikaRmetaBase(SyncResource):
             A list of JSON responses from the Tika server
 
         """
-        return [self.decoded_response(item) for item in self.put_multipart(endpoint, filepath, mime_type)]
+        return TikaResponseList(
+            self.decoded_response(item, raise_on_parse_error=False)
+            for item in self.put_multipart(endpoint, filepath, mime_type)
+        )
 
 
 class SyncRecursiveMetaHtml(SyncTikaRmetaBase):
-    def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
+    def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponseList:
         """
         Return the formatted (as HTML) document data.
 
@@ -62,7 +65,7 @@ class SyncRecursiveMetaHtml(SyncTikaRmetaBase):
 
 
 class SyncRecursiveMetaPlain(SyncTikaRmetaBase):
-    def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
+    def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponseList:
         """
         Return the plain text document data.
 
@@ -98,7 +101,7 @@ class AsyncTikaRmetaBase(AsyncResource):
         endpoint: str,
         filepath: Path,
         mime_type: str | None = None,
-    ) -> list[TikaResponse]:
+    ) -> TikaResponseList:
         """
         Given a specific endpoint and a file, do a multipart put to the endpoint.
 
@@ -111,11 +114,14 @@ class AsyncTikaRmetaBase(AsyncResource):
             A list of JSON responses from the Tika server
 
         """
-        return [self.decoded_response(item) for item in await self.put_multipart(endpoint, filepath, mime_type)]
+        return TikaResponseList(
+            self.decoded_response(item, raise_on_parse_error=False)
+            for item in await self.put_multipart(endpoint, filepath, mime_type)
+        )
 
 
 class AsyncRecursiveMetaHtml(AsyncTikaRmetaBase):
-    async def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
+    async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponseList:
         """
         Return the formatted (as HTML) document data.
 
@@ -131,7 +137,7 @@ class AsyncRecursiveMetaHtml(AsyncTikaRmetaBase):
 
 
 class AsyncRecursiveMetaPlain(AsyncTikaRmetaBase):
-    async def from_file(self, filepath: Path, mime_type: str | None = None) -> list[TikaResponse]:
+    async def from_file(self, filepath: Path, mime_type: str | None = None) -> TikaResponseList:
         """
         Return the plain text document data.
 

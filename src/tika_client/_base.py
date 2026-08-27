@@ -20,7 +20,9 @@ from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._http_backends._protocols import AsyncClientProtocol
 from tika_client._http_backends._protocols import HttpStatusError
 from tika_client._http_backends._protocols import SyncClientProtocol
+from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
+from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import raise_for_tika_status
 
 if TYPE_CHECKING:
@@ -134,17 +136,26 @@ class BaseResource(ABC, Generic[T]):
         """
 
     @staticmethod
-    def decoded_response(resp_json: dict[str, Any]) -> TikaResponse:
+    def decoded_response(resp_json: dict[str, Any], *, raise_on_parse_error: bool = True) -> TikaResponse:
         """
         Return the decoded JSON from Tika with helpers for access.
 
         Args:
             resp_json: The JSON response from the server
+            raise_on_parse_error: Raise if the container parser failed. /rmeta passes
+                False, since raising would discard the entries that did parse.
 
         Returns:
             The decoded response
 
+        Raises:
+            TikaContainerParseError: The container parser failed. Tika 4 reports this
+                on an HTTP 200 with no content, so it has to be detected here.
+
         """
+        detail = resp_json.get(TikaKey.ContainerException)
+        if raise_on_parse_error and detail is not None:
+            raise TikaContainerParseError(data=resp_json, detail=detail)
         return TikaResponse(resp_json)
 
 

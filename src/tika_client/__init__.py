@@ -9,7 +9,11 @@ from tika_client.client import TikaClient
 from tika_client.data_models import DublinCoreKey
 from tika_client.data_models import TikaKey
 from tika_client.data_models import XmpKey
+from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaCrashError
+from tika_client.exceptions import TikaEmbeddedParseError
+from tika_client.exceptions import TikaError
+from tika_client.exceptions import TikaParseError
 from tika_client.exceptions import TikaPartialParseError
 from tika_client.exceptions import TikaPayloadTooLargeError
 from tika_client.exceptions import TikaSaturatedError
@@ -21,8 +25,12 @@ __all__ = [
     "DublinCoreKey",
     "HttpStatusError",
     "TikaClient",
+    "TikaContainerParseError",
     "TikaCrashError",
+    "TikaEmbeddedParseError",
+    "TikaError",
     "TikaKey",
+    "TikaParseError",
     "TikaPartialParseError",
     "TikaPayloadTooLargeError",
     "TikaSaturatedError",
