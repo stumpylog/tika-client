@@ -131,6 +131,17 @@ def _try_parse_status_envelope(text: str) -> tuple[str | None, str | None]:
     )
 
 
+def _is_json_content_type(headers: object) -> bool:
+    """Whether the response declares a JSON body, tolerating a missing or odd header mapping."""
+    getter = getattr(headers, "get", None)
+    if getter is None:
+        return False
+    value = getter("Content-Type")
+    if not isinstance(value, str):
+        return False
+    return "json" in value.split(";")[0].strip().lower()
+
+
 def _parse_retry_after(headers: object) -> float | None:
     getter = getattr(headers, "get", None)
     if getter is None:
@@ -165,25 +176,33 @@ def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | 
     if status_code < 400:  # noqa: PLR2004
         return
 
-    tika_status, _ = _try_parse_status_envelope(response.text)
-
+    # These three are definitive at the protocol level, so they win over any envelope and
+    # are decided before the body is touched. That also avoids running json.loads over a
+    # potentially document-sized body only to discard the result.
     if status_code == 429:  # noqa: PLR2004
         raise TikaSaturatedError(response=response) from cause
     if status_code == 413:  # noqa: PLR2004
         raise TikaPayloadTooLargeError(response=response) from cause
     if status_code == 400:  # noqa: PLR2004
         raise TikaBadRequestError(response=response) from cause
-    # TIMEOUT and crash statuses are classified regardless of the specific non-2xx status
-    # code: confirmed live that a crash envelope can appear on both 500 and 503, and there's
-    # no reason to assume TIMEOUT is 503-only when it comes from the same PipesResult code path.
+
+    # A 422 body is the raw partially-extracted document, i.e. user-supplied content. Only
+    # trust it to classify the failure when the server declares it as JSON, otherwise a
+    # document that happens to extract to an envelope shape would pick its own exception.
+    if status_code == 422 and not _is_json_content_type(response.headers):  # noqa: PLR2004
+        raise TikaPartialParseError(response=response) from cause
+
+    tika_status, _ = _try_parse_status_envelope(response.text)
+
+    # TIMEOUT and crash statuses are classified from the envelope rather than the status
+    # code, except where the code is itself definitive (handled above): a crash envelope is
+    # confirmed to appear on both 500 and 503, and TIMEOUT comes from the same PipesResult
+    # code path, so neither is tied to one status code.
     if tika_status == "TIMEOUT":
         raise TikaTimeoutError(response=response) from cause
     if tika_status in {"UNSPECIFIED_CRASH", "OOM"}:
         raise TikaCrashError(response=response) from cause
 
-    # After the envelope, not before it: a 422 carrying a crash or timeout envelope is
-    # that failure, not a partial parse. The usual 422 has no envelope to classify from,
-    # its body being empty or the raw partially-extracted content.
     if status_code == 422:  # noqa: PLR2004
         raise TikaPartialParseError(response=response) from cause
 
@@ -207,6 +226,26 @@ class TikaParseError(TikaError):
     def __str__(self) -> str:
         """Render the server-side detail, which is usually a Java stack trace."""
         return self.detail or self.__class__.__name__
+
+    def __reduce__(self) -> tuple[Any, tuple[Any, ...]]:
+        """
+        Support pickle and deepcopy.
+
+        The keyword-only __init__ leaves .args empty, so the default reduction calls
+        cls(*()) and dies with a TypeError about missing arguments. These errors are
+        aggregated into groups, which is exactly what crosses a process boundary under
+        concurrent.futures, celery or pytest-xdist.
+        """
+        return (_rebuild_parse_error, (type(self), self.data, self.detail))
+
+
+def _rebuild_parse_error(
+    cls: type[TikaParseError],
+    data: dict[str, Any],
+    detail: str | None,
+) -> TikaParseError:
+    """Reconstruct a parse error during unpickling, since __init__ is keyword-only."""
+    return cls(data=data, detail=detail)
 
 
 class TikaContainerParseError(TikaParseError):

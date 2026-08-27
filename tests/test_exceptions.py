@@ -8,6 +8,8 @@ These do not require Docker or a live Tika server themselves.
 
 from __future__ import annotations
 
+import copy
+import pickle
 from typing import Any
 
 import pytest
@@ -289,8 +291,12 @@ class TestEnvelopeClassificationPrecedence:
     """
 
     def test_422_carrying_timeout_is_classified_as_timeout(self) -> None:
-        """An envelope status wins over the bare status code, as documented."""
-        response = FakeResponse(422, '{"status":"TIMEOUT"}')
+        """An envelope status wins over the bare status code when declared as JSON."""
+        response = FakeResponse(
+            422,
+            '{"status":"TIMEOUT"}',
+            headers={"Content-Type": "application/json"},
+        )
 
         with pytest.raises(TikaTimeoutError):
             raise_for_tika_status(response)
@@ -368,3 +374,89 @@ class TestParseErrorGroup:
         """CPython enforces a non-empty sequence, so callers must guard before raising."""
         with pytest.raises(ValueError, match="non-empty"):
             TikaParseErrorGroup("nothing failed", [])
+
+
+class TestEnvelopeOverrideIsGatedOnContentType:
+    """
+    A 422 body is user-supplied document content, so it must not steer classification.
+
+    Envelope classification is right for a real error body, but a 422 carries the raw
+    partially-extracted document. A JSON document that happens to extract to something
+    shaped like an error envelope would otherwise pick its own exception type.
+    """
+
+    def test_422_json_envelope_with_json_content_type_is_classified(self) -> None:
+        """A genuine error envelope, declared as JSON, still wins over the status code."""
+        response = FakeResponse(
+            422,
+            '{"status":"TIMEOUT"}',
+            headers={"Content-Type": "application/json"},
+        )
+
+        with pytest.raises(TikaTimeoutError):
+            raise_for_tika_status(response)
+
+    def test_422_envelope_shaped_document_content_is_not_classified(self) -> None:
+        """Extracted document content that mimics an envelope stays a partial parse."""
+        response = FakeResponse(
+            422,
+            '{"status":"TIMEOUT"}',
+            headers={"Content-Type": "text/html;charset=UTF-8"},
+        )
+
+        with pytest.raises(TikaPartialParseError):
+            raise_for_tika_status(response)
+
+    def test_422_without_a_content_type_is_not_classified(self) -> None:
+        """Absent a declared JSON type, the conservative reading is a partial parse."""
+        response = FakeResponse(422, '{"status":"OOM"}')
+
+        with pytest.raises(TikaPartialParseError):
+            raise_for_tika_status(response)
+
+    def test_non_422_envelopes_are_unaffected_by_content_type(self) -> None:
+        """Only 422 carries document content; a 503 body is always a real error body."""
+        response = FakeResponse(503, '{"status":"TIMEOUT"}', headers={"Content-Type": "text/plain"})
+
+        with pytest.raises(TikaTimeoutError):
+            raise_for_tika_status(response)
+
+
+class TestParseErrorsSurviveProcessBoundaries:
+    """
+    Parse errors are aggregated into groups, which is exactly what crosses process
+    boundaries under concurrent.futures, celery or pytest-xdist. Keyword-only __init__
+    with empty .args made them die on unpickling with an unrelated TypeError.
+    """
+
+    def test_parse_error_pickle_round_trip(self) -> None:
+        """The error survives transport with its detail and data intact."""
+        original = TikaContainerParseError(data={"a": "b"}, detail="boom")
+
+        restored = pickle.loads(pickle.dumps(original))  # noqa: S301
+
+        assert isinstance(restored, TikaContainerParseError)
+        assert restored.detail == "boom"
+        assert restored.data == {"a": "b"}
+
+    def test_parse_error_deepcopy(self) -> None:
+        """deepcopy uses the same reduction path as pickle."""
+        original = TikaEmbeddedParseError(data={"a": "b"}, detail="boom")
+
+        restored = copy.deepcopy(original)
+
+        assert isinstance(restored, TikaEmbeddedParseError)
+        assert restored.detail == "boom"
+
+    def test_group_pickle_round_trip(self) -> None:
+        """A group of parse errors survives transport, sub-exceptions included."""
+        original = TikaParseErrorGroup(
+            "1 of 2 documents failed to parse",
+            [TikaContainerParseError(data={}, detail="boom")],
+        )
+
+        restored = pickle.loads(pickle.dumps(original))  # noqa: S301
+
+        assert isinstance(restored, TikaParseErrorGroup)
+        assert len(restored.exceptions) == 1
+        assert restored.exceptions[0].detail == "boom"
