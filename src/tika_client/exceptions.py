@@ -218,6 +218,9 @@ class TikaParseErrorGroup(ExceptionGroup[TikaParseError], TikaError):  # noqa: N
     ExceptionGroup would escape "except TikaError" entirely.
     """
 
-    def derive(self, excs: Sequence[TikaParseError]) -> TikaParseErrorGroup:
+    # BaseExceptionGroup.derive is generic and overloaded, so any concrete narrowing is
+    # reported as incompatible. Narrowing is the point: it keeps split() and subgroup()
+    # returning this class rather than a plain ExceptionGroup.
+    def derive(self, excs: Sequence[TikaParseError]) -> TikaParseErrorGroup:  # type: ignore[override]
         """Keep the subclass through split() and subgroup(), which would otherwise degrade to ExceptionGroup."""
         return TikaParseErrorGroup(self.message, excs)

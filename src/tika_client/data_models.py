@@ -120,9 +120,11 @@ class TikaResponse:
         # Tika 4 reports parse failures in-band on a 200. The /tika path raises on a
         # container exception; here the failure is exposed so an /rmeta caller keeps the
         # entries that did parse.
-        self._container_exception: str | None = data.get(TikaKey.ContainerException)
-        self._embedded_exception: str | None = data.get(TikaKey.EmbeddedException)
-        self.parse_exception: str | None = self._container_exception or self._embedded_exception
+        # Both are exposed: with a failed container the embedded detail is still in the
+        # payload, and would otherwise only be reachable through .data.
+        self.container_exception: str | None = data.get(TikaKey.ContainerException)
+        self.embedded_exception: str | None = data.get(TikaKey.EmbeddedException)
+        self.parse_exception: str | None = self.container_exception or self.embedded_exception
         self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 
         # Dublin Core keys
@@ -151,10 +153,10 @@ class TikaResponse:
             TikaEmbeddedParseError: An embedded document failed while the container succeeded.
 
         """
-        if self._container_exception is not None:
-            raise TikaContainerParseError(data=self.data, detail=self._container_exception)
-        if self._embedded_exception is not None:
-            raise TikaEmbeddedParseError(data=self.data, detail=self._embedded_exception)
+        if self.container_exception is not None:
+            raise TikaContainerParseError(data=self.data, detail=self.container_exception)
+        if self.embedded_exception is not None:
+            raise TikaEmbeddedParseError(data=self.data, detail=self.embedded_exception)
 
     @staticmethod
     def parse_datetime_string(

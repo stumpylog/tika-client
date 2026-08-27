@@ -15,9 +15,14 @@ truncating a valid .docx so no binary sample needs committing.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import pytest
 
+from tika_client.client import AsyncTikaClient
+from tika_client.client import TikaClient
+from tika_client.data_models import TikaKey
+from tika_client.data_models import TikaResponse
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaEmbeddedParseError
 from tika_client.exceptions import TikaError
@@ -26,7 +31,7 @@ from tika_client.exceptions import TikaParseError
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from tika_client.client import TikaClient
+    from pytest_httpx import HTTPXMock
 
 
 @pytest.fixture(scope="session")
@@ -90,8 +95,9 @@ class TestRaiseForParseStatus:
         """A document that parsed cleanly does not raise."""
         result = tika_client.rmeta.as_text.from_file(sample_google_docs_to_docx_file)
 
-        assert result.raise_for_parse_status() is None
-        assert result[0].raise_for_parse_status() is None
+        # Calling is the assertion: either of these raising fails the test.
+        result.raise_for_parse_status()
+        result[0].raise_for_parse_status()
 
     def test_embedded_failure_raises_embedded_error(
         self,
@@ -133,3 +139,68 @@ class TestRaiseForParseStatus:
 
         with pytest.raises(TikaError):
             result.raise_for_parse_status()
+
+
+class TestSingleDocumentEndpointsRaise:
+    """
+    Mocked coverage of the raising contract for paths the live tests do not reach.
+
+    These construct a client directly instead of using the tika_client fixture, which
+    depends on the container fixture, so they run on a CI leg without Docker.
+    """
+
+    CONTAINER_FAILURE: ClassVar[dict[str, str]] = {
+        TikaKey.ContentType: "application/vnd.oasis.opendocument.text",
+        TikaKey.ContainerException: "org.apache.tika.exception.TikaException: Error opening file",
+    }
+
+    def test_metadata_from_file_raises(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """/meta shares decoded_response with /tika, so a container failure must raise there too."""
+        httpx_mock.add_response(json=self.CONTAINER_FAILURE)
+
+        with TikaClient(tika_url="http://tika.invalid") as client, pytest.raises(TikaContainerParseError):
+            client.metadata.from_file(sample_libre_office_writer_file)
+
+    async def test_async_tika_from_file_raises(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """The async paths share decoded_response, so they raise identically."""
+        httpx_mock.add_response(json=self.CONTAINER_FAILURE)
+
+        async with AsyncTikaClient(tika_url="http://tika.invalid") as client:
+            with pytest.raises(TikaContainerParseError):
+                await client.tika.as_text.from_file(sample_libre_office_writer_file)
+
+    def test_both_keys_present_prefers_the_container_failure(self) -> None:
+        """A failed container makes the embedded failure moot, so it takes precedence."""
+        response = TikaResponse(
+            {
+                **self.CONTAINER_FAILURE,
+                TikaKey.EmbeddedException: "org.apache.tika.exception.TikaException: embedded",
+            },
+        )
+
+        assert response.parse_exception == self.CONTAINER_FAILURE[TikaKey.ContainerException]
+        assert response.container_exception == self.CONTAINER_FAILURE[TikaKey.ContainerException]
+        assert response.embedded_exception == "org.apache.tika.exception.TikaException: embedded"
+        with pytest.raises(TikaContainerParseError):
+            response.raise_for_parse_status()
+
+    def test_embedded_only_raises_the_embedded_error(self) -> None:
+        """With no container failure the embedded one is what surfaces."""
+        response = TikaResponse(
+            {
+                TikaKey.ContentType: "application/zip",
+                TikaKey.EmbeddedException: "org.apache.tika.exception.TikaException: embedded",
+            },
+        )
+
+        assert response.container_exception is None
+        with pytest.raises(TikaEmbeddedParseError):
+            response.raise_for_parse_status()
