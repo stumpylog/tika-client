@@ -13,13 +13,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-class HttpStatusError(Exception):
-    """Unified HTTP status error raised by all backends."""
-
-    def __init__(self, *, response: ResponseProtocol) -> None:
-        """Initialize the error with the response that caused it."""
-        super().__init__()
-        self.response = response
+# Re-exported for backwards compatibility; the class moved to tika_client.exceptions so
+# that it and the in-band TikaParseError family could share a TikaError root.
+from tika_client.exceptions import HttpStatusError
 
 
 class ResponseProtocol(Protocol):
@@ -103,3 +99,6 @@ class AsyncClientProtocol(Protocol):
     async def aclose(self) -> None:
         """Asynchronously close the client and release resources."""
         ...  # pragma: no cover
+
+
+__all__ = ["HttpStatusError", "ResponseProtocol"]

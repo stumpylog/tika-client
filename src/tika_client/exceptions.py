@@ -6,11 +6,29 @@ from __future__ import annotations
 import json
 import math
 from typing import TYPE_CHECKING
-
-from tika_client._http_backends._protocols import HttpStatusError
+from typing import Any
 
 if TYPE_CHECKING:
     from tika_client._http_backends._protocols import ResponseProtocol
+
+
+class TikaError(Exception):
+    """
+    Root of every error this library raises.
+
+    Exists because Tika 4 reports failures two different ways: as a non-2xx HTTP
+    status (see HttpStatusError), and in-band on an HTTP 200 with the failure
+    embedded in the metadata (see TikaParseError). Catching TikaError covers both.
+    """
+
+
+class HttpStatusError(TikaError):
+    """Unified HTTP status error raised by all backends."""
+
+    def __init__(self, *, response: ResponseProtocol) -> None:
+        """Initialize the error with the response that caused it."""
+        super().__init__()
+        self.response = response
 
 
 class TikaServerError(HttpStatusError):
@@ -148,3 +166,42 @@ def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | 
         raise TikaCrashError(response=response) from cause
 
     raise TikaServerError(response=response) from cause
+
+
+class TikaParseError(TikaError):
+    """
+    Base for parse failures Tika 4 reports in-band on an HTTP 200.
+
+    There is no failing HTTP response to attach, so unlike HttpStatusError these
+    carry the decoded metadata that described the failure.
+    """
+
+    def __init__(self, *, data: dict[str, Any], detail: str | None) -> None:
+        """Build the error from the decoded metadata of an otherwise-successful response."""
+        super().__init__()
+        self.data = data
+        self.detail = detail
+
+    def __str__(self) -> str:
+        """Render the server-side detail, which is usually a Java stack trace."""
+        return self.detail or self.__class__.__name__
+
+
+class TikaContainerParseError(TikaParseError):
+    """
+    The container parser failed, so no content was extracted.
+
+    Tika 3.x returned 500 here. Tika 4 returns 200 with the stack trace in
+    tk:exception:container-exception and no tk:content, so this is raised to keep
+    a failed parse from looking like an empty document.
+    """
+
+
+class TikaEmbeddedParseError(TikaParseError):
+    """
+    An embedded document failed to parse while its container succeeded.
+
+    Only reachable from /rmeta, which returns one entry per embedded document.
+    Never raised eagerly: the surrounding documents parsed fine, so this surfaces
+    only via raise_for_parse_status().
+    """
