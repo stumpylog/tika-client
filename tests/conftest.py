@@ -32,8 +32,11 @@ def tika_host(docker_services: Services, docker_ip: str) -> str:
 
     url = f"http://{docker_ip}:{docker_services.port_for('tika', 9998)}"
 
+    # Tika 4 boots substantially slower than 3.x: the pipes infrastructure starts a fork
+    # pool before the server answers, measured at ~26s cold on a 2-CPU host. The previous
+    # 30s left almost no margin and failed intermittently under parallel workers.
     docker_services.wait_until_responsive(
-        timeout=30.0,
+        timeout=120.0,
         pause=1,
         check=lambda: is_responsive(url),
     )
