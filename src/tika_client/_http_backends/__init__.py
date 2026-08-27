@@ -7,11 +7,14 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Literal
 
-from tika_client._http_backends._protocols import AsyncClientProtocol
-from tika_client._http_backends._protocols import HttpStatusError
-from tika_client._http_backends._protocols import SyncClientProtocol
+from tika_client.exceptions import HttpStatusError
+
+if TYPE_CHECKING:
+    from tika_client._http_backends._protocols import AsyncClientProtocol
+    from tika_client._http_backends._protocols import SyncClientProtocol
 
 BackendType = Literal["httpx", "niquests", "requests", "auto"]
 

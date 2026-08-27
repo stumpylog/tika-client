@@ -13,8 +13,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-# Re-exported for backwards compatibility; the class moved to tika_client.exceptions so
-# that it and the in-band TikaParseError family could share a TikaError root.
+# Re-exported purely for backwards compatibility with anyone importing the old private
+# path; the class moved to tika_client.exceptions so that it and the in-band
+# TikaParseError family could share a TikaError root. Nothing internal imports it here.
 from tika_client.exceptions import HttpStatusError
 
 
@@ -101,4 +102,4 @@ class AsyncClientProtocol(Protocol):
         ...  # pragma: no cover
 
 
-__all__ = ["HttpStatusError", "ResponseProtocol"]
+__all__ = ["AsyncClientProtocol", "HttpStatusError", "ResponseProtocol", "SyncClientProtocol"]

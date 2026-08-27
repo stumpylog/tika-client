@@ -12,7 +12,7 @@ from typing import cast
 import requests
 import requests.exceptions
 
-from tika_client._http_backends._protocols import HttpStatusError
+from tika_client.exceptions import HttpStatusError
 
 if TYPE_CHECKING:
     from tika_client._http_backends._protocols import ResponseProtocol

@@ -18,10 +18,10 @@ from anyio.to_thread import run_sync
 
 from tika_client._constants import MIN_COMPRESS_LEN
 from tika_client._http_backends._protocols import AsyncClientProtocol
-from tika_client._http_backends._protocols import HttpStatusError
 from tika_client._http_backends._protocols import SyncClientProtocol
 from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
+from tika_client.exceptions import HttpStatusError
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import raise_for_tika_status
 
