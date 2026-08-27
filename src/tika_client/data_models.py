@@ -4,10 +4,11 @@
 from __future__ import annotations
 
 import re
+from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
@@ -25,7 +26,7 @@ _TIME_RE = re.compile(
 )
 
 
-class TikaKey(str, Enum):
+class TikaKey(StrEnum):
     """
     Keys for access to certain Tika returned values in the JSON.
 
@@ -42,7 +43,7 @@ class TikaKey(str, Enum):
     Content = "tk:content"
 
 
-class DublinCoreKey(str, Enum):
+class DublinCoreKey(StrEnum):
     """
     Dublin Core keys for access to certain Tika returned values in the JSON.
 
@@ -66,7 +67,7 @@ class DublinCoreKey(str, Enum):
     Format = "dc:format"
 
 
-class XmpKey(str, Enum):
+class XmpKey(StrEnum):
     """
     XMP keys for access to certain Tika returned values in the JSON.
 
@@ -79,7 +80,7 @@ class XmpKey(str, Enum):
     NumPages = "xmpTPg:NPages"
 
 
-class OtherTikaKeys(str, Enum):
+class OtherTikaKeys(StrEnum):
     """Other keys Tika may return in the JSON."""
 
     CharacterCount = "meta:character-count"
@@ -155,7 +156,7 @@ class TikaResponse:
         tzinfo = None
         if timezone_str is not None:
             if timezone_str.lower() == "z":
-                tzinfo = timezone.utc
+                tzinfo = UTC
             else:
                 multi = -1 if timezone_str[0:1] == "-" else 1
                 hours = int(timezone_str[1:3])

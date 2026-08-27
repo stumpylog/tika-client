@@ -1,3 +1,4 @@
+from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
@@ -39,7 +40,7 @@ class TestDateTimeFormat:
             hour=16,
             minute=30,
             second=44,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
     def test_parse_offset_date_format_zulu(
@@ -67,7 +68,7 @@ class TestDateTimeFormat:
             hour=16,
             minute=35,
             second=44,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
     def test_parse_offset_date_format_positive(
@@ -133,7 +134,7 @@ class TestDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the ISO 8061 format (as done by Python)
         """
-        expected = datetime(2025, 9, 1, 10, 41, 38, 516674, tzinfo=timezone.utc)
+        expected = datetime(2025, 9, 1, 10, 41, 38, 516674, tzinfo=UTC)
 
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: expected.isoformat()},
@@ -193,7 +194,7 @@ class TestAsyncDateTimeFormat:
             hour=16,
             minute=30,
             second=44,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
     async def test_parse_offset_date_format_zulu(
@@ -221,7 +222,7 @@ class TestAsyncDateTimeFormat:
             hour=16,
             minute=35,
             second=44,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
     async def test_parse_offset_date_format_positive(
@@ -287,7 +288,7 @@ class TestAsyncDateTimeFormat:
         """
         Test the datetime parsing properly handles a time with a timezone in the ISO 8061 format (as done by Python)
         """
-        expected = datetime(2025, 9, 1, 10, 41, 38, 516994, tzinfo=timezone.utc)
+        expected = datetime(2025, 9, 1, 10, 41, 38, 516994, tzinfo=UTC)
 
         httpx_mock.add_response(
             json={TikaKey.ContentType: "test", TikaKey.Parsers: [], DublinCoreKey.Created: expected.isoformat()},

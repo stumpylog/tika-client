@@ -1,5 +1,5 @@
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from http import HTTPStatus
 from pathlib import Path
 
@@ -42,8 +42,8 @@ class TestMetadataResource:
         resp = tika_client.metadata.from_file(sample_docx_file, magic.from_file(str(sample_docx_file), mime=True))
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        assert resp.created == datetime(year=2023, month=5, day=17, hour=16, minute=41, tzinfo=timezone.utc)
-        assert resp.modified == datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=timezone.utc)
+        assert resp.created == datetime(year=2023, month=5, day=17, hour=16, minute=41, tzinfo=UTC)
+        assert resp.modified == datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=UTC)
 
     def test_metadata_from_odt(
         self,
@@ -146,8 +146,8 @@ class TestAsyncMetadataResource:
         )
 
         assert resp.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        assert resp.created == datetime(year=2023, month=5, day=17, hour=16, minute=41, tzinfo=timezone.utc)
-        assert resp.modified == datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=timezone.utc)
+        assert resp.created == datetime(year=2023, month=5, day=17, hour=16, minute=41, tzinfo=UTC)
+        assert resp.modified == datetime(year=2023, month=5, day=17, hour=16, minute=44, tzinfo=UTC)
 
     async def test_metadata_from_odt(
         self,
