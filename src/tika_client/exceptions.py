@@ -84,15 +84,30 @@ class TikaPayloadTooLargeError(TikaServerError):
     """
 
 
+class TikaBadRequestError(TikaServerError):
+    """
+    A 400 response - the request is malformed, and retrying will never help.
+
+    Covers an unknown or reserved fetcher/emitter, an unrecognized handler name in the
+    path, and a malformed body. Distinct from the 5xx family because the correct
+    response is to fix or drop the request rather than back off and retry.
+    """
+
+
 class TikaPartialParseError(TikaServerError):
     """
-    A 422 response from a raw endpoint (e.g. /tika/html) - container-level parse exception.
+    A 422 response from a raw endpoint - container-level parse exception.
 
     Confirmed never JSON in practice: the body is either empty or the raw
     partially-extracted content, so tika_status and message end up None in real usage.
     Nothing in this class enforces that - the base class still attempts to parse the
     envelope for every response - it is an observed property of Tika's behavior rather
     than a parsing rule, so callers should not treat those attributes as guaranteed None.
+
+    Not expected from this client. 422 comes from the raw /tika, /tika/text, /tika/html,
+    /tika/xml and /tika/md family and from /meta/{field}, none of which this client calls:
+    it uses /tika/json/{handler}, /meta and /rmeta, whose failures arrive as a 200 with an
+    embedded exception instead. Kept for defence in depth.
     """
 
 
@@ -150,15 +165,14 @@ def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | 
     if status_code < 400:  # noqa: PLR2004
         return
 
-    if status_code == 422:  # noqa: PLR2004
-        raise TikaPartialParseError(response=response) from cause
-
     tika_status, _ = _try_parse_status_envelope(response.text)
 
     if status_code == 429:  # noqa: PLR2004
         raise TikaSaturatedError(response=response) from cause
     if status_code == 413:  # noqa: PLR2004
         raise TikaPayloadTooLargeError(response=response) from cause
+    if status_code == 400:  # noqa: PLR2004
+        raise TikaBadRequestError(response=response) from cause
     # TIMEOUT and crash statuses are classified regardless of the specific non-2xx status
     # code: confirmed live that a crash envelope can appear on both 500 and 503, and there's
     # no reason to assume TIMEOUT is 503-only when it comes from the same PipesResult code path.
@@ -166,6 +180,12 @@ def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | 
         raise TikaTimeoutError(response=response) from cause
     if tika_status in {"UNSPECIFIED_CRASH", "OOM"}:
         raise TikaCrashError(response=response) from cause
+
+    # After the envelope, not before it: a 422 carrying a crash or timeout envelope is
+    # that failure, not a partial parse. The usual 422 has no envelope to classify from,
+    # its body being empty or the raw partially-extracted content.
+    if status_code == 422:  # noqa: PLR2004
+        raise TikaPartialParseError(response=response) from cause
 
     raise TikaServerError(response=response) from cause
 

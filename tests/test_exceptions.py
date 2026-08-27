@@ -12,6 +12,7 @@ from typing import Any
 
 import pytest
 
+from tika_client.exceptions import TikaBadRequestError
 from tika_client.exceptions import TikaCrashError
 from tika_client.exceptions import TikaPartialParseError
 from tika_client.exceptions import TikaPayloadTooLargeError
@@ -239,3 +240,65 @@ class TestStrRepresentation:
         rendered = str(err.value)
         assert "413" in rendered
         assert rendered != ""
+
+
+class TestBadRequest:
+    """
+    400 is a distinct category in Tika 4: the request is malformed and retrying never helps.
+
+    The migration guide tells clients branching on status code to account for the
+    429 / 400 / 413 mappings. Without a type of its own, callers cannot tell a
+    permanently bad request from a transient server problem.
+    """
+
+    def test_400_raises_bad_request(self) -> None:
+        """A malformed request is its own type rather than the generic server error."""
+        response = FakeResponse(400, '{"status":"FETCHER_NOT_FOUND"}')
+
+        with pytest.raises(TikaBadRequestError) as err:
+            raise_for_tika_status(response)
+
+        assert err.value.status_code == 400
+        assert err.value.tika_status == "FETCHER_NOT_FOUND"
+
+    def test_400_from_an_unknown_handler_name(self) -> None:
+        """Naming handlers in the path means a client/server skew surfaces as a 400."""
+        response = FakeResponse(400, "Unrecognized handler: bogus. Valid types: text, html, body")
+
+        with pytest.raises(TikaBadRequestError):
+            raise_for_tika_status(response)
+
+    def test_bad_request_is_distinguishable_from_server_error(self) -> None:
+        """A 500 must not be caught by a handler that only wants non-retryable failures."""
+        with pytest.raises(TikaServerError) as err:
+            raise_for_tika_status(FakeResponse(500, ""))
+
+        assert not isinstance(err.value, TikaBadRequestError)
+
+
+class TestEnvelopeClassificationPrecedence:
+    """
+    The 422 branch ran before the envelope was parsed, so it swallowed crash statuses.
+
+    The module documents that TIMEOUT and crash statuses are classified regardless of
+    status code. The 422 short-circuit contradicted that for any 422 carrying an envelope.
+    """
+
+    def test_422_carrying_timeout_is_classified_as_timeout(self) -> None:
+        """An envelope status wins over the bare status code, as documented."""
+        response = FakeResponse(422, '{"status":"TIMEOUT"}')
+
+        with pytest.raises(TikaTimeoutError):
+            raise_for_tika_status(response)
+
+    def test_422_without_an_envelope_is_still_a_partial_parse(self) -> None:
+        """The common 422 shape, raw partial content, keeps its existing meaning."""
+        response = FakeResponse(422, "<html><body>partial content</body>")
+
+        with pytest.raises(TikaPartialParseError):
+            raise_for_tika_status(response)
+
+    def test_empty_422_is_still_a_partial_parse(self) -> None:
+        """An empty 422 body has no envelope to classify from."""
+        with pytest.raises(TikaPartialParseError):
+            raise_for_tika_status(FakeResponse(422, ""))

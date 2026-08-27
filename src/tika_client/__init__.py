@@ -11,6 +11,7 @@ from tika_client.data_models import TikaResponse
 from tika_client.data_models import TikaResponseList
 from tika_client.data_models import XmpKey
 from tika_client.exceptions import HttpStatusError
+from tika_client.exceptions import TikaBadRequestError
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaCrashError
 from tika_client.exceptions import TikaEmbeddedParseError
@@ -27,6 +28,7 @@ __all__ = [
     "AsyncTikaClient",
     "DublinCoreKey",
     "HttpStatusError",
+    "TikaBadRequestError",
     "TikaClient",
     "TikaContainerParseError",
     "TikaCrashError",
