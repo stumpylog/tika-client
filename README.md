@@ -328,7 +328,15 @@ if results.has_parse_errors:
 # Or raise on demand, the way httpx defers raise_for_status() to you.
 # The list form raises a TikaParseErrorGroup, so every failure is reported, not just the first.
 results.raise_for_parse_status()
+
+# The same method exists on an individual response, raising the one matching error.
+results[0].raise_for_parse_status()
 ```
+
+`raise_for_parse_status()` is available on both `TikaResponse` and `TikaResponseList`. The
+single-response form raises `TikaContainerParseError` or `TikaEmbeddedParseError` directly; the
+list form always raises a `TikaParseErrorGroup`, even for a single failure, so that handling does
+not depend on how many documents happened to fail. Neither raises for truncation.
 
 `TikaParseErrorGroup` is an `ExceptionGroup`, so `except*` works, and it is also a `TikaError`:
 
