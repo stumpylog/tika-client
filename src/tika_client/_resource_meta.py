@@ -39,7 +39,7 @@ class SyncMetadata(SyncResource):
 
         """
         resp = self.put_multipart(MULTI_PART_ENDPOINT, filepath, mime_type)
-        return self.decoded_response(resp)
+        return self.decoded_response(resp, on_parse_error="container")
 
 
 class AsyncMetadata(AsyncResource):
@@ -63,4 +63,4 @@ class AsyncMetadata(AsyncResource):
 
         """
         resp = await self.put_multipart(MULTI_PART_ENDPOINT, filepath, mime_type)
-        return self.decoded_response(resp)
+        return self.decoded_response(resp, on_parse_error="container")

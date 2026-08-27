@@ -41,7 +41,7 @@ class SyncTikaRmetaBase(SyncResource):
 
         """
         return TikaResponseList(
-            self.decoded_response(item, raise_on_parse_error=False)
+            self.decoded_response(item, on_parse_error="none")
             for item in self.put_multipart(endpoint, filepath, mime_type)
         )
 
@@ -113,7 +113,7 @@ class AsyncTikaRmetaBase(AsyncResource):
 
         """
         return TikaResponseList(
-            self.decoded_response(item, raise_on_parse_error=False)
+            self.decoded_response(item, on_parse_error="none")
             for item in await self.put_multipart(endpoint, filepath, mime_type)
         )
 

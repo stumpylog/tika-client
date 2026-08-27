@@ -267,6 +267,48 @@ class TestSingleDocumentEndpointsRaise:
             response.raise_for_parse_status()
 
 
+class TestMetadataIgnoresEmbeddedFailures:
+    """
+    /meta returns container metadata only, so an embedded failure does not affect its answer.
+
+    Raising would discard metadata that is complete with respect to what was asked for. A
+    live tika-server does not send the embedded key on /meta at all, so this is enforced by
+    construction rather than in reaction to observed behaviour.
+    """
+
+    def test_embedded_failure_does_not_raise(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """An embedded failure leaves the container metadata usable."""
+        httpx_mock.add_response(
+            json={
+                TikaKey.ContentType: "application/zip",
+                TikaKey.EmbeddedException: "org.apache.tika.exception.TikaException: embedded",
+            },
+        )
+
+        with TikaClient(tika_url="http://tika.invalid") as client:
+            result = client.metadata.from_file(sample_libre_office_writer_file)
+
+        assert result.type == "application/zip"
+        assert result.embedded_exception is not None
+
+    def test_container_failure_still_raises(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """A container failure means the metadata itself is untrustworthy, so it still raises."""
+        httpx_mock.add_response(
+            json={TikaKey.ContainerException: "org.apache.tika.exception.TikaException: boom"},
+        )
+
+        with TikaClient(tika_url="http://tika.invalid") as client, pytest.raises(TikaContainerParseError):
+            client.metadata.from_file(sample_libre_office_writer_file)
+
+
 class TestTaskDeadlineReached:
     """
     Tika 4 truncates rather than failing when a parse exceeds its deadline.

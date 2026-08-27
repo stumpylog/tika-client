@@ -12,9 +12,11 @@ from typing import IO
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Generic
+from typing import Literal
 from typing import TypeVar
 from urllib.parse import quote
 
+from anyio import Path as AsyncPath
 from anyio.to_thread import run_sync
 
 from tika_client._constants import MIN_COMPRESS_LEN
@@ -33,6 +35,9 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound="SyncClientProtocol | AsyncClientProtocol")
+
+# Which in-band parse failures raise, which differs by what the endpoint returns.
+ParseErrorMode = Literal["all", "container", "none"]
 
 # Matches C0 control characters (including CR/LF) and DEL, none of which are
 # valid in an HTTP header value. httpx/niquests/requests all reject these at
@@ -173,14 +178,17 @@ class BaseResource(ABC, Generic[T]):
         return content_bytes, headers
 
     @staticmethod
-    def decoded_response(resp_json: dict[str, Any], *, raise_on_parse_error: bool = True) -> TikaResponse:
+    def decoded_response(resp_json: dict[str, Any], *, on_parse_error: ParseErrorMode = "all") -> TikaResponse:
         """
         Return the decoded JSON from Tika with helpers for access.
 
         Args:
             resp_json: The JSON response from the server
-            raise_on_parse_error: Raise if the container parser failed. /rmeta passes
-                False, since raising would discard the entries that did parse.
+            on_parse_error: Which in-band parse failures should raise. "all" for the
+                single-document content endpoints, where a failure means content the caller
+                asked for is missing. "container" for /meta, which returns container metadata
+                only, so an embedded failure does not affect its answer. "none" for /rmeta,
+                where raising would discard the entries that did parse.
 
         Returns:
             The decoded response
@@ -191,7 +199,7 @@ class BaseResource(ABC, Generic[T]):
                 Tika reports both on an HTTP 200, so they have to be detected here.
 
         """
-        if raise_on_parse_error:
+        if on_parse_error != "none":
             # Container first: a failed container makes the embedded failure moot. Checked on
             # the raw payload rather than a constructed TikaResponse, so a failure response
             # missing an otherwise-required key still raises the right error.
@@ -199,7 +207,7 @@ class BaseResource(ABC, Generic[T]):
             if container is not None:
                 raise TikaContainerParseError(data=resp_json, detail=container)
             embedded = resp_json.get(TikaKey.EmbeddedException)
-            if embedded is not None:
+            if embedded is not None and on_parse_error == "all":
                 raise TikaEmbeddedParseError(data=resp_json, detail=embedded)
         return TikaResponse(resp_json)
 
@@ -411,14 +419,15 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             The JSON response of the server
 
         """
-        size = (await run_sync(filepath.stat)).st_size
+        size = (await AsyncPath(filepath).stat()).st_size
         # See the sync twin: an empty body would collide Content-Length with the chunked
         # encoding requests and niquests add for a zero-length handle.
         if self.compress or size == 0:
             return await self.put_content(endpoint, await run_sync(filepath.read_bytes), mime_type, filepath.name)
 
         headers = dict(BaseResource.get_content_headers(filepath.name))
-        # stat, open and close are blocking, so they go to a worker thread. The httpx adapter
+        # open and close stay on worker threads: the handle must remain a plain sync file,
+        # because the niquests async adapter passes it straight to the request. The httpx adapter
         # reads its chunks off the loop too; the niquests adapter reads them inline, since it
         # takes the handle directly.
         headers["Content-Length"] = str(size)
