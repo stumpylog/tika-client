@@ -283,11 +283,23 @@ with TikaClient("http://localhost:9998") as client:
         print(f"Tika server error: {e.tika_status} - {e.message}")
 ```
 
+These cover non-2xx responses only. Tika 4 also reports parse failures on a `200`, which are a
+separate family described next.
+
 ### Parse failures
 
 Tika 3.x returned a 500 when the container parser failed. **Tika 4 returns a 200** with the
 stack trace in `tk:exception:container-exception` and no content at all, so a failed parse would
 otherwise be indistinguishable from an empty document.
+
+Two error types describe these, both subclassing `TikaParseError` and so also `TikaError`:
+
+- `TikaContainerParseError` - the container parser failed, so nothing was extracted.
+- `TikaEmbeddedParseError` - an embedded document failed while its container parsed fine. Only
+  reachable from `rmeta.*`, and never raised automatically, since the surrounding documents
+  succeeded.
+
+Both carry `detail`, the server-side message, which is usually a Java stack trace.
 
 For `tika.*` and `metadata.*`, which describe a single document, the failure is total and is
 raised:
