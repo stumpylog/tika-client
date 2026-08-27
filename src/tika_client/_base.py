@@ -291,6 +291,11 @@ class SyncResource(BaseResource[SyncClientProtocol]):
         body stream. Compression is the exception: the compressed length is not knowable
         without compressing, so that path still buffers.
 
+        filepath must be a regular file. A FIFO or character device reports st_size == 0 and
+        then yields bytes, which fails loudly rather than corrupting: httpx raises
+        h11.LocalProtocolError for the length mismatch, and the other backends recompute the
+        length from the handle.
+
         Args:
             endpoint: The endpoint to send the file to
             filepath: The path of the file to send
@@ -409,6 +414,11 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
         Content-Length comes from stat() rather than from the buffer, which is what lets the
         body stream. Compression is the exception: the compressed length is not knowable
         without compressing, so that path still buffers.
+
+        filepath must be a regular file. A FIFO or character device reports st_size == 0 and
+        then yields bytes, which fails loudly rather than corrupting: httpx raises
+        h11.LocalProtocolError for the length mismatch, and the other backends recompute the
+        length from the handle.
 
         Args:
             endpoint: The endpoint to send the file to

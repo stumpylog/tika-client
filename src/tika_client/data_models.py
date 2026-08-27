@@ -138,6 +138,10 @@ class TikaResponse:
         # on any other shape, recreating the silent truncation this exists to prevent. An
         # explicit false is still honoured.
         deadline = data.get(TikaKey.TaskDeadlineReached)
+        if isinstance(deadline, (list, tuple)) and deadline:
+            # Tika metadata can be multi-valued, and str(["false"]) is "['false']", which would
+            # otherwise read as truncated. Unwrap before comparing.
+            deadline = deadline[0]
         self.truncated: bool = deadline is not None and str(deadline).strip().lower() not in {"false", ""}
         self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 

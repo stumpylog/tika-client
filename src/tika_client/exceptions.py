@@ -190,6 +190,10 @@ def raise_for_tika_status(response: ResponseProtocol, *, cause: BaseException | 
     # A 422 body is the raw partially-extracted document, i.e. user-supplied content. Only
     # trust it to classify the failure when the server declares it as JSON, otherwise a
     # document that happens to extract to an envelope shape would pick its own exception.
+    #
+    # In practice this makes envelope classification unreachable for 422, since those bodies
+    # are observed never to be JSON. That is deliberate: the gate protects against document
+    # content steering control flow, and the endpoints this client calls do not return 422.
     if status_code == 422 and not _is_json_content_type(response.headers):  # noqa: PLR2004
         raise TikaPartialParseError(response=response) from cause
 

@@ -1,9 +1,12 @@
 """
 Unit tests for the typed Tika server exception hierarchy.
-Response bodies below are the exact bodies captured against a live apache/tika:4.0.0
-server while forcing each condition (low maxRequestSizeBytes, pipes.numClients=1,
-a 1ms totalTaskTimeoutMillis, and truncated/corrupted sample documents).
-These do not require Docker or a live Tika server themselves.
+
+Status values and envelope shapes follow Tika 4's documented PipesResult statuses and the
+error-body format in the 4.x server migration guide. Some bodies are representative rather
+than captured: the 418 and FAILED_TO_INITIALIZE cases are constructed to exercise the
+fallback paths, and the oversized body is synthetic.
+
+These require neither Docker nor a live Tika server.
 """
 
 from __future__ import annotations

@@ -352,6 +352,7 @@ class TestTaskDeadlineReached:
         "value",
         [
             pytest.param(["true"], id="multi-valued-list"),
+            pytest.param(["true", "false"], id="multi-valued-first-wins"),
             pytest.param("2026-08-27T10:00:00Z", id="timestamp"),
             pytest.param("Task deadline reached after 60000ms", id="message"),
         ],
@@ -370,6 +371,15 @@ class TestTaskDeadlineReached:
         )
 
         assert response.truncated is True
+
+    @pytest.mark.parametrize("value", [pytest.param(["false"], id="list"), pytest.param(("false",), id="tuple")])
+    def test_multi_valued_false_is_not_truncated(self, value: object) -> None:
+        """str(["false"]) is "['false']", which would read as truncated without unwrapping."""
+        response = TikaResponse(
+            {TikaKey.ContentType: "application/pdf", TikaKey.TaskDeadlineReached: value},
+        )
+
+        assert response.truncated is False
 
     def test_list_reports_truncation_from_any_entry(self) -> None:
         """Callers guarding on has_parse_errors alone would otherwise ingest truncated content."""

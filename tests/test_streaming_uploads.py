@@ -33,30 +33,62 @@ def no_whole_file_reads(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.usefixtures("no_whole_file_reads")
 class TestSyncFromFileStreams:
-    def test_as_text_streams(self, tika_client: TikaClient, sample_docx_file: Path) -> None:
+    """
+    Every backend is covered, because they stream by genuinely different means.
+
+    httpx needs an iterator of chunks and hangs on a file object; requests and niquests take
+    the handle directly. Testing only the default backend is how the zero-byte framing
+    regression reached main.
+    """
+
+    @pytest.mark.parametrize("backend", ["httpx", "niquests", "requests"])
+    def test_as_text_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """Plain text extraction sends the file without reading it whole."""
-        result = tika_client.tika.as_text.from_file(sample_docx_file)
+        with TikaClient(tika_url=tika_host, backend=backend) as client:
+            result = client.tika.as_text.from_file(sample_docx_file)
 
         assert result.content is not None
 
-    def test_as_html_streams(self, tika_client: TikaClient, sample_docx_file: Path) -> None:
+    @pytest.mark.parametrize("backend", ["httpx", "niquests", "requests"])
+    def test_as_html_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """HTML extraction sends the file without reading it whole."""
-        result = tika_client.tika.as_html.from_file(sample_docx_file)
+        with TikaClient(tika_url=tika_host, backend=backend) as client:
+            result = client.tika.as_html.from_file(sample_docx_file)
+
+        assert result.content is not None
+
+    def test_compress_buffers_by_design(
+        self,
+        tika_host: str,
+        sample_docx_file: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """compress=True must buffer: the compressed length is unknowable without compressing."""
+        monkeypatch.undo()  # this one is allowed to read the file whole
+
+        with TikaClient(tika_url=tika_host, compress=True) as client:
+            result = client.tika.as_text.from_file(sample_docx_file)
 
         assert result.content is not None
 
 
 @pytest.mark.usefixtures("no_whole_file_reads")
 class TestAsyncFromFileStreams:
-    async def test_as_text_streams(self, async_tika_client: AsyncTikaClient, sample_docx_file: Path) -> None:
+    """requests is sync-only, so the async matrix is httpx and niquests."""
+
+    @pytest.mark.parametrize("backend", ["httpx", "niquests"])
+    async def test_as_text_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """The async path streams too, rather than reading in a worker thread."""
-        result = await async_tika_client.tika.as_text.from_file(sample_docx_file)
+        async with AsyncTikaClient(tika_url=tika_host, backend=backend) as client:
+            result = await client.tika.as_text.from_file(sample_docx_file)
 
         assert result.content is not None
 
-    async def test_as_html_streams(self, async_tika_client: AsyncTikaClient, sample_docx_file: Path) -> None:
+    @pytest.mark.parametrize("backend", ["httpx", "niquests"])
+    async def test_as_html_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """The async HTML path streams as well."""
-        result = await async_tika_client.tika.as_html.from_file(sample_docx_file)
+        async with AsyncTikaClient(tika_url=tika_host, backend=backend) as client:
+            result = await client.tika.as_html.from_file(sample_docx_file)
 
         assert result.content is not None
 
