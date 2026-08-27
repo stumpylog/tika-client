@@ -23,6 +23,7 @@ from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
 from tika_client.exceptions import HttpStatusError
 from tika_client.exceptions import TikaContainerParseError
+from tika_client.exceptions import TikaEmbeddedParseError
 from tika_client.exceptions import raise_for_tika_status
 
 if TYPE_CHECKING:
@@ -149,13 +150,21 @@ class BaseResource(ABC, Generic[T]):
             The decoded response
 
         Raises:
-            TikaContainerParseError: The container parser failed. Tika 4 reports this
-                on an HTTP 200 with no content, so it has to be detected here.
+            TikaContainerParseError: The container parser failed, so nothing was extracted.
+            TikaEmbeddedParseError: An embedded document failed while its container parsed.
+                Tika reports both on an HTTP 200, so they have to be detected here.
 
         """
-        detail = resp_json.get(TikaKey.ContainerException)
-        if raise_on_parse_error and detail is not None:
-            raise TikaContainerParseError(data=resp_json, detail=detail)
+        if raise_on_parse_error:
+            # Container first: a failed container makes the embedded failure moot. Checked on
+            # the raw payload rather than a constructed TikaResponse, so a failure response
+            # missing an otherwise-required key still raises the right error.
+            container = resp_json.get(TikaKey.ContainerException)
+            if container is not None:
+                raise TikaContainerParseError(data=resp_json, detail=container)
+            embedded = resp_json.get(TikaKey.EmbeddedException)
+            if embedded is not None:
+                raise TikaEmbeddedParseError(data=resp_json, detail=embedded)
         return TikaResponse(resp_json)
 
 

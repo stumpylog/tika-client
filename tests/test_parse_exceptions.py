@@ -14,6 +14,7 @@ truncating a valid .docx so no binary sample needs committing.
 
 from __future__ import annotations
 
+import zipfile
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -52,6 +53,60 @@ def corrupt_odt_file(samples_dir: Path, tmp_path_factory: pytest.TempPathFactory
     path = tmp_path_factory.mktemp("corrupt") / "corrupt.odt"
     path.write_bytes(truncated)
     return path
+
+
+@pytest.fixture(scope="session")
+def zip_with_broken_member(samples_dir: Path, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """
+    A zip whose container parses cleanly but which holds one unreadable document.
+
+    Tika extracts the good member and reports the bad one via an embedded exception, so the
+    content looks complete: the failed member's filename appears with no text after it.
+    """
+    work = tmp_path_factory.mktemp("mixed")
+    good = work / "good.txt"
+    good.write_text("this attachment is perfectly readable")
+    broken = work / "broken.docx"
+    broken.write_bytes((samples_dir / "sample.docx").read_bytes()[:2000])
+
+    archive = work / "mixed.zip"
+    with zipfile.ZipFile(archive, "w") as handle:
+        handle.write(good, "good.txt")
+        handle.write(broken, "broken.docx")
+    return archive
+
+
+class TestEmbeddedFailureOnSingleDocument:
+    """
+    An unreadable attachment must not pass silently through the single-document endpoints.
+
+    Tika returns 200 with the good content extracted and the failed member's text simply
+    absent, so nothing in the payload marks the loss.
+    """
+
+    def test_embedded_failure_raises(self, tika_client: TikaClient, zip_with_broken_member: Path) -> None:
+        """The one silent partial-data path on tika.*: an attachment fails, content looks fine."""
+        with pytest.raises(TikaEmbeddedParseError):
+            tika_client.tika.as_text.from_file(zip_with_broken_member)
+
+    def test_partial_content_survives_the_raise(
+        self,
+        tika_client: TikaClient,
+        zip_with_broken_member: Path,
+    ) -> None:
+        """Raising must not discard what was extracted, or best-effort callers lose out."""
+        with pytest.raises(TikaEmbeddedParseError) as err:
+            tika_client.tika.as_text.from_file(zip_with_broken_member)
+
+        assert err.value.partial.content is not None
+        assert "perfectly readable" in err.value.partial.content
+        assert err.value.partial.embedded_exception is not None
+
+    def test_rmeta_still_does_not_raise(self, tika_client: TikaClient, zip_with_broken_member: Path) -> None:
+        """The list form is unchanged: raising there would discard entries that parsed."""
+        results = tika_client.rmeta.as_text.from_file(zip_with_broken_member)
+
+        assert results.has_parse_errors
 
 
 class TestContainerParseException:

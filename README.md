@@ -63,8 +63,11 @@ and this release uses `ExceptionGroup`, which is a 3.11 builtin.
 
 Beyond the server requirement, four changes will affect existing code:
 
-- A failed parse now raises `TikaContainerParseError` where 1.0.0 returned a `TikaResponse` with
-  no content. See [Parse Failures](#parse-failures).
+- A failed parse now raises where 1.0.0 returned a `TikaResponse` with no content:
+  `TikaContainerParseError` when the whole document failed, and `TikaEmbeddedParseError` when
+  only an embedded member did. **The second will fire on documents that previously appeared to
+  succeed**, such as an archive or email holding one unreadable attachment. The exception's
+  `partial` attribute carries what was extracted. See [Parse Failures](#parse-failures).
 - `rmeta.*` returns a `TikaResponseList` rather than a plain `list`. It is still a `list`, with
   `has_parse_errors` and `truncated` added.
 - `TikaResponse.language` is gone. Tika 4's `/meta` no longer reports it.
@@ -342,11 +345,10 @@ otherwise be indistinguishable from an empty document.
 Two error types describe these, both subclassing `TikaParseError` and so also `TikaError`:
 
 - `TikaContainerParseError` - the container parser failed, so nothing was extracted.
-- `TikaEmbeddedParseError` - an embedded document failed while its container parsed fine.
-  Never raised automatically, because the container's own content is intact. `rmeta.*` reports
-  it per entry, and `tika.*`/`metadata.*` expose it on the single response, so a document with
-  an unreadable attachment comes back successfully with part of its content missing. Check
-  `parse_exception` or call `raise_for_parse_status()` if that matters to you.
+- `TikaEmbeddedParseError` - an embedded document failed while its container parsed fine, for
+  example a zip holding one unreadable file. `tika.*` and `metadata.*` raise it, because Tika
+  returns the good content with the failed member's text simply absent, so nothing in the
+  payload marks the loss. `rmeta.*` does not raise it, reporting it per entry instead.
 
 Both carry `detail`, the server-side message, which is usually a Java stack trace.
 
@@ -384,6 +386,19 @@ results.raise_for_parse_status()
 # The same method exists on an individual response, raising the one matching error.
 results[0].raise_for_parse_status()
 ```
+
+Raising never discards what Tika did extract. The exception carries `partial`, the response as
+parsed, so best-effort extraction is explicit at the call site:
+
+```python
+try:
+    result = client.tika.as_text.from_file(Path("archive.zip"))
+except TikaEmbeddedParseError as e:
+    result = e.partial  # keep what was extracted, knowing part of it is missing
+```
+
+There is deliberately no option to disable raising. `try`/`except` expresses the same choice
+per call and in plain sight, where a client-level flag would quietly restore the silent loss.
 
 `raise_for_parse_status()` is available on both `TikaResponse` and `TikaResponseList`. The
 single-response form raises `TikaContainerParseError` or `TikaEmbeddedParseError` directly; the

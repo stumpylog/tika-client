@@ -13,10 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Tika 3.x.
 - **Requires Python 3.11+.** 3.10 reaches end of life in October 2026, and this release uses
   `ExceptionGroup`.
-- **A failed parse now raises instead of returning empty content.** Tika 4 reports container
-  parse failures as a `200` with no content, where 3.x returned a `500`. `tika.*` and
-  `metadata.*` raise `TikaContainerParseError`; `rmeta.*` exposes failures instead of raising,
-  so entries that parsed are not discarded. See "Parse failures" in the README.
+- **A failed parse now raises instead of returning empty content.** Tika 4 reports parse
+  failures as a `200`, where 3.x returned a `500`. `tika.*` and `metadata.*` raise
+  `TikaContainerParseError` when the document failed outright, and `TikaEmbeddedParseError`
+  when only an embedded member did. **The second fires on documents that previously appeared
+  to succeed**: an archive or email with one unreadable attachment came back with the good
+  content and the failed member's text silently absent. The exception carries `partial`, the
+  response as parsed, so nothing is lost. There is no option to disable raising; catch the
+  exception where you want best-effort extraction. `rmeta.*` does not raise, so entries that
+  parsed are not discarded. See "Parse Failures" in the README.
 - Tika-computed metadata keys moved from `X-TIKA:` to `tk:` (`X-TIKA:content` -> `tk:content`).
   `TikaKey.Parsers`, `TikaKey.Parser_Full`, `TikaKey.Parse_Time` and `TikaKey.Content` hold the
   new spellings. `dc:*`, `xmp:*` and `cp:*` are unchanged, being the file's own assertions

@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from tika_client._http_backends._protocols import ResponseProtocol
+    from tika_client.data_models import TikaResponse
 
 
 class TikaError(Exception):
@@ -226,6 +227,19 @@ class TikaParseError(TikaError):
     def __str__(self) -> str:
         """Render the server-side detail, which is usually a Java stack trace."""
         return self.detail or self.__class__.__name__
+
+    @property
+    def partial(self) -> TikaResponse:
+        """
+        The response as parsed, so raising never discards what Tika did extract.
+
+        Lets a caller who wants best-effort extraction recover it explicitly, which is why
+        there is no flag to disable raising: try/except expresses the same choice at the call
+        site, per call, rather than hiding it in client configuration.
+        """
+        from tika_client.data_models import TikaResponse  # noqa: PLC0415
+
+        return TikaResponse(self.data)
 
     def __reduce__(self) -> tuple[Any, tuple[Any, ...]]:
         """
