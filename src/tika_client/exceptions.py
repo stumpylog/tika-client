@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from tika_client._http_backends._protocols import ResponseProtocol
 
 
@@ -205,3 +207,17 @@ class TikaEmbeddedParseError(TikaParseError):
     Never raised eagerly: the surrounding documents parsed fine, so this surfaces
     only via raise_for_parse_status().
     """
+
+
+class TikaParseErrorGroup(ExceptionGroup[TikaParseError], TikaError):  # noqa: N818 - groups conventionally end in Group, as ExceptionGroup itself does
+    """
+    Every parse failure from a single /rmeta call, so none is hidden behind the first.
+
+    An ExceptionGroup so that except* and the standard tooling work, and a TikaError so
+    that it honours the same contract as every other error this library raises. A bare
+    ExceptionGroup would escape "except TikaError" entirely.
+    """
+
+    def derive(self, excs: Sequence[TikaParseError]) -> TikaParseErrorGroup:
+        """Keep the subclass through split() and subgroup(), which would otherwise degrade to ExceptionGroup."""
+        return TikaParseErrorGroup(self.message, excs)

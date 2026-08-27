@@ -14,6 +14,7 @@ from typing import Any
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaEmbeddedParseError
 from tika_client.exceptions import TikaParseError
+from tika_client.exceptions import TikaParseErrorGroup
 
 # Based on https://cwiki.apache.org/confluence/display/TIKA/Metadata+Overview
 
@@ -230,7 +231,7 @@ class TikaResponseList(list["TikaResponse"]):
         places at once, and reporting only the first would hide the rest.
 
         Raises:
-            ExceptionGroup: Containing one TikaParseError per failed document.
+            TikaParseErrorGroup: Containing one TikaParseError per failed document.
 
         """
         errors: list[TikaParseError] = []
@@ -241,4 +242,4 @@ class TikaResponseList(list["TikaResponse"]):
                 errors.append(e)
         if errors:
             msg = f"{len(errors)} of {len(self)} documents failed to parse"
-            raise ExceptionGroup(msg, errors)
+            raise TikaParseErrorGroup(msg, errors)

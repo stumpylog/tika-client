@@ -20,6 +20,7 @@ import pytest
 
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaEmbeddedParseError
+from tika_client.exceptions import TikaError
 from tika_client.exceptions import TikaParseError
 
 if TYPE_CHECKING:
@@ -125,3 +126,10 @@ class TestRaiseForParseStatus:
 
         assert len(exc_info.value.exceptions) == expected
         assert all(isinstance(exc, TikaParseError) for exc in exc_info.value.exceptions)
+
+    def test_group_is_catchable_as_tika_error(self, tika_client: TikaClient, corrupt_docx_file: Path) -> None:
+        """The group must satisfy the TikaError contract, or the obvious handler misses it."""
+        result = tika_client.rmeta.as_text.from_file(corrupt_docx_file)
+
+        with pytest.raises(TikaError):
+            result.raise_for_parse_status()
