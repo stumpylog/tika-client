@@ -147,13 +147,20 @@ class BaseResource(ABC, Generic[T]):
         content: str | bytes,
         mime_type: str | None,
         filename: str | None,
+        *,
+        compress_body: bool = True,
     ) -> tuple[bytes, dict[str, str]]:
-        """Encode the body and build its headers, compressing when that is enabled and worthwhile."""
+        """
+        Encode the body and build its headers, compressing when that is enabled and worthwhile.
+
+        compress_body is False for the async caller, which compresses in a worker thread and
+        folds the result back in rather than blocking the event loop.
+        """
         content_bytes = content.encode() if isinstance(content, str) else content
         content_length = len(content_bytes)
 
         headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
-        if self.compress and content_length > MIN_COMPRESS_LEN:
+        if compress_body and self.compress and content_length > MIN_COMPRESS_LEN:
             from gzip import compress  # noqa: PLC0415
 
             content_bytes = compress(content_bytes)
@@ -285,12 +292,19 @@ class SyncResource(BaseResource[SyncClientProtocol]):
             The JSON response of the server
 
         """
-        if self.compress:
+        size = filepath.stat().st_size
+        # An empty body must go through put_content. requests and niquests compute the length
+        # from the handle, and super_len() == 0 is falsy, so they add Transfer-Encoding: chunked
+        # alongside our Content-Length: 0. Jetty rejects that combination with a 400.
+        if self.compress or size == 0:
             return self.put_content(endpoint, filepath.read_bytes(), mime_type, filepath.name)
 
         headers = dict(BaseResource.get_content_headers(filepath.name))
-        headers["Content-Length"] = str(filepath.stat().st_size)
-        headers["Content-Type"] = mime_type or guess_type(filepath.name)[0] or "application/octet-stream"
+        headers["Content-Length"] = str(size)
+        # Set only when given, exactly as put_content does. Guessing here would volunteer a
+        # confidently wrong type for a misnamed file, where sending nothing lets Tika detect.
+        if mime_type is not None:
+            headers["Content-Type"] = mime_type
 
         with filepath.open("rb") as handle:
             response = self.client.put(endpoint, content=handle, headers=headers)
@@ -358,20 +372,15 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             Returns the JSON response of the server
 
         """
-        content_bytes = content.encode() if isinstance(content, str) else content
-        content_length = len(content_bytes)
-
-        headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
-        if self.compress and content_length > MIN_COMPRESS_LEN:
+        # Compression runs in a thread here, so the shared helper is told not to do it and the
+        # result is folded back in. Keeps one implementation of the header logic.
+        content_bytes, headers = self._prepare_content(content, mime_type, filename, compress_body=False)
+        if self.compress and len(content_bytes) > MIN_COMPRESS_LEN:
             from gzip import compress  # noqa: PLC0415
 
             content_bytes = await run_sync(compress, content_bytes)
-            content_length = len(content_bytes)
             headers["Content-Encoding"] = "gzip"
-
-        headers["Content-Length"] = str(content_length)
-        if mime_type is not None:
-            headers["Content-Type"] = mime_type
+            headers["Content-Length"] = str(len(content_bytes))
 
         response = await self.client.put(endpoint, content=content_bytes, headers=headers)
         try:
@@ -402,14 +411,19 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             The JSON response of the server
 
         """
-        if self.compress:
+        size = (await run_sync(filepath.stat)).st_size
+        # See the sync twin: an empty body would collide Content-Length with the chunked
+        # encoding requests and niquests add for a zero-length handle.
+        if self.compress or size == 0:
             return await self.put_content(endpoint, await run_sync(filepath.read_bytes), mime_type, filepath.name)
 
         headers = dict(BaseResource.get_content_headers(filepath.name))
-        # stat and open are blocking, so they go to a worker thread like every other file
-        # access on this path; the adapters read the chunks off the loop too.
-        headers["Content-Length"] = str((await run_sync(filepath.stat)).st_size)
-        headers["Content-Type"] = mime_type or guess_type(filepath.name)[0] or "application/octet-stream"
+        # stat, open and close are blocking, so they go to a worker thread. The httpx adapter
+        # reads its chunks off the loop too; the niquests adapter reads them inline, since it
+        # takes the handle directly.
+        headers["Content-Length"] = str(size)
+        if mime_type is not None:
+            headers["Content-Type"] = mime_type
 
         handle = await run_sync(_open_binary, filepath)
         try:

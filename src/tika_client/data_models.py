@@ -111,7 +111,9 @@ class TikaResponse:
         self.data = data
 
         # Always set keys
-        self.type: str = self.data[TikaKey.ContentType]
+        # Absent on a failure payload, the same reason parsers below defaults. TikaParseError
+        # .partial builds a response from exactly such a payload, so this cannot hard-index.
+        self.type: str | None = self.data.get(TikaKey.ContentType)
         # Absent when Tika couldn't parse at all (e.g. a zero-byte file), even on an
         # otherwise-200 response with an embedded tk:exception:container-exception.
         self.parsers: list[str] = self.data.get(TikaKey.Parsers, [])
