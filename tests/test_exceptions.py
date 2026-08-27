@@ -13,7 +13,11 @@ from typing import Any
 import pytest
 
 from tika_client.exceptions import TikaBadRequestError
+from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaCrashError
+from tika_client.exceptions import TikaEmbeddedParseError
+from tika_client.exceptions import TikaError
+from tika_client.exceptions import TikaParseErrorGroup
 from tika_client.exceptions import TikaPartialParseError
 from tika_client.exceptions import TikaPayloadTooLargeError
 from tika_client.exceptions import TikaSaturatedError
@@ -302,3 +306,65 @@ class TestEnvelopeClassificationPrecedence:
         """An empty 422 body has no envelope to classify from."""
         with pytest.raises(TikaPartialParseError):
             raise_for_tika_status(FakeResponse(422, ""))
+
+
+class TestParseErrorGroup:
+    """
+    Docker-free coverage of TikaParseErrorGroup, including derive().
+
+    derive() is the reason the class carries a type: ignore, and split() / subgroup() are
+    the only things that exercise it. Every other group test needs a container, so without
+    these the subtlest code in the hierarchy runs only on the Docker leg.
+    """
+
+    @staticmethod
+    def _group() -> TikaParseErrorGroup:
+        return TikaParseErrorGroup(
+            "2 of 3 documents failed to parse",
+            [
+                TikaContainerParseError(data={}, detail="container failed"),
+                TikaEmbeddedParseError(data={}, detail="embedded failed"),
+            ],
+        )
+
+    def test_is_catchable_as_tika_error(self) -> None:
+        """The whole point of the subclass: a bare ExceptionGroup escapes except TikaError."""
+        with pytest.raises(TikaError):
+            raise self._group()
+
+    def test_subgroup_preserves_the_subclass(self) -> None:
+        """derive() keeps subgroup() from degrading to a plain ExceptionGroup."""
+        matched = self._group().subgroup(TikaEmbeddedParseError)
+
+        assert isinstance(matched, TikaParseErrorGroup)
+        assert len(matched.exceptions) == 1
+
+    def test_split_preserves_the_subclass_on_both_halves(self) -> None:
+        """Both halves of a split must survive as the subclass."""
+        matched, rest = self._group().split(TikaContainerParseError)
+
+        assert isinstance(matched, TikaParseErrorGroup)
+        assert isinstance(rest, TikaParseErrorGroup)
+
+    def test_subgroup_with_no_match_returns_none(self) -> None:
+        """An empty result is None rather than an illegal empty group."""
+        assert self._group().subgroup(TikaTimeoutError) is None
+
+    def test_except_star_dispatches_into_the_subclass(self) -> None:
+        """except* must see the concrete class, not a degraded group."""
+        caught: list[BaseException] = []
+        try:
+            raise self._group()
+        except* TikaContainerParseError as eg:
+            caught.extend(eg.exceptions)
+        except* TikaEmbeddedParseError:
+            # Unmatched parts of a group propagate, so the remainder needs a handler too.
+            pass
+
+        assert len(caught) == 1
+        assert isinstance(caught[0], TikaContainerParseError)
+
+    def test_empty_group_is_rejected(self) -> None:
+        """CPython enforces a non-empty sequence, so callers must guard before raising."""
+        with pytest.raises(ValueError, match="non-empty"):
+            TikaParseErrorGroup("nothing failed", [])
