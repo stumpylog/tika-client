@@ -48,6 +48,7 @@ class TikaKey(StrEnum):
     Content = "tk:content"
     ContainerException = "tk:exception:container-exception"
     EmbeddedException = "tk:exception:embedded-exception"
+    TaskDeadlineReached = "tk:exception:task-deadline-reached"
 
 
 class DublinCoreKey(StrEnum):
@@ -125,6 +126,10 @@ class TikaResponse:
         self.container_exception: str | None = data.get(TikaKey.ContainerException)
         self.embedded_exception: str | None = data.get(TikaKey.EmbeddedException)
         self.parse_exception: str | None = self.container_exception or self.embedded_exception
+        # PARTIAL_TIMEOUT is a 200 carrying whatever was extracted before the deadline, so
+        # this is a successful-but-incomplete parse rather than a failure. The value is
+        # parsed rather than inferred from the key's presence.
+        self.truncated: bool = str(data.get(TikaKey.TaskDeadlineReached, "")).lower() == "true"
         self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 
         # Dublin Core keys

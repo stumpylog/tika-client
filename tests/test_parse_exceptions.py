@@ -204,3 +204,43 @@ class TestSingleDocumentEndpointsRaise:
         assert response.container_exception is None
         with pytest.raises(TikaEmbeddedParseError):
             response.raise_for_parse_status()
+
+
+class TestTaskDeadlineReached:
+    """
+    Tika 4 truncates rather than failing when a parse exceeds its deadline.
+
+    PARTIAL_TIMEOUT maps to 200 on every endpoint with whatever content was extracted
+    before the deadline, so this is a success that is merely incomplete. Raising would
+    discard usable content, but leaving it unreported would make truncation silent.
+    """
+
+    def test_deadline_reached_marks_truncated_without_raising(self) -> None:
+        """Truncated content is still returned, flagged rather than raised."""
+        response = TikaResponse(
+            {
+                TikaKey.ContentType: "application/pdf",
+                TikaKey.TaskDeadlineReached: "true",
+                TikaKey.Content: "as far as it got",
+            },
+        )
+
+        assert response.truncated is True
+        assert response.parse_exception is None
+        assert response.content == "as far as it got"
+        # Truncation is not a parse failure, so this must not raise.
+        response.raise_for_parse_status()
+
+    def test_absent_deadline_key_is_not_truncated(self) -> None:
+        """A complete parse reports truncated as False rather than None."""
+        response = TikaResponse({TikaKey.ContentType: "application/pdf", TikaKey.Content: "all of it"})
+
+        assert response.truncated is False
+
+    def test_explicit_false_is_not_truncated(self) -> None:
+        """The value is parsed rather than assumed from the key being present."""
+        response = TikaResponse(
+            {TikaKey.ContentType: "application/pdf", TikaKey.TaskDeadlineReached: "false"},
+        )
+
+        assert response.truncated is False
