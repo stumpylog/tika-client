@@ -80,10 +80,10 @@ class RequestsSyncAdapter:
         self,
         url: str,
         *,
-        content: bytes,
+        content: bytes | IO[bytes],
         headers: dict[str, str],
     ) -> ResponseProtocol:
-        """Perform a PUT request with raw byte content."""
+        """Perform a PUT request with raw byte content, or stream an open file."""
         # requests uses data= for raw bytes; httpx uses content=
         return RequestsResponseAdapter(
             self._session.put(self._url(url), data=content, headers=headers, timeout=self._timeout),

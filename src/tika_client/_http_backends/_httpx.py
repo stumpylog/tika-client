@@ -9,11 +9,33 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 import httpx
+from anyio.to_thread import run_sync
 
 from tika_client.exceptions import HttpStatusError
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from collections.abc import Iterator
+
     from tika_client._http_backends._protocols import ResponseProtocol
+
+
+# httpx will not take an open file as a request body: the sync client hangs on one and the
+# async client rejects it outright. Both accept an iterator of chunks, which is how a file is
+# streamed without being read into memory.
+_STREAM_CHUNK_SIZE = 64 * 1024
+
+
+def _iter_file(body: IO[bytes]) -> Iterator[bytes]:
+    """Yield the file in chunks for httpx's sync client."""
+    while chunk := body.read(_STREAM_CHUNK_SIZE):
+        yield chunk
+
+
+async def _aiter_file(body: IO[bytes]) -> AsyncIterator[bytes]:
+    """Yield the file in chunks for httpx's async client, reading off the event loop."""
+    while chunk := await run_sync(body.read, _STREAM_CHUNK_SIZE):
+        yield chunk
 
 
 class HttpxResponseAdapter:
@@ -71,11 +93,12 @@ class HttpxSyncAdapter:
         self,
         url: str,
         *,
-        content: bytes,
+        content: bytes | IO[bytes],
         headers: dict[str, str],
     ) -> ResponseProtocol:
-        """Perform a PUT request with raw byte content."""
-        return HttpxResponseAdapter(self._client.put(url, content=content, headers=headers))
+        """Perform a PUT request with raw byte content, or stream an open file."""
+        body = content if isinstance(content, bytes) else _iter_file(content)
+        return HttpxResponseAdapter(self._client.put(url, content=body, headers=headers))
 
     def close(self) -> None:
         """Close the underlying httpx client."""
@@ -103,11 +126,12 @@ class HttpxAsyncAdapter:
         self,
         url: str,
         *,
-        content: bytes,
+        content: bytes | IO[bytes],
         headers: dict[str, str],
     ) -> ResponseProtocol:
-        """Perform an async PUT request with raw byte content."""
-        return HttpxResponseAdapter(await self._client.put(url, content=content, headers=headers))
+        """Perform an async PUT request with raw byte content, or stream an open file."""
+        body = content if isinstance(content, bytes) else _aiter_file(content)
+        return HttpxResponseAdapter(await self._client.put(url, content=body, headers=headers))
 
     async def aclose(self) -> None:
         """Close the underlying httpx async client."""

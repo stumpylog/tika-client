@@ -29,7 +29,7 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 - Synchronous and asynchronous client support
 - Pluggable HTTP backend (httpx, niquests, or requests)
-- `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` read the file into memory before sending it, as Tika 4 removed the `/tika/form*` routes those relied on.
+- `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` stream the file as a raw PUT body, since Tika 4 removed the `/tika/form*` routes those relied on. With `compress=True` they buffer instead, because the compressed length is not knowable without compressing.
 - Full type annotations with typed response properties
 - Supports Tika Server 4.0+ only (the last release supporting Tika 3.x is 1.0.0)
 - Tested against a real Tika server across multiple Python versions and PyPy

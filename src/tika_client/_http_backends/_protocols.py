@@ -63,10 +63,16 @@ class SyncClientProtocol(Protocol):
         self,
         url: str,
         *,
-        content: bytes,
+        content: bytes | IO[bytes],
         headers: dict[str, str],
     ) -> ResponseProtocol:
-        """Perform a PUT request with raw byte content."""
+        """
+        Perform a PUT request with raw byte content.
+
+        content may be an open binary file, which each backend sends without reading it
+        into memory. The backends disagree on how: httpx needs an iterator of chunks and
+        hangs on a file object, while requests and niquests take the object directly.
+        """
         ...  # pragma: no cover
 
     def close(self) -> None:
@@ -91,7 +97,7 @@ class AsyncClientProtocol(Protocol):
         self,
         url: str,
         *,
-        content: bytes,
+        content: bytes | IO[bytes],
         headers: dict[str, str],
     ) -> ResponseProtocol:
         """Perform an async PUT request with raw byte content."""

@@ -6,8 +6,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
-from anyio.to_thread import run_sync
-
 from tika_client._base import AsyncResource
 from tika_client._base import SyncResource
 
@@ -35,10 +33,7 @@ class SyncTikaHtml(SyncResource):
             The JSON response from the Tika server
 
         """
-        content = filepath.read_bytes()
-        return self.decoded_response(
-            self.put_content(HTML_ENDPOINT, content, mime_type, filename=filepath.name),
-        )
+        return self.decoded_response(self.put_file(HTML_ENDPOINT, filepath, mime_type))
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -68,10 +63,7 @@ class SyncTikaPlain(SyncResource):
             The JSON response from the Tika server
 
         """
-        content = filepath.read_bytes()
-        return self.decoded_response(
-            self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type, filename=filepath.name),
-        )
+        return self.decoded_response(self.put_file(PLAIN_TEXT_ENDPOINT, filepath, mime_type))
 
     def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -115,10 +107,7 @@ class AsyncTikaHtml(AsyncResource):
             The JSON response from the Tika server
 
         """
-        content = await run_sync(filepath.read_bytes)
-        return self.decoded_response(
-            await self.put_content(HTML_ENDPOINT, content, mime_type, filename=filepath.name),
-        )
+        return self.decoded_response(await self.put_file(HTML_ENDPOINT, filepath, mime_type))
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """
@@ -148,10 +137,7 @@ class AsyncTikaPlain(AsyncResource):
             The JSON response from the Tika server
 
         """
-        content = await run_sync(filepath.read_bytes)
-        return self.decoded_response(
-            await self.put_content(PLAIN_TEXT_ENDPOINT, content, mime_type, filename=filepath.name),
-        )
+        return self.decoded_response(await self.put_file(PLAIN_TEXT_ENDPOINT, filepath, mime_type))
 
     async def from_buffer(self, content: str | bytes, mime_type: str | None = None) -> TikaResponse:
         """

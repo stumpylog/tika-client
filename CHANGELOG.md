@@ -40,9 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   behind it changed too (Tika 4 removes `tika-langdetect-tika`), so values may differ.
 - `tika.as_html` and `tika.as_text` now target `/tika/json/html` and `/tika/json/body`, the only
   routes producing the JSON envelope this client parses.
-- `tika.as_html.from_file()` and `tika.as_text.from_file()` now read the file into memory rather
-  than streaming it, as Tika 4 removed the `/tika/form*` routes. `metadata.from_file()` and
-  `rmeta.*.from_file()` are unaffected.
+- `tika.as_html.from_file()` and `tika.as_text.from_file()` now send a raw PUT rather than a
+  multipart upload, as Tika 4 removed the `/tika/form*` routes. They still stream, so memory
+  does not scale with file size, except with `compress=True`, where the body must be buffered
+  to know its compressed length. `metadata.from_file()` and `rmeta.*.from_file()` are unaffected.
 
 ### Added
 

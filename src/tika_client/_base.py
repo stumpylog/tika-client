@@ -8,6 +8,7 @@ import re
 from abc import ABC
 from abc import abstractmethod
 from mimetypes import guess_type
+from typing import IO
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Generic
@@ -38,6 +39,11 @@ T = TypeVar("T", bound="SyncClientProtocol | AsyncClientProtocol")
 # send time with an opaque, backend-specific error; raising here fails fast
 # with a clear message instead.
 _CONTROL_CHAR_RE = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _open_binary(path: Path) -> IO[bytes]:
+    """Open a file for binary reading, as a named function so the mode stays visible to typing."""
+    return path.open("rb")
 
 
 class BaseResource(ABC, Generic[T]):
@@ -136,6 +142,29 @@ class BaseResource(ABC, Generic[T]):
 
         """
 
+    def _prepare_content(
+        self,
+        content: str | bytes,
+        mime_type: str | None,
+        filename: str | None,
+    ) -> tuple[bytes, dict[str, str]]:
+        """Encode the body and build its headers, compressing when that is enabled and worthwhile."""
+        content_bytes = content.encode() if isinstance(content, str) else content
+        content_length = len(content_bytes)
+
+        headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
+        if self.compress and content_length > MIN_COMPRESS_LEN:
+            from gzip import compress  # noqa: PLC0415
+
+            content_bytes = compress(content_bytes)
+            content_length = len(content_bytes)
+            headers["Content-Encoding"] = "gzip"
+
+        headers["Content-Length"] = str(content_length)
+        if mime_type is not None:
+            headers["Content-Type"] = mime_type
+        return content_bytes, headers
+
     @staticmethod
     def decoded_response(resp_json: dict[str, Any], *, raise_on_parse_error: bool = True) -> TikaResponse:
         """
@@ -225,22 +254,46 @@ class SyncResource(BaseResource[SyncClientProtocol]):
             Returns the JSON response of the server
 
         """
-        content_bytes = content.encode() if isinstance(content, str) else content
-        content_length = len(content_bytes)
-
-        headers = dict(BaseResource.get_content_headers(filename)) if filename is not None else {}
-        if self.compress and content_length > MIN_COMPRESS_LEN:
-            from gzip import compress  # noqa: PLC0415
-
-            content_bytes = compress(content_bytes)
-            content_length = len(content_bytes)
-            headers["Content-Encoding"] = "gzip"
-
-        headers["Content-Length"] = str(content_length)
-        if mime_type is not None:
-            headers["Content-Type"] = mime_type
+        content_bytes, headers = self._prepare_content(content, mime_type, filename)
 
         response = self.client.put(endpoint, content=content_bytes, headers=headers)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
+        return response.json()
+
+    def put_file(
+        self,
+        endpoint: str,
+        filepath: Path,
+        mime_type: str | None = None,
+    ) -> Any:  # noqa: ANN401
+        """
+        PUT a file to an endpoint without reading it into memory.
+
+        Content-Length comes from stat() rather than from the buffer, which is what lets the
+        body stream. Compression is the exception: the compressed length is not knowable
+        without compressing, so that path still buffers.
+
+        Args:
+            endpoint: The endpoint to send the file to
+            filepath: The path of the file to send
+            mime_type: The mime type of the file, guessed from the name if not provided
+
+        Returns:
+            The JSON response of the server
+
+        """
+        if self.compress:
+            return self.put_content(endpoint, filepath.read_bytes(), mime_type, filepath.name)
+
+        headers = dict(BaseResource.get_content_headers(filepath.name))
+        headers["Content-Length"] = str(filepath.stat().st_size)
+        headers["Content-Type"] = mime_type or guess_type(filepath.name)[0] or "application/octet-stream"
+
+        with filepath.open("rb") as handle:
+            response = self.client.put(endpoint, content=handle, headers=headers)
         try:
             response.raise_for_status()
         except HttpStatusError as e:
@@ -321,6 +374,48 @@ class AsyncResource(BaseResource[AsyncClientProtocol]):
             headers["Content-Type"] = mime_type
 
         response = await self.client.put(endpoint, content=content_bytes, headers=headers)
+        try:
+            response.raise_for_status()
+        except HttpStatusError as e:
+            raise_for_tika_status(response, cause=e)
+        return response.json()
+
+    async def put_file(
+        self,
+        endpoint: str,
+        filepath: Path,
+        mime_type: str | None = None,
+    ) -> Any:  # noqa: ANN401
+        """
+        PUT a file to an endpoint without reading it into memory.
+
+        Content-Length comes from stat() rather than from the buffer, which is what lets the
+        body stream. Compression is the exception: the compressed length is not knowable
+        without compressing, so that path still buffers.
+
+        Args:
+            endpoint: The endpoint to send the file to
+            filepath: The path of the file to send
+            mime_type: The mime type of the file, guessed from the name if not provided
+
+        Returns:
+            The JSON response of the server
+
+        """
+        if self.compress:
+            return await self.put_content(endpoint, await run_sync(filepath.read_bytes), mime_type, filepath.name)
+
+        headers = dict(BaseResource.get_content_headers(filepath.name))
+        # stat and open are blocking, so they go to a worker thread like every other file
+        # access on this path; the adapters read the chunks off the loop too.
+        headers["Content-Length"] = str((await run_sync(filepath.stat)).st_size)
+        headers["Content-Type"] = mime_type or guess_type(filepath.name)[0] or "application/octet-stream"
+
+        handle = await run_sync(_open_binary, filepath)
+        try:
+            response = await self.client.put(endpoint, content=handle, headers=headers)
+        finally:
+            await run_sync(handle.close)
         try:
             response.raise_for_status()
         except HttpStatusError as e:
