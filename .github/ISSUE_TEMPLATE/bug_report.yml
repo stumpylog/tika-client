@@ -17,14 +17,14 @@ body:
     id: client-version
     attributes:
       label: tika-client Version
-      placeholder: "e.g., 1.0.0"
+      placeholder: "e.g., 2.0.0"
     validations:
       required: true
   - type: input
     id: server-version
     attributes:
       label: Apache Tika Server Version
-      placeholder: "e.g., 2.8.0"
+      placeholder: "e.g., 4.0.0"
     validations:
       required: true
   - type: textarea

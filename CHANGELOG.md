@@ -5,57 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-08-27
 
 ### Breaking Change
 
-- **This release drops support for Tika Server 3.x.** Only Tika Server 4.0+ is supported.
-  The last release supporting Tika 3.x is 1.0.0.
-- Metadata keys that Tika computes itself moved from the `X-TIKA:` prefix to a `tk:` prefix
-  (e.g. `X-TIKA:content` -> `tk:content`), matching Tika 4's own key rename. `TikaKey.Parsers`,
-  `TikaKey.Parser_Full`, `TikaKey.Parse_Time`, and `TikaKey.Content` now hold the new spellings.
-  Dublin Core, XMP, and other file-claimed metadata keys (`dc:*`, `xmp:*`, `meta:*`, `cp:*`)
-  are unchanged.
-- `TikaResponse.language` has been removed — Tika 4's `/meta` and `/rmeta` no longer return a
-  `language` field.
-- `tika.as_html.from_file()` and `tika.as_text.from_file()` now read the whole file into memory
-  before sending it, instead of streaming it via multipart — Tika 4 removed the unauthenticated
-  multipart upload route these relied on. `metadata.from_file()` and `rmeta.*.from_file()` are
-  unaffected and continue to stream via multipart.
-- `tika.as_html` and `tika.as_text` now target `/tika/json/html` and `/tika/json/body` respectively —
-  Tika 4's `/tika/html` and `/tika/text` routes return 406 Not Acceptable for this client's
-  `Accept: application/json` header, and only the `/tika/json/{handler}` routes produce the JSON
-  metadata-plus-content envelope this client parses.
+- **Requires Tika Server 4.0+.** Tika 4 is a wire-breaking release; use `tika-client` 1.0.0 for
+  Tika 3.x.
+- **Requires Python 3.11+.** 3.10 reaches end of life in October 2026, and this release uses
+  `ExceptionGroup`.
+- **A failed parse now raises instead of returning empty content.** Tika 4 reports container
+  parse failures as a `200` with no content, where 3.x returned a `500`. `tika.*` and
+  `metadata.*` raise `TikaContainerParseError`; `rmeta.*` exposes failures instead of raising,
+  so entries that parsed are not discarded. See "Parse failures" in the README.
+- Tika-computed metadata keys moved from `X-TIKA:` to `tk:` (`X-TIKA:content` -> `tk:content`).
+  `TikaKey.Parsers`, `TikaKey.Parser_Full`, `TikaKey.Parse_Time` and `TikaKey.Content` hold the
+  new spellings. `dc:*`, `xmp:*`, `meta:*` and `cp:*` are unchanged.
+- **If you index `result.data` by string, check your keys.** Tika 4 renamed roughly 55 more keys
+  than the four above, kebab-casing format namespaces (`pdf:hasMarkedContent` ->
+  `pdf:has-marked-content`) and moving others between prefixes (`resourceName` ->
+  `tk:resource-name`). See [Metadata changes in Tika 4](https://tika.apache.org/docs/4.0.x/migration-to-4x/metadata-changes-4x.html);
+  Tika ships an opt-in `legacy-key-migration-filter`.
+- `mime_type` is now a hint, not an override. Tika 4 ignores it unless it matches or specializes
+  the type detected from the content (TIKA-4825).
+- `TikaResponse.language` removed. Tika 4's `/meta` no longer returns it. `/rmeta` and
+  `/tika/json` still can, but only with a language-detection filter configured; read
+  `tk:detected-language` from `result.data`.
+- `tika.as_html` and `tika.as_text` now target `/tika/json/html` and `/tika/json/body`, the only
+  routes producing the JSON envelope this client parses.
+- `tika.as_html.from_file()` and `tika.as_text.from_file()` now read the file into memory rather
+  than streaming it, as Tika 4 removed the `/tika/form*` routes. `metadata.from_file()` and
+  `rmeta.*.from_file()` are unaffected.
 
 ### Added
 
-- `tika_client.TikaServerError` and subclasses (`TikaTimeoutError`, `TikaCrashError`,
-  `TikaSaturatedError`, `TikaPayloadTooLargeError`, `TikaPartialParseError`) for Tika 4's new
-  error response envelope. All subclass the existing `HttpStatusError`, so existing
-  `except HttpStatusError` handling keeps working unchanged.
+- `TikaError`, the root of every error this library raises; `HttpStatusError` now subclasses it
+- `TikaContainerParseError` and `TikaEmbeddedParseError` for parse failures reported on a `200`
+- `TikaResponse.parse_exception`, `.container_exception`, `.embedded_exception`
+- `TikaResponse.raise_for_parse_status()` and `TikaResponseList.raise_for_parse_status()`, raising
+  on demand the way httpx defers `raise_for_status()`
+- `TikaParseErrorGroup`, an `ExceptionGroup` and a `TikaError`, so every failure in an `rmeta`
+  call is reported rather than only the first
+- `TikaResponseList`, the `rmeta.*` return type, with `has_parse_errors` and `truncated`
+- `TikaResponse.truncated`, reporting Tika 4's new `PARTIAL_TIMEOUT`. Not raised, and not part of
+  `has_parse_errors`: the content is real but incomplete
+- `TikaServerError` and subclasses (`TikaBadRequestError`, `TikaTimeoutError`, `TikaCrashError`,
+  `TikaSaturatedError`, `TikaPayloadTooLargeError`, `TikaPartialParseError`) for Tika 4's error
+  envelope, all subclassing `HttpStatusError`
+- `TikaResponse` and `TikaResponseList` are now exported from the package root
 
 ### Fixed
 
-- `from_file()` now raises a clear `ValueError` if a filename contains a control character
-  (e.g. an embedded newline), instead of letting an opaque, backend-specific error surface
-  from deep inside httpx/niquests/requests when the resulting `Content-Disposition` header is
-  sent. Not exploitable in practice (all three backends already reject such headers at send
-  time), but the failure mode is now clear.
-- `TikaResponse.parsers` no longer raises a `KeyError` for inputs Tika couldn't parse at all
-  (e.g. a zero-byte file), which return a `200` with an embedded exception and no `tk:parsed-by`
-  key. It now defaults to `[]`, matching this class's existing behavior for every other optional
-  field.
-- `TikaTimeoutError` is now raised regardless of the specific non-2xx HTTP status code, matching
-  how `TikaCrashError` already worked — a response carrying a `TIMEOUT` status envelope on a code
-  other than `503` previously fell through to the generic `TikaServerError`.
-- Issue template now correctly references Apache Tika Server instead of an incorrectly copy-pasted
-  Gotenberg Server reference.
-- Constructing a `TikaServerError` (or subclass) no longer risks an uncaught `RecursionError` on
-  a deeply-nested JSON error body, and `retry_after` now discards non-finite (`inf`/`nan`) or
-  negative `Retry-After` values instead of passing them through — both would otherwise violate
-  the "never raises while parsing" guarantee, directly or via a caller's `time.sleep()`.
-- `TikaServerError` and its subclasses now render a useful `str()` (status code, `tika_status`,
-  and message) instead of an empty string, so default log/traceback output is no longer silent.
+- `TikaTimeoutError` is raised regardless of status code, matching `TikaCrashError`. Codes that
+  are definitive at the protocol level (`400`, `413`, `429`) still take precedence.
+- A `422` carrying a `TIMEOUT` or crash envelope is classified as that failure. The envelope is
+  only trusted when the body is declared JSON, since a `422` body is extracted document content.
+- Parse errors now survive pickling and `deepcopy`, which matters when they cross a process
+  boundary inside a `TikaParseErrorGroup`.
+- `TikaResponse.parsers` defaults to `[]` instead of raising `KeyError` when Tika could not parse
+  at all and returned no `tk:parsed-by`.
+- `from_file()` raises `ValueError` for a filename containing a control character, instead of an
+  opaque backend-specific error at send time.
+- Constructing a `TikaServerError` no longer risks an uncaught `RecursionError` on a deeply
+  nested body, and `retry_after` discards non-finite or negative values.
+- `TikaServerError` renders a useful `str()` instead of an empty string.
+- Integration tests wait longer for tika-server, which starts substantially slower in Tika 4.
+- Issue template references Apache Tika Server rather than a copy-pasted Gotenberg reference.
 
 ## [1.0.0] - 2026-08-06
 

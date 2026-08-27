@@ -17,9 +17,7 @@ if TYPE_CHECKING:
     from tika_client._http_backends._protocols import AsyncClientProtocol
     from tika_client._http_backends._protocols import SyncClientProtocol
 
-HTML_ENDPOINT: Final[str] = "/rmeta"
 HTML_MULTI_PART_ENDPOINT: Final[str] = "/rmeta/form/html"
-PLAIN_TEXT_ENDPOINT: Final[str] = "/rmeta/text"
 PLAIN_TEXT_MULTI_PART_ENDPOINT: Final[str] = "/rmeta/form/text"
 
 

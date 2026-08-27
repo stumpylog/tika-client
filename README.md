@@ -16,6 +16,8 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 - [Tika Server Compatibility](#tika-server-compatibility)
 - [Usage](#usage)
 - [Response Data](#response-data)
+  - [Parse failures](#parse-failures)
+  - [Truncated parses](#truncated-parses)
 - [HTTP Backend Selection](#http-backend-selection)
 - [Configuration](#configuration)
 - [Why](#why)
@@ -25,7 +27,7 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 - Synchronous and asynchronous client support
 - Pluggable HTTP backend (httpx, niquests, or requests)
-- `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` read the file into memory before sending it — Tika 4 removed the unauthenticated multipart route those used to rely on.
+- `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` read the file into memory before sending it, as Tika 4 removed the `/tika/form*` routes those relied on.
 - Full type annotations with typed response properties
 - Supports Tika Server 4.0+ only (the last release supporting Tika 3.x is 1.0.0)
 - Tested against a real Tika server across multiple Python and PyPy versions
@@ -49,8 +51,11 @@ with no extras will raise `ImportError` on first use.
 
 This version requires **Tika Server 4.0 or later**. Tika 4.x is a wire-breaking
 release (endpoint paths, metadata key names, and error response formats all
-changed) — this client does not support Tika Server 3.x. If you need Tika 3.x
+changed). This client does not support Tika Server 3.x. If you need Tika 3.x
 support, use `tika-client` 1.0.0, the last release compatible with it.
+
+This version requires **Python 3.11 or later**. Python 3.10 reaches end of life in October 2026,
+and this release uses `ExceptionGroup`, which is a 3.11 builtin.
 
 ## Usage
 
@@ -171,7 +176,7 @@ async with AsyncTikaClient("http://localhost:9998") as client:
         print(item.content)
 ```
 
-The MIME type can be provided to all methods for more accurate `Content-Type` detection:
+The MIME type can be provided to all methods as a detection hint:
 
 ```python
 result = client.tika.as_text.from_file(
@@ -184,9 +189,16 @@ Currently, the metadata, tika, and recursive metadata endpoints are implemented.
 support for additional Tika endpoints, please open an idea in
 [GitHub Discussions](https://github.com/stumpylog/tika-client/discussions/categories/ideas).
 
+> **Note**
+> In Tika 4 this is a hint, not an override. Tika 3.x treated a request `Content-Type` as
+> authoritative and forced the type; Tika 4 keeps it only when it matches or specializes the
+> type detected from the content, and otherwise ignores it (TIKA-4825). Forcing an unrelated
+> type onto arbitrary bytes no longer works.
+
 ## Response Data
 
-All methods return a `TikaResponse` (or `list[TikaResponse]` for `rmeta`). Commonly used typed properties:
+All methods return a `TikaResponse`, except `rmeta.*`, which returns a `TikaResponseList` (a
+`list` of `TikaResponse`, one per embedded document). Commonly used typed properties:
 
 ```python
 result = client.tika.as_text.from_file(Path("sample.pdf"))
@@ -203,6 +215,9 @@ result.page_count       # int | None
 result.character_count  # int | None
 result.revision         # int | None
 result.last_author      # str | None
+
+result.parse_exception  # str | None - see "Parse failures" below
+result.truncated        # bool - the parse hit its deadline and content is incomplete
 ```
 
 Tika returns many additional fields depending on the file type. The complete parsed JSON response
@@ -233,27 +248,30 @@ with TikaClient("http://localhost:9998") as client:
 For a non-2xx response, `tika-client` raises one of the following `TikaServerError` subclasses
 instead of a bare `HttpStatusError`:
 
-- `TikaTimeoutError` — a 503 response where the forked Tika worker exceeded its configured
+- `TikaTimeoutError` - a 503 response where the forked Tika worker exceeded its configured
   processing timeout.
-- `TikaCrashError` — a 503 (or 500) response where the forked Tika JVM crashed, e.g. from an
+- `TikaCrashError` - a 503 (or 500) response where the forked Tika JVM crashed, e.g. from an
   out-of-memory condition.
-- `TikaSaturatedError` — a 429 response indicating the server's fork pool is saturated;
+- `TikaSaturatedError` - a 429 response indicating the server's fork pool is saturated;
   `retry_after` may carry a backoff hint.
-- `TikaPayloadTooLargeError` — a 413 response, either because the request body exceeded the
+- `TikaPayloadTooLargeError` - a 413 response, either because the request body exceeded the
   server's configured size limit or because the parse result exceeded the IPC payload limit.
-- `TikaPartialParseError` — a 422 response from a raw endpoint (e.g. `/tika/html`) indicating a
-  container-level parse exception.
-- `TikaServerError` — the base class, also raised directly as a fallback for any other non-2xx
+- `TikaBadRequestError` - a 400 response: the request is malformed, an unknown fetcher or
+  emitter was named, or the handler in the path was not recognized. Retrying never helps.
+- `TikaPartialParseError` - a 422 response from one of Tika's raw endpoints. This client does
+  not call those, so it is not expected in practice; it is kept for defence in depth.
+- `TikaServerError` - the base class, also raised directly as a fallback for any other non-2xx
   response that doesn't match one of the more specific cases above.
 
-All of these subclass `HttpStatusError`, so any existing `except HttpStatusError` handling
-continues to work unchanged. Each instance also carries:
+All of these subclass `HttpStatusError`, which in turn subclasses `TikaError`, the root of every
+error this library raises. Any existing `except HttpStatusError` handling continues to work
+unchanged. Each instance also carries:
 
-- `tika_status` — the raw `status` value from Tika's JSON error envelope, when the body was
+- `tika_status` - the raw `status` value from Tika's JSON error envelope, when the body was
   parseable JSON in that shape (`None` otherwise).
-- `message` — the raw `message` value from that same envelope, when present.
-- `retry_after` — the `Retry-After` response header parsed as a number of seconds, when present.
-- `response_text` — the raw, unparsed response body.
+- `message` - the raw `message` value from that same envelope, when present.
+- `retry_after` - the `Retry-After` response header parsed as a number of seconds, when present.
+- `response_text` - the raw, unparsed response body.
 
 ```python
 from tika_client import TikaClient, TikaServerError
@@ -264,6 +282,68 @@ with TikaClient("http://localhost:9998") as client:
     except TikaServerError as e:
         print(f"Tika server error: {e.tika_status} - {e.message}")
 ```
+
+### Parse failures
+
+Tika 3.x returned a 500 when the container parser failed. **Tika 4 returns a 200** with the
+stack trace in `tk:exception:container-exception` and no content at all, so a failed parse would
+otherwise be indistinguishable from an empty document.
+
+For `tika.*` and `metadata.*`, which describe a single document, the failure is total and is
+raised:
+
+```python
+from tika_client import TikaClient, TikaContainerParseError
+
+with TikaClient("http://localhost:9998") as client:
+    try:
+        result = client.tika.as_text.from_file(Path("corrupt.docx"))
+    except TikaContainerParseError as e:
+        print(f"Tika could not parse the document: {e}")
+```
+
+For `rmeta.*`, which returns one entry per embedded document, raising would throw away the
+entries that parsed successfully, so failures are exposed instead:
+
+```python
+results = client.rmeta.as_text.from_file(Path("archive-with-a-bad-attachment.docx"))
+
+if results.has_parse_errors:
+    for entry in results:
+        if entry.parse_exception is not None:
+            print(f"failed: {entry.parse_exception}")
+
+# Or raise on demand, the way httpx defers raise_for_status() to you.
+# The list form raises a TikaParseErrorGroup, so every failure is reported, not just the first.
+results.raise_for_parse_status()
+```
+
+`TikaParseErrorGroup` is an `ExceptionGroup`, so `except*` works, and it is also a `TikaError`:
+
+```python
+try:
+    results.raise_for_parse_status()
+except* TikaEmbeddedParseError as eg:
+    for err in eg.exceptions:
+        print(err.detail)
+```
+
+### Truncated parses
+
+Tika 4 adds `PARTIAL_TIMEOUT`: a parse that exceeds its deadline returns a 200 with whatever
+content was extracted so far. This is **not** raised, because that content is real and usable,
+and it is deliberately not part of `has_parse_errors`, because truncation is not a parse failure.
+Check it explicitly when an incomplete document matters:
+
+```python
+result = client.tika.as_text.from_file(Path("enormous.pdf"))
+
+if result.truncated:
+    print("Tika hit its deadline; this content is incomplete")
+```
+
+The server-side default is generous (`totalTaskTimeoutMillis` is an hour), so this is uncommon,
+but it is silent if you do not look for it.
 
 ## HTTP Backend Selection
 
