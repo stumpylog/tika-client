@@ -14,14 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Requires Python 3.11+.** 3.10 reaches end of life in October 2026, and this release uses
   `ExceptionGroup`.
 - **A failed parse now raises instead of returning empty content.** Tika 4 reports parse
-  failures as a `200`, where 3.x returned a `500`. `tika.*` and `metadata.*` raise
-  `TikaContainerParseError` when the document failed outright, and `TikaEmbeddedParseError`
-  when only an embedded member did. **The second fires on documents that previously appeared
-  to succeed**: an archive or email with one unreadable attachment came back with the good
-  content and the failed member's text silently absent. The exception carries `partial`, the
-  response as parsed, so nothing is lost. There is no option to disable raising; catch the
-  exception where you want best-effort extraction. `rmeta.*` does not raise, so entries that
-  parsed are not discarded. See "Parse Failures" in the README.
+  failures as a `200`, where 3.x returned a `500`. Which failures raise depends on what the
+  endpoint returns:
+  - `tika.*` raises `TikaContainerParseError` when the document failed outright, and
+    `TikaEmbeddedParseError` when only an embedded member did.
+  - `metadata.*` raises `TikaContainerParseError` only. An embedded failure does not affect the
+    container metadata it returns.
+  - `rmeta.*` never raises, since that would discard the entries that parsed. Inspect
+    `has_parse_errors` or call `raise_for_parse_status()`.
+
+  **`TikaEmbeddedParseError` fires on documents that previously appeared to succeed**: an
+  archive or email with one unreadable attachment came back with the good content and the
+  failed member's text silently absent. The exception carries `partial`, the response as
+  parsed, so nothing is lost. There is no option to disable raising; catch the exception where
+  you want best-effort extraction. See "Parse Failures" in the README.
+
 - Tika-computed metadata keys moved from `X-TIKA:` to `tk:` (`X-TIKA:content` -> `tk:content`).
   `TikaKey.Parsers`, `TikaKey.Parser_Full`, `TikaKey.Parse_Time` and `TikaKey.Content` hold the
   new spellings. `dc:*`, `xmp:*` and `cp:*` are unchanged, being the file's own assertions
@@ -32,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `pdf:has-marked-content`) and moving others between prefixes (`resourceName` ->
   `tk:resource-name`). See [Metadata changes in Tika 4](https://tika.apache.org/docs/4.0.x/migration-to-4x/metadata-changes-4x.html);
   Tika ships an opt-in `legacy-key-migration-filter`.
+- `TikaResponse.type` is now `str | None`. It previously hard-indexed `Content-Type`, which a
+  failure payload can omit, so reading it could raise `KeyError`. Callers doing
+  `result.type.startswith(...)` need a `None` check.
 - `mime_type` is now a hint, not an override. Tika 4 ignores it unless it matches or specializes
   the type detected from the content (TIKA-4825).
 - `TikaResponse.language` removed. Tika 4's `/meta` no longer returns it. `/rmeta` and
@@ -44,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multipart upload, as Tika 4 removed the `/tika/form*` routes. They still stream, so memory
   does not scale with file size, except with `compress=True`, where the body must be buffered
   to know its compressed length. `metadata.from_file()` and `rmeta.*.from_file()` are unaffected.
+
+- The Development Status classifier moves from Beta to Production/Stable.
 
 ### Added
 

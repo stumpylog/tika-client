@@ -267,6 +267,52 @@ class TestSingleDocumentEndpointsRaise:
             response.raise_for_parse_status()
 
 
+class TestTikaRaisesEmbeddedFailures:
+    """
+    The mirror of the /meta case, and the branch's headline behaviour.
+
+    Mocked as well as covered live, because the live test needs a container: flipping
+    decoded_response's default mode would silently reinstate the loss with every
+    container-free test still passing.
+    """
+
+    def test_embedded_failure_raises(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """tika.* must raise: the failed member's text is missing from content asked for."""
+        httpx_mock.add_response(
+            json={
+                TikaKey.ContentType: "application/zip",
+                TikaKey.Content: "the readable part only",
+                TikaKey.EmbeddedException: "org.apache.tika.exception.TikaException: embedded",
+            },
+        )
+
+        with TikaClient(tika_url="http://tika.invalid") as client, pytest.raises(TikaEmbeddedParseError) as err:
+            client.tika.as_text.from_file(sample_libre_office_writer_file)
+
+        assert err.value.partial.content == "the readable part only"
+
+    async def test_async_embedded_failure_raises(
+        self,
+        sample_libre_office_writer_file: Path,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        """The async path shares decoded_response, so it raises identically."""
+        httpx_mock.add_response(
+            json={
+                TikaKey.ContentType: "application/zip",
+                TikaKey.EmbeddedException: "org.apache.tika.exception.TikaException: embedded",
+            },
+        )
+
+        async with AsyncTikaClient(tika_url="http://tika.invalid") as client:
+            with pytest.raises(TikaEmbeddedParseError):
+                await client.tika.as_text.from_file(sample_libre_office_writer_file)
+
+
 class TestMetadataIgnoresEmbeddedFailures:
     """
     /meta returns container metadata only, so an embedded failure does not affect its answer.
