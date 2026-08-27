@@ -23,10 +23,12 @@ from tika_client.client import AsyncTikaClient
 from tika_client.client import TikaClient
 from tika_client.data_models import TikaKey
 from tika_client.data_models import TikaResponse
+from tika_client.data_models import TikaResponseList
 from tika_client.exceptions import TikaContainerParseError
 from tika_client.exceptions import TikaEmbeddedParseError
 from tika_client.exceptions import TikaError
 from tika_client.exceptions import TikaParseError
+from tika_client.exceptions import TikaParseErrorGroup
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -125,12 +127,16 @@ class TestRaiseForParseStatus:
     def test_list_raises_group_of_every_failure(self, tika_client: TikaClient, corrupt_docx_file: Path) -> None:
         """Raising over a list groups every failed document so none are hidden."""
         result = tika_client.rmeta.as_text.from_file(corrupt_docx_file)
-        expected = sum(1 for entry in result if entry.parse_exception is not None)
 
-        with pytest.raises(ExceptionGroup) as exc_info:
+        # Hardcoded from observed apache/tika:4.0.0 behaviour: the truncated .docx yields
+        # five entries with exactly one failure. Deriving the count from parse_exception,
+        # the attribute under test, would let over-detection inflate both sides in
+        # lockstep and still pass.
+        assert len(result) == 5
+        with pytest.raises(TikaParseErrorGroup) as exc_info:
             result.raise_for_parse_status()
 
-        assert len(exc_info.value.exceptions) == expected
+        assert len(exc_info.value.exceptions) == 1
         assert all(isinstance(exc, TikaParseError) for exc in exc_info.value.exceptions)
 
     def test_group_is_catchable_as_tika_error(self, tika_client: TikaClient, corrupt_docx_file: Path) -> None:
@@ -238,9 +244,52 @@ class TestTaskDeadlineReached:
         assert response.truncated is False
 
     def test_explicit_false_is_not_truncated(self) -> None:
-        """The value is parsed rather than assumed from the key being present."""
+        """An explicit false is honoured rather than treated as presence."""
         response = TikaResponse(
             {TikaKey.ContentType: "application/pdf", TikaKey.TaskDeadlineReached: "false"},
         )
 
         assert response.truncated is False
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            pytest.param(["true"], id="multi-valued-list"),
+            pytest.param("2026-08-27T10:00:00Z", id="timestamp"),
+            pytest.param("Task deadline reached after 60000ms", id="message"),
+        ],
+    )
+    def test_unexpected_value_shapes_still_report_truncated(self, value: object) -> None:
+        """
+        The wire format is unconfirmed, so presence is the signal.
+
+        The key was read out of TikaCoreProperties rather than observed on the wire, and
+        its two siblings in the tk:exception: namespace carry stack traces rather than
+        booleans. Failing closed here would recreate the silent truncation this exists
+        to prevent.
+        """
+        response = TikaResponse(
+            {TikaKey.ContentType: "application/pdf", TikaKey.TaskDeadlineReached: value},
+        )
+
+        assert response.truncated is True
+
+    def test_list_reports_truncation_from_any_entry(self) -> None:
+        """Callers guarding on has_parse_errors alone would otherwise ingest truncated content."""
+        results = TikaResponseList(
+            [
+                TikaResponse({TikaKey.ContentType: "application/pdf"}),
+                TikaResponse(
+                    {TikaKey.ContentType: "application/pdf", TikaKey.TaskDeadlineReached: "true"},
+                ),
+            ],
+        )
+
+        assert results.truncated is True
+        assert results.has_parse_errors is False
+
+    def test_list_without_truncation_reports_false(self) -> None:
+        """A complete set of documents reports no truncation."""
+        results = TikaResponseList([TikaResponse({TikaKey.ContentType: "application/pdf"})])
+
+        assert results.truncated is False

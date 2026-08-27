@@ -127,9 +127,16 @@ class TikaResponse:
         self.embedded_exception: str | None = data.get(TikaKey.EmbeddedException)
         self.parse_exception: str | None = self.container_exception or self.embedded_exception
         # PARTIAL_TIMEOUT is a 200 carrying whatever was extracted before the deadline, so
-        # this is a successful-but-incomplete parse rather than a failure. The value is
-        # parsed rather than inferred from the key's presence.
-        self.truncated: bool = str(data.get(TikaKey.TaskDeadlineReached, "")).lower() == "true"
+        # this is a successful-but-incomplete parse rather than a failure.
+        #
+        # Presence is the signal, because the wire format is unconfirmed: the key was read
+        # from TikaCoreProperties rather than observed on a live response, its two siblings
+        # in the tk:exception: namespace carry stack traces rather than booleans, and Tika
+        # metadata can be multi-valued. Matching only the literal "true" would fail closed
+        # on any other shape, recreating the silent truncation this exists to prevent. An
+        # explicit false is still honoured.
+        deadline = data.get(TikaKey.TaskDeadlineReached)
+        self.truncated: bool = deadline is not None and str(deadline).strip().lower() not in {"false", ""}
         self.content_length: int | None = int(self.data.get(TikaKey.ContentLength, "0")) or None
 
         # Dublin Core keys
@@ -152,6 +159,9 @@ class TikaResponse:
 
         Mirrors httpx's raise_for_status: the response is returned either way, and the
         caller decides when a failure should become an exception.
+
+        Note:
+            Deadline truncation is deliberately not raised; check .truncated for that.
 
         Raises:
             TikaContainerParseError: The container parser failed, so nothing was extracted.
@@ -230,12 +240,27 @@ class TikaResponseList(list["TikaResponse"]):
         """Whether any document in the response carries an in-band parse exception."""
         return any(response.parse_exception is not None for response in self)
 
+    @property
+    def truncated(self) -> bool:
+        """
+        Whether any document was cut short by the task deadline.
+
+        Deliberately separate from has_parse_errors, since truncation is a successful but
+        incomplete parse rather than a failure. Exposed at the list level because a caller
+        guarding only on has_parse_errors would otherwise ingest truncated content without
+        noticing, and any one of N embedded documents can be the truncated one.
+        """
+        return any(response.truncated for response in self)
+
     def raise_for_parse_status(self) -> None:
         """
-        Raise an ExceptionGroup covering every failed document, or return None if all parsed.
+        Raise a TikaParseErrorGroup covering every failed document, or return None if all parsed.
 
         A group rather than a single error because one /rmeta call can fail in several
         places at once, and reporting only the first would hide the rest.
+
+        Note:
+            Deadline truncation is deliberately not raised; check .truncated for that.
 
         Raises:
             TikaParseErrorGroup: Containing one TikaParseError per failed document.
