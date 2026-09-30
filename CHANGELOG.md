@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `httpx2` HTTP backend, selected with `backend="httpx2"` or installed with
+  `pip install "tika-client[httpx2]"`. It supports both sync and async. `backend="auto"` tries it
+  last, after `httpx`, `niquests` and `requests`, so existing installs keep their current backend.
+
 ## [2.0.0] - 2026-08-27
 
 ### Breaking Change

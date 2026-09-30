@@ -36,12 +36,12 @@ class TestSyncFromFileStreams:
     """
     Every backend is covered, because they stream by genuinely different means.
 
-    httpx needs an iterator of chunks and hangs on a file object; requests and niquests take
+    httpx and httpx2 need an iterator of chunks and hang on a file object; requests and niquests take
     the handle directly. Testing only the default backend is how the zero-byte framing
     regression reached main.
     """
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests", "requests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests", "requests"])
     def test_as_text_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """Plain text extraction sends the file without reading it whole."""
         with TikaClient(tika_url=tika_host, backend=backend) as client:
@@ -49,7 +49,7 @@ class TestSyncFromFileStreams:
 
         assert result.content is not None
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests", "requests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests", "requests"])
     def test_as_html_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """HTML extraction sends the file without reading it whole."""
         with TikaClient(tika_url=tika_host, backend=backend) as client:
@@ -74,9 +74,9 @@ class TestSyncFromFileStreams:
 
 @pytest.mark.usefixtures("no_whole_file_reads")
 class TestAsyncFromFileStreams:
-    """requests is sync-only, so the async matrix is httpx and niquests."""
+    """requests is sync-only, so the async matrix is httpx, httpx2 and niquests."""
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests"])
     async def test_as_text_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """The async path streams too, rather than reading in a worker thread."""
         async with AsyncTikaClient(tika_url=tika_host, backend=backend) as client:
@@ -84,7 +84,7 @@ class TestAsyncFromFileStreams:
 
         assert result.content is not None
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests"])
     async def test_as_html_streams(self, tika_host: str, backend: str, sample_docx_file: Path) -> None:
         """The async HTML path streams as well."""
         async with AsyncTikaClient(tika_url=tika_host, backend=backend) as client:
@@ -103,7 +103,7 @@ class TestZeroByteFiles:
     every backend because the default-only fixtures are how the regression got in.
     """
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests", "requests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests", "requests"])
     def test_empty_file_reaches_tika(self, tika_host: str, backend: str, tmp_path: Path) -> None:
         """Tika must see the upload and report it as empty, rather than Jetty rejecting the framing."""
         empty = tmp_path / "empty.txt"
@@ -119,7 +119,7 @@ class TestZeroByteFiles:
 
         assert "ZeroByteFileException" in str(err.value)
 
-    @pytest.mark.parametrize("backend", ["httpx", "niquests"])
+    @pytest.mark.parametrize("backend", ["httpx", "httpx2", "niquests"])
     async def test_empty_file_reaches_tika_async(self, tika_host: str, backend: str, tmp_path: Path) -> None:
         """The async paths share put_file, so they share the empty-body handling."""
         empty = tmp_path / "empty.txt"
