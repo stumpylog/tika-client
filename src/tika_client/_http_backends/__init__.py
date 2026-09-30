@@ -16,13 +16,13 @@ if TYPE_CHECKING:
     from tika_client._http_backends._protocols import AsyncClientProtocol
     from tika_client._http_backends._protocols import SyncClientProtocol
 
-BackendType = Literal["httpx", "niquests", "requests", "auto"]
+BackendType = Literal["httpx", "httpx2", "niquests", "requests", "auto"]
 
 __all__ = ["BackendType", "HttpStatusError", "make_async_client", "make_sync_client"]
 
 
-def _resolve_backend(backend: BackendType) -> Literal["httpx", "niquests", "requests"]:
-    """Resolve 'auto' to a concrete backend name, preferring httpx."""
+def _resolve_backend(backend: BackendType) -> Literal["httpx", "httpx2", "niquests", "requests"]:
+    """Resolve 'auto' to a concrete backend name, preferring httpx and trying httpx2 last."""
     if backend == "auto":
         try:
             import httpx  # noqa: F401, PLC0415
@@ -42,7 +42,13 @@ def _resolve_backend(backend: BackendType) -> Literal["httpx", "niquests", "requ
             pass
         else:
             return "requests"
-        msg = "No HTTP backend available; install httpx, niquests, or requests"
+        try:
+            import httpx2  # noqa: F401, PLC0415
+        except ImportError:
+            pass
+        else:
+            return "httpx2"
+        msg = "No HTTP backend available; install httpx, niquests, requests, or httpx2"
         raise ImportError(msg)
     return backend
 
@@ -64,6 +70,15 @@ def make_sync_client(
         logging.getLogger("httpx").setLevel(log_level)
         logging.getLogger("httpcore").setLevel(log_level)
         return HttpxSyncAdapter(httpx.Client(base_url=base_url, timeout=timeout, headers=headers))
+
+    if resolved == "httpx2":
+        import httpx2  # noqa: PLC0415
+
+        from tika_client._http_backends._httpx2 import Httpx2SyncAdapter  # noqa: PLC0415
+
+        logging.getLogger("httpx2").setLevel(log_level)
+        logging.getLogger("httpcore2").setLevel(log_level)
+        return Httpx2SyncAdapter(httpx2.Client(base_url=base_url, timeout=timeout, headers=headers))
 
     if resolved == "niquests":
         import niquests  # noqa: PLC0415
@@ -95,7 +110,7 @@ def make_async_client(
 ) -> AsyncClientProtocol:
     """Create and return an asynchronous HTTP client for the given backend."""
     if backend == "requests":
-        msg = "The 'requests' backend does not support async; use 'httpx' or 'niquests'"
+        msg = "The 'requests' backend does not support async; use 'httpx', 'httpx2', or 'niquests'"
         raise ValueError(msg)
     resolved = _resolve_backend(backend)
     if resolved == "httpx":
@@ -106,6 +121,15 @@ def make_async_client(
         logging.getLogger("httpx").setLevel(log_level)
         logging.getLogger("httpcore").setLevel(log_level)
         return HttpxAsyncAdapter(httpx.AsyncClient(base_url=base_url, timeout=timeout, headers=headers))
+
+    if resolved == "httpx2":
+        import httpx2  # noqa: PLC0415
+
+        from tika_client._http_backends._httpx2 import Httpx2AsyncAdapter  # noqa: PLC0415
+
+        logging.getLogger("httpx2").setLevel(log_level)
+        logging.getLogger("httpcore2").setLevel(log_level)
+        return Httpx2AsyncAdapter(httpx2.AsyncClient(base_url=base_url, timeout=timeout, headers=headers))
 
     import niquests  # noqa: PLC0415
 
