@@ -8,12 +8,16 @@ These construct response objects directly and do not require Docker or a live Ti
 """
 
 import httpx
+import httpx2
 import niquests
+import pytest
 import requests
 
 from tika_client._http_backends._httpx import HttpxResponseAdapter
+from tika_client._http_backends._httpx2 import Httpx2ResponseAdapter
 from tika_client._http_backends._niquests import NiquestsResponseAdapter
 from tika_client._http_backends._requests import RequestsResponseAdapter
+from tika_client.exceptions import HttpStatusError
 
 
 class TestHttpxResponseAdapterTextHeaders:
@@ -23,6 +27,24 @@ class TestHttpxResponseAdapterTextHeaders:
 
         assert adapter.text == "Request body exceeds maxRequestSizeBytes"
         assert adapter.headers["Retry-After"] == "5"
+
+
+class TestHttpx2ResponseAdapterTextHeaders:
+    def test_text_and_headers(self) -> None:
+        raw = httpx2.Response(413, text="Request body exceeds maxRequestSizeBytes", headers={"Retry-After": "5"})
+        adapter = Httpx2ResponseAdapter(raw)
+
+        assert adapter.text == "Request body exceeds maxRequestSizeBytes"
+        assert adapter.headers["Retry-After"] == "5"
+
+    def test_raise_for_status_converts_exception(self) -> None:
+        raw = httpx2.Response(500, request=httpx2.Request("GET", "http://localhost:9998/tika"))
+        adapter = Httpx2ResponseAdapter(raw)
+
+        with pytest.raises(HttpStatusError) as err:
+            adapter.raise_for_status()
+
+        assert err.value.response is adapter
 
 
 class TestRequestsResponseAdapterTextHeaders:

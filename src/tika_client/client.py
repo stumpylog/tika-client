@@ -46,7 +46,7 @@ class BaseTikaClient(ABC, Generic[T, R]):
         timeout: The timeout for the HTTP request
         log_level: The logging level
         compress: Whether to compress the response
-        backend: The HTTP backend to use. One of "httpx", "niquests", or "auto".
+        backend: The HTTP backend to use. One of "httpx", "httpx2", "niquests", "requests", or "auto".
 
     """
 

@@ -8,7 +8,7 @@ from typing import IO
 from typing import TYPE_CHECKING
 from typing import Any
 
-import httpx
+import httpx2
 
 from tika_client._http_backends._streaming import aiter_file
 from tika_client._http_backends._streaming import iter_file
@@ -18,11 +18,11 @@ if TYPE_CHECKING:
     from tika_client._http_backends._protocols import ResponseProtocol
 
 
-class HttpxResponseAdapter:
-    """Wraps an httpx.Response to satisfy ResponseProtocol."""
+class Httpx2ResponseAdapter:
+    """Wraps an httpx2.Response to satisfy ResponseProtocol."""
 
-    def __init__(self, response: httpx.Response) -> None:
-        """Initialize with an httpx response."""
+    def __init__(self, response: httpx2.Response) -> None:
+        """Initialize with an httpx2 response."""
         self._response = response
 
     @property
@@ -36,7 +36,7 @@ class HttpxResponseAdapter:
         return self._response.text
 
     @property
-    def headers(self) -> httpx.Headers:
+    def headers(self) -> httpx2.Headers:
         """Response headers."""
         return self._response.headers
 
@@ -44,7 +44,7 @@ class HttpxResponseAdapter:
         """Raise HttpStatusError for 4xx/5xx responses."""
         try:
             self._response.raise_for_status()
-        except httpx.HTTPStatusError as e:
+        except httpx2.HTTPStatusError as e:
             raise HttpStatusError(response=self) from e
 
     def json(self) -> Any:  # noqa: ANN401
@@ -52,11 +52,11 @@ class HttpxResponseAdapter:
         return self._response.json()
 
 
-class HttpxSyncAdapter:
-    """Synchronous HTTP adapter backed by httpx.Client."""
+class Httpx2SyncAdapter:
+    """Synchronous HTTP adapter backed by httpx2.Client."""
 
-    def __init__(self, client: httpx.Client) -> None:
-        """Initialize with an httpx sync client."""
+    def __init__(self, client: httpx2.Client) -> None:
+        """Initialize with an httpx2 sync client."""
         self._client = client
 
     def post(
@@ -67,7 +67,7 @@ class HttpxSyncAdapter:
         headers: dict[str, str],
     ) -> ResponseProtocol:
         """Perform a POST request with multipart file upload."""
-        return HttpxResponseAdapter(self._client.post(url, files=files, headers=headers))
+        return Httpx2ResponseAdapter(self._client.post(url, files=files, headers=headers))
 
     def put(
         self,
@@ -78,18 +78,18 @@ class HttpxSyncAdapter:
     ) -> ResponseProtocol:
         """Perform a PUT request with raw byte content, or stream an open file."""
         body = content if isinstance(content, bytes) else iter_file(content)
-        return HttpxResponseAdapter(self._client.put(url, content=body, headers=headers))
+        return Httpx2ResponseAdapter(self._client.put(url, content=body, headers=headers))
 
     def close(self) -> None:
-        """Close the underlying httpx client."""
+        """Close the underlying httpx2 client."""
         self._client.close()
 
 
-class HttpxAsyncAdapter:
-    """Asynchronous HTTP adapter backed by httpx.AsyncClient."""
+class Httpx2AsyncAdapter:
+    """Asynchronous HTTP adapter backed by httpx2.AsyncClient."""
 
-    def __init__(self, client: httpx.AsyncClient) -> None:
-        """Initialize with an httpx async client."""
+    def __init__(self, client: httpx2.AsyncClient) -> None:
+        """Initialize with an httpx2 async client."""
         self._client = client
 
     async def post(
@@ -100,7 +100,7 @@ class HttpxAsyncAdapter:
         headers: dict[str, str],
     ) -> ResponseProtocol:
         """Perform an async POST request with multipart file upload."""
-        return HttpxResponseAdapter(await self._client.post(url, files=files, headers=headers))
+        return Httpx2ResponseAdapter(await self._client.post(url, files=files, headers=headers))
 
     async def put(
         self,
@@ -111,8 +111,8 @@ class HttpxAsyncAdapter:
     ) -> ResponseProtocol:
         """Perform an async PUT request with raw byte content, or stream an open file."""
         body = content if isinstance(content, bytes) else aiter_file(content)
-        return HttpxResponseAdapter(await self._client.put(url, content=body, headers=headers))
+        return Httpx2ResponseAdapter(await self._client.put(url, content=body, headers=headers))
 
     async def aclose(self) -> None:
-        """Close the underlying httpx async client."""
+        """Close the underlying httpx2 async client."""
         await self._client.aclose()

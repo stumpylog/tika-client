@@ -17,6 +17,9 @@ class TestResolveBackendExplicit:
     def test_httpx(self) -> None:
         assert _resolve_backend("httpx") == "httpx"
 
+    def test_httpx2(self) -> None:
+        assert _resolve_backend("httpx2") == "httpx2"
+
     def test_niquests(self) -> None:
         assert _resolve_backend("niquests") == "niquests"
 
@@ -37,8 +40,15 @@ class TestResolveBackendAuto:
         monkeypatch.setitem(sys.modules, "niquests", None)
         assert _resolve_backend("auto") == "requests"
 
+    def test_auto_falls_back_to_httpx2_last(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setitem(sys.modules, "httpx", None)
+        monkeypatch.setitem(sys.modules, "niquests", None)
+        monkeypatch.setitem(sys.modules, "requests", None)
+        assert _resolve_backend("auto") == "httpx2"
+
     def test_auto_raises_when_none_available(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setitem(sys.modules, "httpx", None)
+        monkeypatch.setitem(sys.modules, "httpx2", None)
         monkeypatch.setitem(sys.modules, "niquests", None)
         monkeypatch.setitem(sys.modules, "requests", None)
         with pytest.raises(ImportError, match="No HTTP backend available"):

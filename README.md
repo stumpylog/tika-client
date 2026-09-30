@@ -28,7 +28,7 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 ## Features
 
 - Synchronous and asynchronous client support
-- Pluggable HTTP backend (httpx, niquests, or requests)
+- Pluggable HTTP backend (httpx, httpx2, niquests, or requests)
 - `metadata.from_file()` and `rmeta.*.from_file()` stream files to the server via HTTP multipart/form-data (no full file reads into memory). `tika.as_html.from_file()`/`tika.as_text.from_file()` stream the file as a raw PUT body, since Tika 4 removed the `/tika/form*` routes those relied on. With `compress=True` they buffer instead, because the compressed length is not knowable without compressing.
 - Full type annotations with typed response properties
 - Supports Tika Server 4.0+ only (the last release supporting Tika 3.x is 1.0.0)
@@ -37,16 +37,17 @@ A simple, fully-typed Python client for extracting text, HTML, and metadata from
 
 ## Installation
 
-No HTTP backend is installed by default. Install `tika-client` with one of the three backend extras:
+No HTTP backend is installed by default. Install `tika-client` with one of the backend extras:
 
 ```console
 pip install "tika-client[httpx]"
+pip install "tika-client[httpx2]"
 pip install "tika-client[niquests]"
 pip install "tika-client[requests]"
 ```
 
-All three extras can be combined. The default `backend="auto"` discovers whichever backend is present
-at runtime, trying `httpx` first, then `niquests`, then `requests`. A bare `pip install tika-client`
+The extras can be combined. The default `backend="auto"` discovers whichever backend is present
+at runtime, trying `httpx` first, then `niquests`, then `requests`, then `httpx2`. A bare `pip install tika-client`
 with no extras will raise `ImportError` on first use.
 
 ## Tika Server Compatibility
@@ -442,16 +443,19 @@ but it is silent if you do not look for it.
 ## HTTP Backend Selection
 
 No backend is installed by default. Install at least one extra and select it explicitly, or let
-`"auto"` (the default) detect whichever is present (tries `httpx`, then `niquests`, then `requests`):
+`"auto"` (the default) detect whichever is present (tries `httpx`, then `niquests`, then `requests`, then `httpx2`):
 
 ```python
 from tika_client import TikaClient
 
-# Auto-detect: prefers httpx, then niquests, then requests (default)
+# Auto-detect: prefers httpx, then niquests, then requests, then httpx2 (default)
 with TikaClient("http://localhost:9998") as client: ...
 
 # Explicit httpx
 with TikaClient("http://localhost:9998", backend="httpx") as client: ...
+
+# Explicit httpx2
+with TikaClient("http://localhost:9998", backend="httpx2") as client: ...
 
 # Explicit niquests
 with TikaClient("http://localhost:9998", backend="niquests") as client: ...
@@ -474,7 +478,7 @@ All constructor parameters for both `TikaClient` and `AsyncTikaClient`:
 | `compress`   | `False`                 | Request gzip responses, and gzip `tika.*` request bodies over 1 KiB. Multipart uploads (`metadata.*`, `rmeta.*`) are never compressed |
 | `user_agent` | `tika-client/{version}` | Value sent as the User-Agent header                                                                                                   |
 | `log_level`  | `logging.ERROR`         | Log level for the HTTP backend logger                                                                                                 |
-| `backend`    | `"auto"`                | HTTP backend: `"httpx"`, `"niquests"`, `"requests"`, or `"auto"`                                                                      |
+| `backend`    | `"auto"`                | HTTP backend: `"httpx"`, `"httpx2"`, `"niquests"`, `"requests"`, or `"auto"`                                                          |
 
 `tika_url` and `user_agent` are positional-or-keyword; the rest are keyword-only.
 
