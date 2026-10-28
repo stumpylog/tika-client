@@ -36,3 +36,20 @@ updates:
           - "major"
           - "minor"
           - "patch"
+  # Enable updates for pre-commit hooks
+  - package-ecosystem: "pre-commit"
+    target-branch: "develop"
+    directory: "/"
+    schedule:
+      # Check for updates to pre-commit hooks every month
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    cooldown:
+      default-days: 7
+    groups:
+      pre-commit:
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
