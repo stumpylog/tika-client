@@ -48,7 +48,7 @@ repos:
       - id: yamlfmt
   # Python hooks
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+    rev: v0.15.22
     hooks:
       - id: ruff-check
       - id: ruff-format
@@ -65,7 +65,7 @@ repos:
   #       language_version: python3.12
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.10.9
+    rev: 0.13.6
     hooks:
       # Update the uv lockfile
       - id: uv-lock
