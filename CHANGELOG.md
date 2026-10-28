@@ -7,13 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- `httpx2` HTTP backend, selected with `backend="httpx2"` or installed with
-  `pip install "tika-client[httpx2]"`. It supports both sync and async. `backend="auto"` tries it
-  last, after `httpx`, `niquests` and `requests`, so existing installs keep their current backend.
-
-## [2.0.0] - 2026-08-27
+## [2.0.0] - 2026-10-28
 
 ### Breaking Change
 
@@ -84,6 +78,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TikaKey.ContainerException`, `TikaKey.EmbeddedException` and `TikaKey.TaskDeadlineReached`
 - `TikaResponse` and `TikaResponseList` are now exported from the package root
 - `OtherTikaKeys` is now exported, matching its sibling key enums
+- `httpx2` HTTP backend, selected with `backend="httpx2"` or installed with
+  `pip install "tika-client[httpx2]"`. It supports both sync and async. `backend="auto"` tries it
+  last, after `httpx`, `niquests` and `requests`, so existing installs keep their current backend.
 
 ### Fixed
 
