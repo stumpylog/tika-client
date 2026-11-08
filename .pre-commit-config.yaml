@@ -35,7 +35,7 @@ repos:
         additional_dependencies:
           - tomli
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.23.1
+    rev: v1.31.1
     hooks:
       - id: zizmor
         args:
