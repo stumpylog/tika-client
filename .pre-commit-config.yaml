@@ -53,7 +53,7 @@ repos:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.18.1"
+    rev: "v2.30.3"
     hooks:
       - id: pyproject-fmt
   # TODO: Disabled due to odd issues around a pytest file?
